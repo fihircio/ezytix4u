@@ -91,7 +91,7 @@ export default {
             return route(name);
         },
 
-        verifyD(){
+       /* verifyD(){
             this.check = this.check_session ? 1 : 0;
             
             if(this.check == 0)
@@ -111,7 +111,7 @@ export default {
                     
                 });
             }
-        },
+        },*/
         
         // check Session
         checkSession(){
@@ -155,7 +155,7 @@ export default {
     },
 
     mounted() {
-        this.verifyD();       
+       // this.verifyD();       
         this.getCategories();
         this.getCities();
         this.getDirection();
