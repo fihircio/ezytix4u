@@ -91,7 +91,7 @@ export default {
             return route(name);
         },
 
-       /* verifyD(){
+        verifyD(){
             this.check = this.check_session ? 1 : 0;
             
             if(this.check == 0)
@@ -111,7 +111,7 @@ export default {
                     
                 });
             }
-        },*/
+        },
         
         // check Session
         checkSession(){
