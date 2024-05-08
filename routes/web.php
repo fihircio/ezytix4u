@@ -17,5 +17,8 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/foo', function () {
+    Artisan::call('storage:link');
+});
 
 Eventmie::routes();
