@@ -263,7 +263,38 @@ class SettingsTableSeeder extends Seeder
                 ]
             ]), "type" => "checkbox", "order" => "35", "group" => "Apps", ])->save();
         }
+        $setting = $this->findSetting("apps.billplz_secret_key");
+        if (!$setting->exists) {
+            $setting->fill(["display_name" => "Billplz Secret Key","value" => "", "details" => null, 
+            "type" => "text", "order" => "48", "group" => "Apps", ])->save();
+        }
+        $setting = $this->findSetting("apps.billplz_collection_id");
+        if (!$setting->exists) {
+            $setting->fill([
+                "display_name" => "Billplz Collection ID",
+                "value" => "",
+                "details" => null,
+                "type" => "text",
+                "order" => "48",  // Adjust order as needed
+                "group" => "Apps",
+            ])->save();
+        }
 
+        $setting = $this->findSetting("apps.billplz_sandbox");
+        if (!$setting->exists) {
+            $setting->fill([
+                "display_name" => "Billplz Sandbox Mode",
+                "value" => "1",
+                "details" => json_encode([
+                    "validation" => [
+                        "rule" => "in:0,1,on,off"
+                    ]
+                ]),
+                "type" => "checkbox",
+                "order" => "48",  // Adjust order as needed
+                "group" => "Apps", 
+            ])->save();
+        }
         $setting = $this->findSetting("mail.mail_driver");
         if (!$setting->exists) {
             $setting->fill(["display_name" => "Mail Driver", "value" => "", "details"=> null, "type" => "text", "order" => "36", "group" => "Mail", ])->save();

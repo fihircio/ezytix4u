@@ -1,5 +1,7 @@
 const mix = require('laravel-mix');
 
+require('laravel-mix-polyfill');
+
 /*
  |--------------------------------------------------------------------------
  | Mix Asset Management
@@ -12,6 +14,7 @@ const mix = require('laravel-mix');
  */
 
 mix.js('resources/js/app.js', 'public/js')
+   // .js('eventmie-pro/resources/js/events_show/index.js', 'eventmie-pro/publishable/assets/js/events_show.js')
     .postCss('resources/css/app.css', 'public/css', [
         //
     ]);

@@ -215,6 +215,9 @@ Route::group([
         // Paypal Checkout
         Route::match(['get', 'post'], '/paypal/callback', "$controller@paypal_callback")->name('bookings_paypal_callback');  
 
+        // Billplz Callback
+        Route::post('/billplz/callback', "$namespace\\BookingsController@billplzCallback")->name('bookings_billplz_callback');  
+    
         // Redirect back to event
         Route::get('/login-first', "$controller@login_first")->name('login_first');
         Route::get('/signup-first', "$controller@signup_first")->name('signup_first');

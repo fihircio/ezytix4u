@@ -17,8 +17,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/foo', function () {
+Route::get('/symlink', function () {
     Artisan::call('storage:link');
-});
+    echo "Done";
+ });
 
 Eventmie::routes();

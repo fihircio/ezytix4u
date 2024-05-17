@@ -236,9 +236,12 @@
                                                     <input type="radio" class="custom-control-input" id="payment_method_usaepay" name="payment_method" v-model="payment_method" value="9" >
                                                     <label class="custom-control-label" for="payment_method_usaepay"> &nbsp;<i class="fa-regular fa-credit-card"></i> USAePay</label>
                                                 </div>
-                                            
-        
 
+                                                <div class="radio-inline" v-if="is_admin <= 0 && is_billplz > 0">
+                                                    <input type="radio" class="custom-control-input" id="payment_method_billplz" name="payment_method" v-model="payment_method" value="2">
+                                                    <label class="custom-control-label" for="payment_method_billplz">  &nbsp;<i class="fas fa-money-bill-wave"></i> Billplz</label> 
+                                                </div>
+                    
                                                 <!-- For Admin & Organizer & Customer -->
                                                 <div class="radio-inline" 
                                                     v-if="(is_organiser > 0 && is_offline_payment_organizer > 0) || (is_customer > 0 && is_offline_payment_customer > 0) || (is_admin > 0)">
@@ -323,7 +326,8 @@ export default {
         'is_offline_payment_organizer',
         'is_offline_payment_customer',
         'booked_tickets',
-        'is_usaepay'
+        'is_usaepay',
+        'is_billplz'
     ],
 
     data() {

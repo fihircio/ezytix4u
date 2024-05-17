@@ -257,6 +257,7 @@ class EventsController extends Controller
         }
         
         $is_paypal = $this->is_paypal();
+        $is_billplz = $this->is_billplz();
 
         $is_usaepay = $this->USAePay->isUSAePay();
         
@@ -269,7 +270,7 @@ class EventsController extends Controller
 
         return Eventmie::view($view, compact(
             'event', 'tag_groups', 'max_ticket_qty', 'free_tickets', 
-            'ended', 'category', 'country', 'google_map_key', 'is_paypal', 
+            'ended', 'category', 'country', 'google_map_key', 'is_paypal','is_billplz',  
             'tickets', 'currency', 'booked_tickets', 'total_capacity', 'extra', 'is_usaepay'));
     }
 
@@ -339,6 +340,18 @@ class EventsController extends Controller
         return $is_paypal;
         
     }
+
+     // is_billplz
+    
+     protected function is_billplz()
+     {
+         // if have Billplz keys then will show Billplz payment option otherwise hide
+         $is_billplz = 1;
+         if(empty(setting('apps.billplz_secret_key')) || empty(setting('apps.billplz_collection_id')))
+             $is_billplz = 0;
+         
+         return $is_billplz;
+     }
 
     // get tickets and it is public
     protected function get_tickets($event_id = null)

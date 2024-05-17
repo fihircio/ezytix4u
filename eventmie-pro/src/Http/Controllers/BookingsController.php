@@ -16,6 +16,7 @@ use Classiebit\Eventmie\Models\Transaction;
 use Classiebit\Eventmie\Models\Tax;
 use Classiebit\Eventmie\Services\USAePay;
 use Illuminate\Support\Facades\DB;
+use Classiebit\Eventmie\Services\BillplzService;
 use Throwable;
 
 class BookingsController extends Controller
@@ -42,7 +43,9 @@ class BookingsController extends Controller
         $this->tax          = new Tax;
         $this->customer_id  = null;
         $this->organiser_id = null;
-
+        $this->billplzService = new BillplzService(setting('apps'));
+       // $this->billplz = new Billplz(setting('apps'.billplz_secret_key'), setting('apps.billplz_sandbox') ? 'staging' : 'live');
+        
         $this->USAePay      = new USAePay;
         
     }
@@ -492,6 +495,7 @@ class BookingsController extends Controller
         // return to paypal
         session(['booking'=>$booking]);
 
+        // set payment method for Billplz
         $this->set_payment_method($request, $booking);
 
         return $this->init_checkout($booking);
@@ -544,7 +548,7 @@ class BookingsController extends Controller
 
         return error($flag['error'], Response::HTTP_REQUEST_TIMEOUT);
     }
-    
+
     // 3. On return from gateway check if payment fail or success
     public function paypal_callback(Request $request)
     {
@@ -567,6 +571,59 @@ class BookingsController extends Controller
     }    
 
     /* =================== PAYPAL ==================== */
+
+     /* =================== BILLPLIZ ==================== */
+    // 2. Create a bill and redirect to payment gateway
+      /**
+     *  Billplz
+     *
+     * @param  mixed $order
+     * @param  mixed $currency
+     * @param  mixed $booking
+     * @return void
+     */
+    protected function billplz($order = [], $currency = 'MYR', $booking = [])
+    {  
+        try {
+                $response = $this->billplz->createBill([
+                'collection_id'       => setting('apps.billplz_collection_id'),
+                'email'               => $booking[key($booking)]['customer_email'],
+                'name'                => $booking[key($booking)]['customer_name'],
+                'amount'              => (int) ($order['price'] * 100), // amount in cents
+                'callback_url'        => route('eventmie.bookings_billplz_callback'),
+                'description'         => $order['product_title'].' ('.$order['price_title'].')',
+            
+            ]);
+
+            if ($response->getStatusCode() === 200) {
+                return response(['status' => true, 'url' => $response->json()['url'], 'message' => ''], Response::HTTP_OK);
+            }
+            
+            return error($response->json()['error']['message'], Response::HTTP_REQUEST_TIMEOUT);
+        } catch (\Throwable $th) {
+            return error($th->getMessage(), Response::HTTP_REQUEST_TIMEOUT);
+        }
+    }
+    // 3. Get payment status on redirect from gateway
+    public function billplzCallback(Request $request)
+    {
+        // Payment success
+        if($request->billplz['paid'] == 'true') {
+            return $this->finish_checkout([
+                'transaction_id'    => $request->billplz['id'],
+                'payer_reference'   => $request->billplz['paid_at'],
+                'message'           => 'Paid',
+                'status'            => true,
+            ]);
+        }
+
+        // Payment failed
+        return $this->finish_checkout([
+            'error' => 'Payment Failed!',
+            'status' => false,
+        ]);
+    }
+    /* =================== BILLPLIZ ==================== */
 
     /** 
      * 4 Finish checkout process
@@ -610,6 +667,8 @@ class BookingsController extends Controller
             
             if ($payment_method == 1)
                 $data['payment_gateway'] = 'PayPal';
+            else if ($payment_method == 2)
+                $data['payment_gateway'] = 'Billplz';
             else if ($payment_method == 9)
                 $data['payment_gateway'] = 'USAePay';
 
@@ -1111,14 +1170,26 @@ class BookingsController extends Controller
         
             return $this->paypal($order, $currency);
         } 
+
+        if($payment_method == 2)
+        {
+            if(empty(setting('apps.billplz_collection_id')) || empty(setting('apps.billplz_secret_key')))
+            return response()->json(['status' => false, 'url'=>$url, 'message'=>$msg]);
+   
+            $customer = [
+                'email' => $booking[0]['customer_email'],
+                'name' => $booking[0]['customer_name'],
+            ];
+
+            return $this->finish_checkout($this->billplzService->createBill($order, $currency, $customer));                    
+        }
         
         if($payment_method == 9)
         {
             if(empty(setting('apps.usaepay_sourceKey')) || empty(setting('apps.usaepay_pin')))
                 return response()->json(['status' => false, 'url'=>$url, 'message'=>$msg]); 
 
-            return $this->finish_checkout($this->USAePay->createTransaction($order, $currency));
-            
+            return $this->finish_checkout($this->USAePay->createTransaction($order, $currency));          
         }
         
     }

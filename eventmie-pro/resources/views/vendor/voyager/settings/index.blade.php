@@ -268,6 +268,13 @@
                                 {{ __('voyager::generic.Set Callback URL on your PayPal Dashboard') }} - <code>{{ route('eventmie.bookings_paypal_callback') }}</code>
                             </div>
                             @endif
+                            {{-- Info for Billplz Callback --}}
+                                @if($setting->key == 'apps.billplz_secret_key')
+                                <br>
+                            <div class="alert alert-info">
+                                {{ __('voyager::generic.Set Callback URL on your Billplz Dashboard') }} - <code>{{ route('eventmie.bookings_billplz_callback') }}</code>
+                            </div>
+                            @endif
 
                             <div class="panel-heading">
                                 <h3 class="panel-title">
@@ -366,6 +373,21 @@
                                         @else
                                             <input type="checkbox" name="{{ $setting->key }}" @if($checked) checked @endif class="toggleswitch">
                                         @endif
+                                    @endif
+                                   
+                                    @if($setting->key == 'apps.billplz_secret_key')
+                                        <input type="text" class="form-control" name="{{ $setting->key }}" value="{{ $setting->value }}">
+                                    @endif
+
+                                    
+                                    @if($setting->key == 'apps.billplz_collection_id')
+                                        <input type="text" class="form-control" name="{{ $setting->key }}" value="{{ $setting->value }}">
+                                    @endif
+                                        
+                                   
+                                    @if($setting->key == 'apps.billplz_sandbox')
+                                        <input type="checkbox" name="{{ $setting->key }}" id="billplz_sandbox" value="1" {{ $setting->value ? 'checked' : '' }} >
+                                        <label for="billplz_sandbox">Enable Sandbox Mode</label>
                                     @endif
 
                                     <?php $options = json_decode($setting->details); ?>

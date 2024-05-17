@@ -54,7 +54,7 @@ class DataRowsSeedCommand extends Command
     {
         $this->info('starting generating seeds process...');
 
-        $this->genseed($filesystem);
+       // $this->genseed($filesystem);
         
     }
 

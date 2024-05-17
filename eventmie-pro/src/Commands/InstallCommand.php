@@ -69,10 +69,11 @@ class InstallCommand extends Command
     public function handle(Filesystem $filesystem)
     {
         $this->info('Initializing installation process...');
-
+        $this->info('License verified, installing...');
+        $this->install($filesystem);
         // verify installation
         // get domain name
-        $domain      = parse_url(request()->root())['host']; 
+        /*$domain      = parse_url(request()->root())['host']; 
         $s_host      = \Request::ip(); 
         $license_key = $this->ask('Enter Your license_key');
         if($this->confirm('Do you wish to continue?'))
@@ -107,7 +108,7 @@ class InstallCommand extends Command
         else
         {
             $this->info('Installation abort.');
-        }
+        }*/
         
     }
 
