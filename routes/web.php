@@ -19,7 +19,14 @@ Route::get('/', function () {
 
 Route::get('/symlink', function () {
     Artisan::call('storage:link');
-    echo "Done";
- });
+   echo "Link Done";
+});
+
+Route::get('/clear', function () {
+   Artisan::call('optimize:clear');
+    Artisan::call('cache:clear');
+   echo "Clear Done";
+});
+
 
 Eventmie::routes();
