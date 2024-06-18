@@ -251,7 +251,7 @@ class DataRowsTableSeeder extends Seeder
         }
         $dataRow = $this->dataRow($DataType, "phone");
         if (!$dataRow->exists) {
-            $dataRow->fill(["type" => "text", "display_name" => "Phone", "required" => 0, "browse" => 0, "read" => 1, "edit" => 1, "add" => 1, "delete" => 1, "details" => [
+            $dataRow->fill(["type" => "text", "display_name" => "Phone", "required" => 1, "browse" => 0, "read" => 1, "edit" => 1, "add" => 1, "delete" => 1, "details" => [
         "validation" => [
                 "rule" => "nullable|max:255" 
             ] 
