@@ -41,6 +41,7 @@ class CreateBookingsTable extends Migration {
 			$table->integer('transaction_id')->unsigned()->default(0);
 			$table->string('customer_name', 256);
 			$table->string('customer_email', 256);
+			$table->string('customer_phone', 256);
 			$table->string('currency', 5)->nullable();
 		});
 	}

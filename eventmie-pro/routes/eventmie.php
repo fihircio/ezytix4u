@@ -130,6 +130,7 @@ Route::group([
         
         Route::get('/', "$controller@index")->name('o_dashboard');
         Route::get('/organiser_monthly_revenue', "$controller@organizer_booking_revenue")->name('monthly_revenue');
+        Route::get('/lucky-draw', "$controller@luckyDraw")->name('luckyDraw');
     });
 
     /* Tags */
@@ -216,7 +217,10 @@ Route::group([
         Route::match(['get', 'post'], '/paypal/callback', "$controller@paypal_callback")->name('bookings_paypal_callback');  
 
         // Billplz Callback
-        Route::post('/billplz/callback', "$namespace\\BookingsController@billplzCallback")->name('bookings_billplz_callback');  
+        Route::post('/bookings/billplz/callback', "$controller@billplzCallback")->name('bookings_billplz_callback');  
+
+        // Toyyibpay Callback
+        Route::match(['get', 'post'], '/bookings/toyyibpay/callback', "$controller@toyyibpayCallback")->name('bookings_toyyibpay_callback');
     
         // Redirect back to event
         Route::get('/login-first', "$controller@login_first")->name('login_first');

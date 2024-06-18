@@ -331,7 +331,8 @@
             :is_offline_payment_customer="is_offline_payment_customer"
             :booked_tickets="booked_tickets"
             :is_usaepay="is_usaepay"
-            :is_billplz="is_billplz"   
+            :is_billplz="is_billplz"
+            :is_toyyibpay="is_toyyibpay"    
         >
         </ticket-component>
 
@@ -363,7 +364,8 @@ export default {
         'currency',
         'date_format',
         'is_usaepay',
-        'is_billplz'
+        'is_billplz',
+        'is_toyyibpay'
     ],
 
     mixins:[

@@ -258,6 +258,7 @@ class EventsController extends Controller
         
         $is_paypal = $this->is_paypal();
         $is_billplz = $this->is_billplz();
+        $is_toyyibpay = $this->is_toyyibpay();
 
         $is_usaepay = $this->USAePay->isUSAePay();
         
@@ -270,7 +271,7 @@ class EventsController extends Controller
 
         return Eventmie::view($view, compact(
             'event', 'tag_groups', 'max_ticket_qty', 'free_tickets', 
-            'ended', 'category', 'country', 'google_map_key', 'is_paypal','is_billplz',  
+            'ended', 'category', 'country', 'google_map_key', 'is_paypal','is_billplz', 'is_toyyibpay',  
             'tickets', 'currency', 'booked_tickets', 'total_capacity', 'extra', 'is_usaepay'));
     }
 
@@ -352,6 +353,18 @@ class EventsController extends Controller
          
          return $is_billplz;
      }
+
+      // is_toyyibpay
+    
+      protected function is_toyyibpay()
+      {
+          // if have Toyyibpay keys then will show Toyyibpay payment option otherwise hide
+          $is_toyyibpay = 1;
+          if(empty(setting('apps.toyyibpay_secret_key')) || empty(setting('apps.toyyibpay_redirect_uri')))
+              $is_toyyibpay = 0;
+          
+          return $is_toyyibpay;
+      }
 
     // get tickets and it is public
     protected function get_tickets($event_id = null)

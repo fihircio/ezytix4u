@@ -37,4 +37,11 @@ return [
         'sandbox' => env('BILLPLZ_SANDBOX', false),
     ],
 
+    'toyyibpay' => [
+        'client_secret' => env('TOYYIBPAY_USER_SECRET_KEY'),
+        'redirect_uri' => env('TOYYIBPAY_REDIRECT_URI'),
+        'sandbox' => env('TOYYIBPAY_SANDBOX', false),
+        'code' => env('TOYYIBPAY_CODE'),
+    ],
+
 ];

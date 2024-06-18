@@ -17,6 +17,7 @@ use Classiebit\Eventmie\Models\Tax;
 use Classiebit\Eventmie\Services\USAePay;
 use Illuminate\Support\Facades\DB;
 use Classiebit\Eventmie\Services\BillplzService;
+use Classiebit\Eventmie\Services\ToyyibPayService;
 use Throwable;
 
 class BookingsController extends Controller
@@ -44,6 +45,7 @@ class BookingsController extends Controller
         $this->customer_id  = null;
         $this->organiser_id = null;
         $this->billplzService = new BillplzService(setting('apps'));
+        $this->toyyibPayService = new ToyyibPayService(setting('apps'));
        // $this->billplz = new Billplz(setting('apps'.billplz_secret_key'), setting('apps.billplz_sandbox') ? 'staging' : 'live');
         
         $this->USAePay      = new USAePay;
@@ -362,6 +364,7 @@ class BookingsController extends Controller
                 $booking[$key]['customer_id']       = $this->customer_id;
                 $booking[$key]['customer_name']     = $customer['name'];
                 $booking[$key]['customer_email']    = $customer['email'];
+                $booking[$key]['customer_phone']    = $customer['phone'];
                 $booking[$key]['organiser_id']      = $this->organiser_id;
                 $booking[$key]['event_id']          = $request->event_id;
                 $booking[$key]['ticket_id']         = $value['ticket_id'];
@@ -625,6 +628,80 @@ class BookingsController extends Controller
     }
     /* =================== BILLPLIZ ==================== */
 
+    /* =================== TOYYIBPAY ==================== */
+    // 2. Create a bill and redirect to payment gateway
+      /**
+     *  Toyyibpay
+     *
+     * @param  mixed $order
+     * @param  mixed $currency
+     * @param  mixed $booking
+     * @return void
+     */
+    protected function toyyibpay($order = [], $currency = 'MYR', $booking = [])
+    {  
+        try {
+
+            $response = $this->toyyibpay->createPayment($order, $currency, $booking);
+
+            if ($response->getStatusCode() === 200) {
+                $paymentLink = $response->json()['url']; // Get the payment link
+                $billCode = $response->json()['billCode']; 
+                 // Redirect the user to the ToyyibPay payment page
+               // return redirect($paymentLink); 
+                
+               /* return $this->finish_checkout([
+                    'status' => true,
+                    'url' => $paymentLink,
+                    'billCode' => $billCode, 
+                ]); */
+                
+            }
+            
+            return error($response->json()['error']['message'], Response::HTTP_REQUEST_TIMEOUT);
+        } catch (\Throwable $th) {
+            return error($th->getMessage(), Response::HTTP_REQUEST_TIMEOUT);
+        }
+    }
+    // 3. Get payment status on redirect from gateway
+    public function toyyibpayCallback(Request $request)
+    {
+        // Get the bill code from the request
+        // Make a request to verify the payment status
+        $billCode = $request->get('billcode');
+        $paymentStatus = $this->toyyibPayService->verifyPaymentStatus($billCode);
+       
+        $statusId = $paymentStatus[0]['billpaymentStatus'];
+        $transactionId = $paymentStatus[0]['billExternalReferenceNo'];
+        $orderId = $paymentStatus[0]['billpaymentInvoiceNo'];
+        
+        //dd('Payment Status:', $paymentStatus, $request->all());
+
+        // Check if payment is successful
+        if ((isset($paymentStatus[0]['billpaymentStatus']) && $paymentStatus[0]['billpaymentStatus'] === '1')) {
+            $flag = [
+                'status' => true,
+                'transaction_id' => $transactionId,
+                'message' => 'Payment successful',
+                'payer_reference' => $request->get('payer_reference','N/A'),
+                'price' => $paymentStatus[0]['billpaymentAmount'], // Get the amount
+            ];
+
+        } else {
+            // Payment is not successful
+            $flag = [
+                'status' => false,
+                'transaction_id' => $transactionId,
+                'message' => 'Payment failed'
+            ];
+        }
+
+        return $this->finish_checkout($flag); 
+        
+    }
+    /* =================== TOYYIBPAY ==================== */
+
+
     /** 
      * 4 Finish checkout process
      * Last: Add data to purchases table and finish checkout
@@ -639,8 +716,10 @@ class BookingsController extends Controller
         unset($data['price_tagline']);
 
         $booking                = session('booking');
-        $payment_method         = (int)session('payment_method')['payment_method'];
+        $payment_method         = session('payment_method')['payment_method'] ?? null;
         
+       // dd('Checkout Status:', $flag);
+        //dd('After session retrieval:', $data, $booking, $payment_method);
         // IMPORTANT!!! clear session data setted during checkout process
         session()->forget(['pre_payment', 'booking', 'payment_method']);
         
@@ -655,11 +734,17 @@ class BookingsController extends Controller
         // if success 
         if($flag['status'])
         {
+            //dd('Inside success condition:', $flag, $data, $payment_method);
             $data['txn_id']             = $flag['transaction_id'];
             $data['amount_paid']        = $data['price'];
             unset($data['price']);
             $data['payment_status']     = $flag['message'];
             $data['payer_reference']    = $flag['payer_reference'];
+            /*
+            $data['txn_id']             = $flag['transaction_id'];
+            $data['amount_paid']        = $data['price'];
+            unset($data['price']);
+            */
             $data['status']             = 1;
             $data['created_at']         = Carbon::now();
             $data['updated_at']         = Carbon::now();
@@ -671,34 +756,46 @@ class BookingsController extends Controller
                 $data['payment_gateway'] = 'Billplz';
             else if ($payment_method == 9)
                 $data['payment_gateway'] = 'USAePay';
+            else if ($payment_method == 10)
+                $data['payment_gateway'] = 'ToyyibPay';
 
             try {
+                //dd('Before DB transaction:', $data, $booking, $flag);
                 //TCL Transaction Control Query
                 DB::transaction(function () use(&$flag, $data, $booking) {
 
-                    $flag = false;
+                    //$flag = false;
+                    //dd('Inside DB transaction:', $flag, $data, $booking);
 
                     // if transaction already exist then return 
                     $transaction = DB::table('transactions')->where([ 'txn_id' => $data['txn_id']])->first();
-                    
-                    if(!empty($transaction))
+                    //dd('transaction:', $transaction);
+                    if(!empty($transaction)) {
+                        $flag = false;
                         return false;
-                    
+                    }
+
                     // insert data of paypal transaction_id into transaction table
                     $flag      = $this->transaction->add_transaction($data);
-                    $data['transaction_id']     = $flag; // transaction Id
+                    $data['transaction_id'] = $flag; // transaction Id
+                    //dd('Transaction ID after add_transaction:', $transactionId);
+
                     $flag = $this->finish_booking($booking, $data);
+                   // dd('Flag after finish_booking:', $flag);
 
                 });
-
+                
             } catch(Throwable $th) {
-                $flag = false;
+                //$flag = false;
                 session()->forget(['booking_email_data']);
+                // Log the exception message for debugging
+               // Log::error('Checkout exception: ' . $th->getMessage());
             }
             
             // in case of database failure
             if(empty($flag))
             {
+                dd('Transaction failed, flag is empty:', $flag);
                 session()->forget(['booking_email_data']);
 
                 $msg = __('eventmie-pro::em.booking').' '.__('eventmie-pro::em.failed');
@@ -724,23 +821,25 @@ class BookingsController extends Controller
         // if fail
         // redirect no matter what so that it never turns back
         $msg = __('eventmie-pro::em.payment').' '.__('eventmie-pro::em.failed');
-        
-        
+       // dd('Final failure message:', $msg, $url);
+
         if(\Request::wantsJson()) 
             return response(['status' => false, 'url'=>$url, 'message'=>$msg], Response::HTTP_OK);
-        
+      
         session()->flash('error', $msg);
-        return error_redirect($msg);
+        return redirect($url)->withErrors($msg);
     }
 
     // 5. finish booking
     protected function finish_booking($booking = [], $data = [])
     {   
+        //dd('Start finish_booking:', $booking, $data);
         $admin_commission   = setting('multi-vendor.admin_commission');
             
         $params = [];
         foreach($booking as $key => $value)
         {
+            //dd('Before foreach loop:', $key, $value, $data);
             $params[$key] = $value;
             $params[$key]['order_number']    = time().rand(1,988);
             $params[$key]['transaction_id']  = $data['transaction_id'];
@@ -750,25 +849,32 @@ class BookingsController extends Controller
             if($data['transaction_id'])
                 $params[$key]['payment_type']   = 'online';
         }
+       // dd('After foreach loop:', $params);
         
         // get booking_id
         // update commission session array
         // insert into commission
         $commission_data            = [];
         $commission                 = session('commission');
+        //dd('Before updating commission session array:', $commission);
 
         // delete commission data from session
         session()->forget(['commission']);
         
         $common_order_exist = Booking::where(['common_order' => $booking[key($booking)]['common_order']])->first();
+        //dd('Checking common order exist:', $common_order_exist);
 
         if(!empty($common_order_exist))
             return true;
         
+       // dd('Before inserting bookings:', $params);
+        DB::enableQueryLog(); 
+        //dd(DB::getQueryLog());
         Booking::insert($params);
 
         $booking_data = Booking::where(['common_order' => $booking[key($booking)]['common_order']])->get()->all();
-        
+       // dd('Retrieved booking data:', $booking_data);
+
         foreach($booking_data as $key => $data)
         {
             if($data['net_price'] > 0)
@@ -1190,6 +1296,22 @@ class BookingsController extends Controller
                 return response()->json(['status' => false, 'url'=>$url, 'message'=>$msg]); 
 
             return $this->finish_checkout($this->USAePay->createTransaction($order, $currency));          
+        }
+
+        if($payment_method == 10)
+        {
+            if(empty(setting('apps.toyyibpay_secret_key')) || empty(setting('apps.toyyibpay_redirect_uri')))
+            return response()->json(['status' => false, 'url'=>$url, 'message'=>$msg]);
+   
+            // Call createPayment to get the payment link
+            $toyyibPayResponse = $this->toyyibPayService->createPayment($order, $currency, $booking);
+            
+            if ($toyyibPayResponse['status']) {
+                return response()->json($toyyibPayResponse);
+            } else {
+                return error($toyyibPayResponse['error'], Response::HTTP_REQUEST_TIMEOUT);
+            }
+            
         }
         
     }

@@ -275,6 +275,13 @@
                                 {{ __('voyager::generic.Set Callback URL on your Billplz Dashboard') }} - <code>{{ route('eventmie.bookings_billplz_callback') }}</code>
                             </div>
                             @endif
+                            {{-- Info for Toyyibpay Callback --}}
+                                @if($setting->key == 'apps.toyyibpay_secret_key')
+                                <br>
+                            <div class="alert alert-info">
+                                {{ __('voyager::generic.Set Callback URL on your Toyyibpay Dashboard') }} - <code>{{ route('eventmie.bookings_toyyibpay_callback') }}</code>
+                            </div>
+                            @endif
 
                             <div class="panel-heading">
                                 <h3 class="panel-title">
@@ -388,6 +395,24 @@
                                     @if($setting->key == 'apps.billplz_sandbox')
                                         <input type="checkbox" name="{{ $setting->key }}" id="billplz_sandbox" value="1" {{ $setting->value ? 'checked' : '' }} >
                                         <label for="billplz_sandbox">Enable Sandbox Mode</label>
+                                    @endif
+
+                                    @if($setting->key == 'apps.toyyibpay_secret_key')
+                                        <input type="text" class="form-control" name="{{ $setting->key }}" value="{{ $setting->value }}">
+                                    @endif
+
+                                    
+                                    @if($setting->key == 'apps.toyyibpay_redirect_uri')
+                                        <input type="text" class="form-control" name="{{ $setting->key }}" value="{{ $setting->value }}">
+                                    @endif
+
+                                    @if($setting->key == 'apps.toyyibpay_code')
+                                        <input type="text" class="form-control" name="{{ $setting->key }}" value="{{ $setting->value }}">
+                                    @endif
+                                        
+                                    @if($setting->key == 'apps.toyyibpay_sandbox')
+                                        <input type="checkbox" name="{{ $setting->key }}" id="toyyibpay_sandbox" value="1" {{ $setting->value ? 'checked' : '' }} >
+                                        <label for="toyyibpay_sandbox">Enable Sandbox Mode</label>
                                     @endif
 
                                     <?php $options = json_decode($setting->details); ?>

@@ -165,6 +165,7 @@ return [
          * Package Service Providers...
          */
         Billplz\Laravel\BillplzServiceProvider::class,
+        Tarsoft\Toyyibpay\ToyyibpayServiceProvider::class,
         /*
          * Application Service Providers...
          */
@@ -229,6 +230,7 @@ return [
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
         'Billplz' => Billplz\Laravel\Billplz::class,
+        'Toyyibpay' => Tarsoft\Toyyibpay\ToyyibpayFacade::class,
 
     ],
 

@@ -2222,7 +2222,7 @@ function _toPrimitive(input, hint) { if (typeof input !== "object" || input === 
 
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
-  props: ['event', 'max_ticket_qty', 'login_user_id', 'is_admin', 'is_organiser', 'is_customer', 'is_paypal', 'is_offline_payment_organizer', 'is_offline_payment_customer', 'tickets', 'total_capacity', 'booked_tickets', 'currency', 'date_format', 'is_usaepay', 'is_billplz'],
+  props: ['event', 'max_ticket_qty', 'login_user_id', 'is_admin', 'is_organiser', 'is_customer', 'is_paypal', 'is_offline_payment_organizer', 'is_offline_payment_customer', 'tickets', 'total_capacity', 'booked_tickets', 'currency', 'date_format', 'is_usaepay', 'is_billplz', 'is_toyyibpay'],
   mixins: [_mixins_js__WEBPACK_IMPORTED_MODULE_6__["default"]],
   components: {
     'ticket-component': _TicketList_vue__WEBPACK_IMPORTED_MODULE_7__["default"]
@@ -2619,7 +2619,7 @@ function _toPrimitive(input, hint) { if (typeof input !== "object" || input === 
   components: {
     USAePay: _USAePay_vue__WEBPACK_IMPORTED_MODULE_8__["default"]
   },
-  props: ['tickets', 'max_ticket_qty', 'event', 'currency', 'login_user_id', 'is_admin', 'is_organiser', 'is_customer', 'is_paypal', 'is_offline_payment_organizer', 'is_offline_payment_customer', 'booked_tickets', 'is_usaepay', 'is_billplz'],
+  props: ['tickets', 'max_ticket_qty', 'event', 'currency', 'login_user_id', 'is_admin', 'is_organiser', 'is_customer', 'is_paypal', 'is_offline_payment_organizer', 'is_offline_payment_customer', 'booked_tickets', 'is_usaepay', 'is_billplz', 'is_toyyibpay'],
   data() {
     return {
       openModal: false,
@@ -3418,7 +3418,8 @@ var render = function render() {
       is_offline_payment_customer: _vm.is_offline_payment_customer,
       booked_tickets: _vm.booked_tickets,
       is_usaepay: _vm.is_usaepay,
-      is_billplz: _vm.is_billplz
+      is_billplz: _vm.is_billplz,
+      is_toyyibpay: _vm.is_toyyibpay
     }
   }) : _vm._e()], 1);
 };
@@ -3977,7 +3978,31 @@ var render = function render() {
         _vm.payment_method = "2";
       }
     }
-  }), _vm._v(" "), _vm._m(2)]) : _vm._e(), _vm._v(" "), _vm.is_organiser > 0 && _vm.is_offline_payment_organizer > 0 || _vm.is_customer > 0 && _vm.is_offline_payment_customer > 0 || _vm.is_admin > 0 ? _c("div", {
+  }), _vm._v(" "), _vm._m(2)]) : _vm._e(), _vm._v(" "), _vm.is_admin <= 0 && _vm.is_toyyibpay > 0 ? _c("div", {
+    staticClass: "radio-inline"
+  }, [_c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.payment_method,
+      expression: "payment_method"
+    }],
+    staticClass: "custom-control-input",
+    attrs: {
+      type: "radio",
+      id: "payment_method_toyyibpay",
+      name: "payment_method",
+      value: "10"
+    },
+    domProps: {
+      checked: _vm._q(_vm.payment_method, "10")
+    },
+    on: {
+      change: function change($event) {
+        _vm.payment_method = "10";
+      }
+    }
+  }), _vm._v(" "), _vm._m(3)]) : _vm._e(), _vm._v(" "), _vm.is_organiser > 0 && _vm.is_offline_payment_organizer > 0 || _vm.is_customer > 0 && _vm.is_offline_payment_customer > 0 || _vm.is_admin > 0 ? _c("div", {
     staticClass: "radio-inline"
   }, [_c("input", {
     directives: [{
@@ -4096,6 +4121,17 @@ var staticRenderFns = [function () {
   }, [_vm._v("   "), _c("i", {
     staticClass: "fas fa-money-bill-wave"
   }), _vm._v(" Billplz")]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("label", {
+    staticClass: "custom-control-label",
+    attrs: {
+      for: "payment_method_toyyibpay"
+    }
+  }, [_vm._v("   "), _c("i", {
+    staticClass: "fa-regular fa-money-bill-wave"
+  }), _vm._v(" Toyyibpay")]);
 }];
 render._withStripped = true;
 

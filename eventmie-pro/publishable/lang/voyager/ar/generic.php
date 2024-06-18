@@ -164,6 +164,7 @@ return [
     'Set Callback URL on your Facebook App Dashboard'  => "تعيين عنوان URL لرد الاتصال على لوحة تحكم تطبيق Facebook" ,
     'Set Callback URL on your PayPal Dashboard'        => "تعيين عنوان URL لرد الاتصال على لوحة تحكم PayPal" ,
     'Set Callback URL on your Billplz Dashboard'        => "تعيين عنوان URL لرد الاتصال على لوحة تحكم Billplz" ,
+    'Set Callback URL on your Toyyibpay Dashboard'        => "تعيين عنوان URL لرد الاتصال على لوحة تحكم Toyyibpay" ,
     
     "ID"                        => "هوية شخصية",
     "Name"                      => "اسم",

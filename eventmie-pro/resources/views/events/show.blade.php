@@ -131,6 +131,7 @@
                                                     :total_capacity="{{ $total_capacity }}"
                                                     :is_usaepay="{{ json_encode($is_usaepay) }}"
                                                     :is_billplz="{{ $is_billplz }}"
+                                                    :is_toyyibpay="{{ $is_toyyibpay }}"
                                                     :date_format="{{ json_encode(
                                                         [
                                                             'vue_date_format' => format_js_date(),

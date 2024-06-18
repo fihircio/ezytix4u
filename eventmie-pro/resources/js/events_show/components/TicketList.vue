@@ -241,6 +241,11 @@
                                                     <input type="radio" class="custom-control-input" id="payment_method_billplz" name="payment_method" v-model="payment_method" value="2">
                                                     <label class="custom-control-label" for="payment_method_billplz">  &nbsp;<i class="fas fa-money-bill-wave"></i> Billplz</label> 
                                                 </div>
+
+                                                <div class="radio-inline" v-if="is_admin <= 0 && is_toyyibpay > 0">
+                                                    <input type="radio" class="custom-control-input" id="payment_method_toyyibpay" name="payment_method" v-model="payment_method" value="10">
+                                                    <label class="custom-control-label" for="payment_method_toyyibpay">  &nbsp;<i class="fa-regular fa-money-bill-wave"></i> Toyyibpay</label> 
+                                                </div>
                     
                                                 <!-- For Admin & Organizer & Customer -->
                                                 <div class="radio-inline" 
@@ -327,7 +332,8 @@ export default {
         'is_offline_payment_customer',
         'booked_tickets',
         'is_usaepay',
-        'is_billplz'
+        'is_billplz',
+        'is_toyyibpay'
     ],
 
     data() {

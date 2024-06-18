@@ -268,10 +268,10 @@ class SettingsTableSeeder extends Seeder
             $setting->fill(["display_name" => "Billplz Secret Key","value" => "", "details" => null, 
             "type" => "text", "order" => "48", "group" => "Apps", ])->save();
         }
-        $setting = $this->findSetting("apps.billplz_collection_id");
+        $setting = $this->findSetting("apps.billplz_app_id");
         if (!$setting->exists) {
             $setting->fill([
-                "display_name" => "Billplz Collection ID",
+                "display_name" => "Billplz app ID",
                 "value" => "",
                 "details" => null,
                 "type" => "text",
@@ -293,6 +293,50 @@ class SettingsTableSeeder extends Seeder
                 "type" => "checkbox",
                 "order" => "48",  // Adjust order as needed
                 "group" => "Apps", 
+            ])->save();
+        }
+        $setting = $this->findSetting("apps.toyyibpay_secret_key");
+        if (!$setting->exists) {
+            $setting->fill(["display_name" => "Toyyibpay Secret Key","value" => "", "details" => null, 
+            "type" => "text", "order" => "49", "group" => "Apps", ])->save();
+        }
+        $setting = $this->findSetting("apps.toyyibpay_redirect_uri");
+        if (!$setting->exists) {
+            $setting->fill([
+                "display_name" => "Toyyibpay Redirect URI",
+                "value" => "",
+                "details" => null,
+                "type" => "text",
+                "order" => "49",  // Adjust order as needed
+                "group" => "Apps",
+            ])->save();
+        }
+
+        $setting = $this->findSetting("apps.toyyibpay_sandbox");
+        if (!$setting->exists) {
+            $setting->fill([
+                "display_name" => "Toyyibpay Sandbox Mode",
+                "value" => "1",
+                "details" => json_encode([
+                    "validation" => [
+                        "rule" => "in:0,1,on,off"
+                    ]
+                ]),
+                "type" => "checkbox",
+                "order" => "49",  // Adjust order as needed
+                "group" => "Apps", 
+            ])->save();
+        }
+
+        $setting = $this->findSetting("apps.toyyibpay_code");
+        if (!$setting->exists) {
+            $setting->fill([
+                "display_name" => "Toyyibpay Category code",
+                "value" => "",
+                "details" => null,
+                "type" => "text",
+                "order" => "49",  // Adjust order as needed
+                "group" => "Apps",
             ])->save();
         }
         $setting = $this->findSetting("mail.mail_driver");

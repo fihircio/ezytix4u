@@ -6,7 +6,7 @@ use Billplz\Client;
 
 class BillplzService
 {
-    protected $billplz;
+    public $billplz;
     protected $_callback_url;
 
     public function __construct($settings = [])
@@ -36,7 +36,7 @@ class BillplzService
                     'redirect_url' => $this->_callback_url
                 ]
             );
-            dd($response);
+            //dd($response);
 
             if (isset($response['error'])) 
             {
