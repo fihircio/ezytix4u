@@ -73,6 +73,9 @@
                             <td class="align-middle" :data-title="trans('em.actions')">
                                 <div class="d-grid gap-2 text-nowrap">
                                     <a class="btn btn-primary btn-sm" :href="eventEdit(event.slug)"><i class="fas fa-edit"></i> {{ trans('em.edit') }}</a>
+                                    <a class="btn btn-warning btn-sm" @click="eventClone(event.slug)">
+                                        <i class="fas fa-copy"></i> {{ trans('em.clone_event') }}
+                                    </a>
                                     <a class="btn btn-success btn-sm" :class="{ 'disabled' : event.count_bookings < 1 }" :href="exportAttendies(event.slug, event.count_bookings)">
                                         <i class="fas fa-file-csv"></i> {{ trans('em.export_attendees') }}
                                     </a>
@@ -95,6 +98,7 @@
 
 <script>
 
+import { clone } from 'lodash';
 import PaginationComponent from '../../common_components/Pagination'
 
 import mixinsFilters from '../../mixins.js';
@@ -162,6 +166,12 @@ export default {
         // edit myevents
         eventEdit(event_id) {
             return route('eventmie.myevents_form', {id: event_id});
+        },
+
+         // clone myevents
+         eventClone(slug) {
+            const url = route('eventmie.clone_event', { event: slug });
+            window.location.href = url;
         },
 
         // create newevents

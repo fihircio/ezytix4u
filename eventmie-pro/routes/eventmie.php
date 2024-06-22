@@ -377,6 +377,13 @@ Route::group([
         Route::post('/save', "$controller@store_contact")->name('store_contact')->middleware(Spatie\Honeypot\ProtectAgainstSpam::class);
     });
 
+    /* Clone Event */
+    Route::prefix('/clone')->group(function () use ($namespace) {
+        $controller = $namespace.'\CloneEventController';
+        Route::get('/events/{event}', "$controller@clone_event")->name('clone_event');
+    
+    });
+
     /* OAuth login */
     Route::get('/login/{social}', $namespace.'\Auth\LoginController@socialLogin')->where('social', 'facebook|google')->name('oauth_login');
     Route::get('/login/{social}/callback', $namespace.'\Auth\LoginController@handleProviderCallback')->where('social', 'facebook|google')->name('oauth_callback');

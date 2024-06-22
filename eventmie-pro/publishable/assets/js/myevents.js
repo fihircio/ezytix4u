@@ -2194,8 +2194,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var _common_components_Pagination__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../common_components/Pagination */ "./resources/js/common_components/Pagination.vue");
-/* harmony import */ var _mixins_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../mixins.js */ "./resources/js/mixins.js");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _common_components_Pagination__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../common_components/Pagination */ "./resources/js/common_components/Pagination.vue");
+/* harmony import */ var _mixins_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../mixins.js */ "./resources/js/mixins.js");
+
 
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
@@ -2203,9 +2206,9 @@ __webpack_require__.r(__webpack_exports__);
   // pagination query string
   'page', 'category', 'date_format'],
   components: {
-    PaginationComponent: _common_components_Pagination__WEBPACK_IMPORTED_MODULE_0__["default"]
+    PaginationComponent: _common_components_Pagination__WEBPACK_IMPORTED_MODULE_1__["default"]
   },
-  mixins: [_mixins_js__WEBPACK_IMPORTED_MODULE_1__["default"]],
+  mixins: [_mixins_js__WEBPACK_IMPORTED_MODULE_2__["default"]],
   data() {
     return {
       events: [],
@@ -2243,6 +2246,13 @@ __webpack_require__.r(__webpack_exports__);
       return route('eventmie.myevents_form', {
         id: event_id
       });
+    },
+    // clone myevents
+    eventClone(slug) {
+      var url = route('eventmie.clone_event', {
+        event: slug
+      });
+      window.location.href = url;
     },
     // create newevents
     createEvent() {
@@ -2566,6 +2576,15 @@ var render = function render() {
     }, [_c("i", {
       staticClass: "fas fa-edit"
     }), _vm._v(" " + _vm._s(_vm.trans("em.edit")))]), _vm._v(" "), _c("a", {
+      staticClass: "btn btn-warning btn-sm",
+      on: {
+        click: function click($event) {
+          return _vm.eventClone(event.slug);
+        }
+      }
+    }, [_c("i", {
+      staticClass: "fas fa-copy"
+    }), _vm._v(" " + _vm._s(_vm.trans("em.clone_event")) + "\n                                ")]), _vm._v(" "), _c("a", {
       staticClass: "btn btn-success btn-sm",
       class: {
         disabled: event.count_bookings < 1
