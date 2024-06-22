@@ -61,13 +61,13 @@
                     </a>
                 </li>
 
-                <li class="nav-item tooltip-custom">
-                    <a class="nav-link {{ Route::currentRouteName() == 'eventmie.luckydraw.index' ? 'active' : '' }}"
-                        href="#" title="@lang('eventmie-pro::em.luckydraw')">
+              <!--  <li class="nav-item tooltip-custom">
+                    <a class="nav-link {{ Route::currentRouteName() == 'eventmie.luckyDraw' ? 'active' : '' }}"
+                        href="{{ route('eventmie.luckyDraw') }}" title="@lang('eventmie-pro::em.luckydraw')">
                         <span class="nav-icon"><i class="fas fa-map-location"></i></span>
                         <span class="tooltiptext">@lang('eventmie-pro::em.luckydraw')</span>
                     </a>
-                </li>
+                </li> -->
 
             </ul>
         </div>
