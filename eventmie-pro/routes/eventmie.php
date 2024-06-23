@@ -208,6 +208,10 @@ Route::group([
         Route::get('/search-events', "$controller@searchEvents")->name('searchEvents');
 
     });
+
+    Route::bind('event', function ($value) {
+        return Classiebit\Eventmie\Models\Event::orWhere(['slug' =>  $value, 'short_url' => $value])->firstOrFail();
+    });
     
     /* Bookings */
     Route::prefix('/bookings')->group(function () use ($namespace)  {
@@ -411,12 +415,12 @@ Route::group([
     /* Send Email */
     Route::get('/send/email', $namespace.'\SendEmailController@send_email')->name('send_email');
 
-    
+    Route::get('/{event_short_url}', '\App\Http\Controllers\Eventmie\EventsController@shortUrl')->name('eventmie.shortUrl');
 
     /* ============================= ALL OTHER ROUTES ABOVE ============================= */
     /* Wildcard routes (add all other routes above) */
     /* Static Pages */
-    Route::get('pages/{page}', $namespace."\PagesController@view")->name('page'); 
+    Route::get('pages/{page}', $namespace.'\PagesController@view')->name('page'); 
     /* ============================= NO ROUTES BELOW THIS ============================= */
 
 

@@ -473,4 +473,15 @@ class EventsController extends Controller
 
         return response()->json($options);
     }
+
+    public function shortUrl(Request $request, $event_short_url)
+    {
+        // get event
+        $event = $this->event->where(['short_url'=>$event_short_url, 'status'=>1])->first();
+        if(!$event)
+            abort('404');
+
+        // redirect to event page
+        return redirect()->route('eventmie.events_show', [$event->slug]);
+    }
 }

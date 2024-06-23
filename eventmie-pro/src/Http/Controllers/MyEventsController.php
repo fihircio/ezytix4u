@@ -220,6 +220,8 @@ class MyEventsController extends Controller
             'description'       => 'required',
             'faq'               => 'nullable',
             'offline_payment_info' => 'nullable|max:256',
+            // CUSTOM
+            'short_url'         => 'nullable|max:256',
         ], [
             'category_id.*' => __('eventmie-pro::em.category').' '.__('eventmie-pro::em.required')
         ]);
@@ -229,7 +231,8 @@ class MyEventsController extends Controller
         $result->title      = null;
         $result->excerpt    = null;
         $result->slug       = null;
-        
+        //CUSTOM
+        $result->short_url  = null;
         // in case of edit
         if(!empty($request->event_id))
         {
@@ -260,6 +263,14 @@ class MyEventsController extends Controller
                 'slug'             => 'unique:events,slug',
             ]);
         }
+        //CUSTOM
+        // short_url is not equal to before short_url then apply unique column rule    
+        if($result->short_url != $request->short_url && !empty($request->short_url))
+        {
+            $request->validate([
+                'short_url'             => 'unique:events,short_url',
+            ]);
+        }
 
         $params = [
             "title"         => $request->title,
@@ -269,7 +280,9 @@ class MyEventsController extends Controller
             "faq"           => $request->faq,
             "category_id"   => $request->category_id,
             "featured"      => 0,
-            "offline_payment_info" => $request->offline_payment_info
+            "offline_payment_info" => $request->offline_payment_info,
+            //CUSTOM
+            "short_url"     => $this->slugify($request->short_url)
         ];
 
         //featured

@@ -57,6 +57,15 @@
             </div>
 
             <div class="mb-3">
+                <label class="form-label">{{ trans('em.short_url') }}</label>
+                <div class="input-group">
+                    <span id="basic-addon3" class="input-group-text text-wrap text-left">{{ShortSlugUrl() }}</span>
+                    <input type="text" class="form-control" name="short_url" v-model="shortUrl" v-validate="'required'" @change="isDirty()">
+                    <span v-show="errors.has('short_url')" class="help text-danger">{{ errors.first('short_url') }}</span>
+                </div>
+            </div>
+
+            <div class="mb-3">
                 <label class="form-label">{{ trans('em.excerpt') }} ({{ trans('em.short_info') }})</label>
                 <input type="text" class="form-control"  name="excerpt" v-model="excerpt" v-validate="'required'" @change="isDirty()">
                 <span v-show="errors.has('excerpt')" class="help text-danger">{{ errors.first('excerpt') }}</span>
@@ -135,6 +144,7 @@ export default {
         return {
 
             title           : null,
+            short_url       : null,
             excerpt         : null,
             organiser_ids   : null,
             categories      : [],
@@ -175,6 +185,7 @@ export default {
             if(Object.keys(this.event).length > 0)
             {
                 this.title          = this.event.title;
+                this.short_url      = this.event.short_url;
                 this.excerpt        = this.event.excerpt;
                 this.category_id    = this.event.category_id;
                 this.organiser_ids  = this.organiser_id ;
@@ -269,8 +280,15 @@ export default {
             return '';
         },
 
-        // get organizers
+        // shorturl route
+        ShortSlugUrl() {
+            if (this.shortUrl != null)
+                return route('eventmie.events_index')+'/'+this.shortUrl;
+        
+            return '';
+        },
 
+        // get organizers
         getOrganizers(loading, search = null){
             var postUrl     = route('eventmie.get_organizers');
             var _this       = this;

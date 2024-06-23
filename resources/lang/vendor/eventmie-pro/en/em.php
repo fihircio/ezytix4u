@@ -501,6 +501,7 @@ return [
     'organiser_not_found'               => 'Organiser not found',
     'select_category'                   => 'Select Category',
     'event_name'                        => 'Event Name',
+    'short_url'                         => 'Short URL',
     'event_url'                         => 'Event URL',
     'more_event_info'                   => 'Why to attend event?',
     'event_featured'                    => 'Event Featured',
