@@ -11,9 +11,11 @@
             </div>
             <div class="table-responsive">
                 <table class="table text-wrap">
+                    <!-- Table Headings -->
                     <thead class="table-light text-nowrap">
                         <tr>
                             <th class="border-top-0 border-bottom-0">{{ trans('em.event') }}</th>
+                            <th class="border-top-0 border-bottom-0">{{ trans('em.is_private') }}</th>
                             <th class="border-top-0 border-bottom-0">{{ trans('em.timings') }}</th>
                             <th class="border-top-0 border-bottom-0">{{ trans('em.repetitive') }}</th>
                             <th class="border-top-0 border-bottom-0">{{ trans('em.payment_frequency') }}</th>
@@ -23,7 +25,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(event, index) in events" :key="index" >
+                        <tr v-for="(event, index) in events" :key="index">
                             <td :data-title="trans('em.event')">
                                 <div class="d-flex align-items-center">
                                     <a :href="eventSlug(event.slug)">    
@@ -35,10 +37,10 @@
                                         </h5>
                                         <small class="text-success strong" v-if="event.count_bookings > 0"><i class="fas fa-bolt"></i> {{ event.count_bookings }} {{ trans('em.bookings') }}</small>
                                         <small class="text-muted strong" v-else><i class="fas fa-hourglass"></i> {{ event.count_bookings }} {{ trans('em.bookings') }}</small>
+                                        <small class="badge bg-success" v-if="event.is_private > 0"><i class="fas fa-lock"></i> {{ trans('em.private') }}</small>
                                     </div>
                                 </div>
                             </td>
-
                             <td class="align-middle text-nowrap" :data-title="trans('em.start_date')">
                                 <small class="text-muted">
                                     {{ changeDateFormat(userTimezone(event.start_date+' '+event.start_time, 'YYYY-MM-DD HH:mm:ss').format('YYYY-MM-DD'), 'YYYY-MM-DD') }}
@@ -72,16 +74,19 @@
                             </td>
                             <td class="align-middle" :data-title="trans('em.actions')">
                                 <div class="d-grid gap-2 text-nowrap">
-                                    <a class="btn btn-primary btn-sm" :href="eventEdit(event.slug)"><i class="fas fa-edit"></i> {{ trans('em.edit') }}</a>
+                                    <a class="btn btn-primary btn-sm" :href="eventEdit(event.slug)"><i class="fas fa-edit"></i> {{ trans('em.edit') }}
+                                    </a>
                                     <a class="btn btn-warning btn-sm" @click="eventClone(event.slug)">
                                         <i class="fas fa-copy"></i> {{ trans('em.clone_event') }}
+                                    </a>
+                                    <a class="btn btn-info btn-sm" @click="triggerPrivateEvent(event)">
+                                        <i class="fas fa-lock"></i> {{ trans('em.add_password') }}
                                     </a>
                                     <a class="btn btn-success btn-sm" :class="{ 'disabled' : event.count_bookings < 1 }" :href="exportAttendies(event.slug, event.count_bookings)">
                                         <i class="fas fa-file-csv"></i> {{ trans('em.export_attendees') }}
                                     </a>
                                 </div>
                             </td>
-
                         </tr>
                         <tr v-if="events.length <= 0">
                             <td class="text-center align-middle">{{ trans('em.no_events') }}</td>
@@ -89,9 +94,13 @@
                     </tbody>
                 </table>
             </div>
-            <div class="px-4 pb-4" v-if="events.length > 0">
-                <pagination-component v-if="pagination.last_page > 1" :pagination="pagination" :offset="pagination.total" @paginate="getMyEvents()"></pagination-component>
-            </div>
+            <!-- Pagination Component -->
+        <div class="px-4 pb-4" v-if="events.length > 0">
+            <pagination-component v-if="pagination.last_page > 1" :pagination="pagination" :offset="pagination.total" @paginate="getMyEvents()"></pagination-component>
+        </div>
+        <!-- Event Password Modal -->
+        <EventPassword :event_id="selectedEventId" :event="selectedEvent" v-if="showEventPasswordModal" @close="closeEventPasswordModal"/>
+        </div>
         </div>
     </div>       
 </template>
@@ -100,7 +109,7 @@
 
 import { clone } from 'lodash';
 import PaginationComponent from '../../common_components/Pagination'
-
+import EventPassword from './EventPassword';
 import mixinsFilters from '../../mixins.js';
 
 
@@ -114,6 +123,7 @@ export default {
 
     components: {
         PaginationComponent,
+        EventPassword
     },
     
     mixins:[
@@ -127,6 +137,9 @@ export default {
                 'current_page': 1
             },
             moment           : moment,
+            selectedEventId: null,
+            selectedEvent: null,
+            showEventPasswordModal:false
         }
     },
     
@@ -172,6 +185,22 @@ export default {
          eventClone(slug) {
             const url = route('eventmie.clone_event', { event: slug });
             window.location.href = url;
+        },
+
+         // private event
+        triggerPrivateEvent(event) {
+            console.log('triggerPrivateEvent called with:', event);
+            this.selectedEventId = event.id;
+            this.selectedEvent = event;
+            this.showEventPasswordModal = true; // Show the modal
+            console.log('showEventPasswordModal:', this.showEventPasswordModal);
+        console.log('selectedEventId:', this.selectedEventId);
+        console.log('selectedEvent:', this.selectedEvent);
+        },
+        closeEventPasswordModal() {
+            this.showEventPasswordModal = false; // Hide the modal
+            this.selectedEventId = null;
+            this.selectedEvent = null;
         },
 
         // create newevents

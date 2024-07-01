@@ -35,6 +35,7 @@
                                         <span class="badge bg-info text-white"><i class="fas fa-signal"></i>&nbsp;
                                             @lang('eventmie-pro::em.online_event')</span>
                                     @endif
+                                    <span class="text-black">By<span class="ms-3">{{ $event->organiser }}</span></span>
 
                                     <span class="badge bg-primary text-white">{{ $category['name'] }}</span>
 
@@ -360,7 +361,16 @@
 
                             </div>
                         </div>
-
+                         <!-- Organiser Section -->
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h4 class="mb-2 fw-bold">Organiser</h4>
+                                <div class="d-flex align-items-center">
+                                    <img src="{{ '/storage/' . $event->organiser_image }}" alt="Organiser Image" class="rounded-circle" width="50" height="50">
+                                    <p class="mb-0 ms-3">{{ $event->organiser }}</p>
+                                </div>
+                            </div>
+                        </div>                       
                     </div>
                     {{-- Event Start Date End --}}
                 </div>

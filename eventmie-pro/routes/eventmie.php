@@ -8,6 +8,7 @@ use Classiebit\Eventmie\Middleware\Authenticate;
 
 use Classiebit\Eventmie\Http\Controllers\VenueController;
 use Classiebit\Eventmie\Http\Controllers\MyVenueController;
+use Classiebit\Eventmie\Middleware\CheckPrivateEvent;
 use Illuminate\Support\Facades\Schema;
 /*
 |
@@ -189,6 +190,10 @@ Route::group([
         Route::post('/api/event_schedule', "$controller@event_schedule")->name('event_schedule');
     });
     
+Route::group([
+    'prefix' => config('eventmie.route.prefix'),
+    'middleware' => [(Schema::hasTable('settings') ? !empty(setting('multi-vendor.verify_email')) : false) ? 'everified' : 'common'],
+], function() use ($namespace) {
     /* Events */
     Route::prefix('/events')->group(function () use ($namespace) {
         $controller = $namespace.'\EventsController';
@@ -196,7 +201,8 @@ Route::group([
         Route::get('/', "$controller@index")->name('events_index');
         
         // Wildcard
-        Route::get('/{event}', "$controller@show")->name('events_show');
+        Route::get('/{event}', "$controller@show")->name('events_show')->middleware(CheckPrivateEvent::class);
+        Route::get('/{event}/private', "$controller@showPrivateEventForm")->name('private_eventform_password');
         Route::get('/{event}/tag_{tag_title}', "$controller@tag")->name('events_tags');
         
         // API
@@ -209,6 +215,15 @@ Route::group([
 
     });
 
+    /* Private Event */
+    Route::prefix('/private')->group(function () use ($namespace) {
+        $controller = $namespace.'\PrivateEventController';
+        Route::post('/events', "$controller@save_password")->name('private_event_save');
+        Route::post('/verify_event_password', "$controller@verify_event_password")->name('verify_event_password');
+    });
+});
+
+    /* ShortURL Events */
     Route::bind('event', function ($value) {
         return Classiebit\Eventmie\Models\Event::orWhere(['slug' =>  $value, 'short_url' => $value])->firstOrFail();
     });

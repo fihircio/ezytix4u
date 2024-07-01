@@ -275,6 +275,22 @@ class EventsController extends Controller
             'tickets', 'currency', 'booked_tickets', 'total_capacity', 'extra', 'is_usaepay'));
     }
 
+    public function showPrivateEventForm($event)
+    {
+        // Check if $event is already an instance of Event model
+        if (!($event instanceof \Classiebit\Eventmie\Models\Event)) {
+            // If it's not, try to find the event by slug
+            $event = \Classiebit\Eventmie\Models\Event::where('slug', $event)->firstOrFail();
+        }
+
+        // At this point, $event should be an Event model instance
+        if (!$event->is_private) {
+            // If the event is not private, redirect to the normal event page
+            return redirect()->route('eventmie.events_show', [$event->slug]);
+        }
+
+        return view('eventmie::private_event.password', compact('event'));
+    }
     /**
      *  Event tag detail by title
      * 

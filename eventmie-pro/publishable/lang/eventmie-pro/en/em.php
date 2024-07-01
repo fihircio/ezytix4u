@@ -197,6 +197,8 @@ return [
     /* ================ Event ================ */
     'event'                             => 'Event',
     'events'                            => 'Events',
+    'private'                            => 'Private Event',
+    'private_event_text'                => 'Request password from organiser to view event.',
     'repeat'                            => 'Repeat',
     'repetitive'                        => 'Repetitive',
     'upcoming'                          => 'Upcoming',

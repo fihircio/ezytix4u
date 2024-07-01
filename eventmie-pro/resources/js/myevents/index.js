@@ -14,6 +14,7 @@ require('../vue_common');
  * Local Components 
  */
 import MyEvents from './components/MyEvents';
+import EventPassword from './components/EventPassword';
 
 
 /**
