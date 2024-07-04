@@ -14,6 +14,7 @@ use Classiebit\Eventmie\Models\User;
 use Classiebit\Eventmie\Models\Commission;
 use Classiebit\Eventmie\Models\Transaction;
 use Classiebit\Eventmie\Models\Tax;
+use Classiebit\Eventmie\Models\Promocode;
 use Classiebit\Eventmie\Services\USAePay;
 use Illuminate\Support\Facades\DB;
 use Classiebit\Eventmie\Services\BillplzService;
@@ -386,6 +387,7 @@ class BookingsController extends Controller
                 $booking[$key]['event_start_time']  = $data['event']->start_time;
                 $booking[$key]['event_end_time']    = $data['event']->end_time;
                 $booking[$key]['common_order']      = $common_order;
+                $booking[$key]['promocode_reward']  = null;
                 
                 // repetitive event
                 if($data['event']->repetitive)
@@ -444,6 +446,10 @@ class BookingsController extends Controller
             
             
         }
+
+         /* CUSTOM */
+         $booking = $this->apply_promocode($request, $booking);
+         /* CUSTOM */
         
         // calculate commission 
         $this->calculate_commission($booking, $booking_organiser_price, $admin_tax);
@@ -498,7 +504,7 @@ class BookingsController extends Controller
         // return to paypal
         session(['booking'=>$booking]);
 
-        // set payment method for Billplz
+        // set payment method
         $this->set_payment_method($request, $booking);
 
         return $this->init_checkout($booking);
@@ -890,6 +896,9 @@ class BookingsController extends Controller
         }
         // insert data in commission table
         $this->commission->add_commission($commission_data);
+
+        //CUSTOM
+        $this->check_promocode();
     
         // store booking date for email notification        
         session(['booking_email_data'=> $booking_data]);
@@ -1314,6 +1323,170 @@ class BookingsController extends Controller
             
         }
         
+    }
+
+    /*===================== Apply Promocode ==============================*/ 
+    
+    protected function apply_promocode(Request $request, $booking = [])
+    {
+        $net_total_price   = 0;
+
+        // count total price
+        foreach($booking as $key => $val)
+        {
+            $net_total_price            += $val['net_price'];
+        }
+        
+        $tickets            = $request->ticket_id;
+        $tickets_quantity   = $request->quantity;
+        $promocodes         = $request->promocode;
+        
+        if($net_total_price > 0)
+        {
+            foreach($tickets as $key => $value)
+            {
+                if($value && $tickets_quantity[$key] > 0 && $promocodes[$key])
+                {
+                    // check promocode
+                    try {
+                        
+                        $check_promocode  = Promocode::where(['code' => $promocodes[$key]])->where('quantity', '>',  0)->firstOrFail();
+                        
+                        if(empty($check_promocode))
+                            continue;
+                        
+                        
+                        $params = [
+                            'ticket_id' => $value,
+                        ];
+                        $this->promocode = new Promocode;  
+                        
+                        // get ticket's promocode's ids
+                        $ticket_promocodes_ids = $this->promocode->get_ticket_promocodes_ids($params);
+                        
+                        if(empty($ticket_promocodes_ids))
+                            continue;
+                        
+                        $promocodes_ids = [];
+                            
+                        foreach($ticket_promocodes_ids as $key1 => $value1)
+                        {
+                            $promocodes_ids[] = $value1->promocode_id;
+                        }                    
+                        
+                        $params = [
+                            'promocodes_ids' => $promocodes_ids,
+                        ];
+                        
+                        // get tikcet's promocodes
+                        $ticket_promocodes = $this->promocode->get_ticket_promocodes($params);
+                        
+                        if(empty($ticket_promocodes))
+                            continue;
+
+                        $promocode_match = false;    
+                        
+                        // match user promocode with particular tickets's promocodes     
+                        foreach($ticket_promocodes as $key2 => $value2)
+                        {
+                            if($value2['code'] == $promocodes[$key])
+                            {
+                                $promocode_match = true;
+                                break;
+                            }
+                        }    
+
+                        if($promocode_match)
+                        {
+                            // apply promocode
+                            $user_promocode = [];
+
+                            // manual check in promocode_user if promocode not already applied by the user
+                            
+                            $params = [
+                                'user_id'       => $booking[key($booking)]['customer_id'],
+                                'promocode_id'  => $check_promocode->id,
+                                'ticket_id'     => $value
+                            ];
+                            
+                            $user_promocode = $this->promocode->promocode_user($params);
+                            
+                            if(empty($user_promocode))
+                            {
+                                if(!empty($booking))
+                                {
+                                    $booking_collection = collect($booking)->groupBy('ticket_id');
+
+                                    foreach($booking as $key3 => $value3)
+                                    {   
+                                        
+                                        if((int)$value == (int)$value3['ticket_id'] && (int)$value3['net_price'] > 0)
+                                        {
+                                            if($check_promocode->p_type == 'fixed')
+                                            {
+                                                $promocode_reward = (float)($check_promocode->reward / $booking_collection[$value3['ticket_id']]->count());
+
+                                                $booking[$key3]['net_price'] =  (float)$value3['net_price'] - $promocode_reward;
+
+                                                $booking[$key3]['promocode_reward'] = $promocode_reward;
+                                            }
+                                            else
+                                            {
+                                                $promocode_reward = (float)(($booking[$key3]['net_price'] * $check_promocode->reward)/100);
+
+                                                $booking[$key3]['net_price'] = (float)($booking[$key3]['net_price'] - $promocode_reward);
+
+                                                $booking[$key3]['promocode_reward'] = $promocode_reward;
+                                            }
+
+                                            
+                                            $booking[$key3]['promocode_id'] = $check_promocode->id;
+                                            $booking[$key3]['promocode']    = $check_promocode->code;
+                                            
+                                            // store valid promocode
+                                            $this->valid_promocodes[$key3]['promocode_id'] = (int)$check_promocode->id;
+                                            $this->valid_promocodes[$key3]['user_id']      = (int)$booking[$key3]['customer_id'];
+                                            $this->valid_promocodes[$key3]['ticket_id']    = (int)$value3['ticket_id'];
+                                            
+                                        }
+                                        
+                                    }
+                                }
+                                
+                            }
+                        }        
+                
+                    } 
+                    catch (\Throwable $e) {
+                        
+                    }
+                }
+            }
+        }
+
+        if(!empty($this->valid_promocodes))
+        {
+            session(['valid_promocodes'=> $this->valid_promocodes]);
+        }
+
+        return $booking;
+    }
+    
+    /*=================== Check Promocode then Apply =======================*/
+
+    protected function check_promocode()
+    {
+        // apply promocode
+        if(!empty( session('valid_promocodes')))
+        {
+            foreach(session('valid_promocodes') as $key => $value)
+            {
+                $this->promocode = new Promocode;
+                $this->promocode->promocode_apply($value);
+            }
+
+            session()->forget(['valid_promocodes']);
+        }
     }
 
 }

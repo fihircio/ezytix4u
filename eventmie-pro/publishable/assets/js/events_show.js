@@ -2636,6 +2636,16 @@ function _toPrimitive(input, hint) { if (typeof input !== "object" || input === 
       options: [],
       //selected customer
       customer: null,
+      //promocode
+      bookings_data: null,
+      name: '',
+      email: '',
+      register_user_id: this.login_user_id,
+      register_modal: 0,
+      promocode: [],
+      ticket_promocodes: [],
+      pc_readonly: [],
+      promocode_reward: 0,
       cardName: "",
       cardNumber: "",
       cardMonth: "",
@@ -2808,6 +2818,9 @@ function _toPrimitive(input, hint) { if (typeof input !== "object" || input === 
       promise.then(function (successMessage) {
         _this.totalPrice();
         _this.orderTotal();
+        /* CUSTOM start*/
+        _this.resetPromocode();
+        /* CUSTOM end*/
       }, function (errorMessage) {});
     },
     // count prise all booked tickets
@@ -2835,8 +2848,24 @@ function _toPrimitive(input, hint) { if (typeof input !== "object" || input === 
     defaultPaymentMethod() {
       // if not admin
       // total > 0
-      if (this.is_admin <= 0 && this.bookedTicketsTotal() > 0) this.payment_method = 1;
+      //if(this.is_admin <= 0 && this.bookedTicketsTotal() > 0)
+      //    this.payment_method = 1;
+
+      //CUSTOM
+      // if premium order & not-admin
+      if (this.is_admin <= 0 && this.orderTotal() > 0 && (parseFloat(this.total) - parseFloat(this.promocode_reward)).toFixed(2) > 0) this.payment_method = 1;
+      // if premium order & admin
+      else if (this.is_admin >= 1 && this.orderTotal() > 0 && (parseFloat(this.total) - parseFloat(this.promocode_reward)).toFixed(2) > 0) this.payment_method = 'offline';else this.payment_method = 1;
+      if (this.is_bulk > 0) {
+        this.payment_method = 'offline';
+      }
+
+      // for free
+      if ((parseFloat(this.total) - parseFloat(this.promocode_reward)).toFixed(2) <= 0) this.payment_method = 'free';
+
+      //CUSTOM
     },
+
     loginFirst() {
       window.location.href = route('eventmie.login_first');
     },
@@ -2887,6 +2916,152 @@ function _toPrimitive(input, hint) { if (typeof input !== "object" || input === 
         block: "end",
         inline: "nearest"
       });
+    },
+    //apply promocode
+    applyPromocode() {
+      var ticket_id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      var index = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      if (this.register_user_id == null) {
+        this.showNotification('error', trans('em.please_login'));
+        return true;
+      }
+      if ((this.is_admin > 0 || this.is_organiser > 0) && this.customer == null) {
+        this.showNotification('error', trans('em.select_customer'));
+        return true;
+      }
+      if (ticket_id != null && this.promocode[index] != null && this.promocode[index] != '' && this.promocode[index] != 'undefined') {
+        axios.post(route('eventmie.apply_promocodes'), {
+          'ticket_id': ticket_id,
+          'promocode': this.promocode[index],
+          'customer_id': this.is_customer > 0 ? this.register_user_id : this.customer_id
+        }).then(res => {
+          if (res.data.status > 0) {
+            console.log('success');
+            var _this = this;
+            var promise = new Promise(function (resolve, reject) {
+              _this.ticket_promocodes[index] = res.data.promocode;
+              resolve(true);
+            });
+            promise.then(function (successMessage) {
+              _this.promocodeReward();
+            }, function (errorMessage) {
+              console.log(errorMessage);
+            });
+
+            // success
+            this.pc_readonly[index] = 1;
+
+            // promocode apply button text change
+            document.getElementById('pcb_' + index).innerHTML = trans('em.applied');
+
+            // error field set null
+            document.getElementById('pc_error_' + index).innerHTML = '';
+
+            // show promocode's reward
+            document.getElementById('pc_success_' + index).innerHTML = res.data.promocode.reward + (res.data.promocode.p_type == 'fixed' ? this.currency : '%') + ' OFF!';
+
+            // promocode input field readonly 
+            document.getElementById('pc_' + index).readOnly = true;
+
+            // promocode apply button disable
+            document.getElementById('pcb_' + index).disabled = true;
+          } else {
+            console.log('error');
+            // error
+            this.pc_readonly[index] = 0;
+
+            // promocode input field readonly 
+            document.getElementById('pc_' + index).readOnly = false;
+
+            // error field set 
+            document.getElementById('pc_error_' + index).innerHTML = res.data.message;
+
+            //success message set null
+            document.getElementById('pc_success_' + index).innerHTML = '';
+
+            // promocode input field clear 
+            document.getElementById('pc_' + index).value = '';
+
+            // promocode v-model value set null    
+            this.promocode[index] = '';
+          }
+        }).catch(error => {
+          Vue.helpers.axiosErrors(error);
+        });
+      }
+    },
+    // promocode' reward 
+    promocodeReward() {
+      this.promocode_reward = 0;
+      if (Object.keys(this.ticket_promocodes).length > 0) {
+        this.ticket_promocodes.forEach(function (value, key) {
+          if (value != 'undefined' && value != '' && value != null) {
+            if (value.p_type == 'fixed') {
+              this.promocode_reward = isNaN(parseFloat(this.promocode_reward) + parseFloat(value.reward)) ? this.promocode_reward : parseFloat(this.promocode_reward) + parseFloat(value.reward);
+            } else {
+              if (this.total_price[key] > 0) {
+                this.promocode_reward = this.promocode_reward + (isNaN(this.total_price[key] * value.reward / 100) ? this.promocode_reward : parseFloat(this.total_price[key] * value.reward / 100));
+              }
+            }
+          }
+        }.bind(this));
+      }
+      this.defaultPaymentMethod();
+      return this.promocode_reward.toFixed(2);
+    },
+    // reset promocode fields
+    resetPromocode() {
+      this.quantity.forEach(function (value, key) {
+        if (Number(value) <= 0 || value == '' || value == 'undefined' || value == null) {
+          // promocode apply button disable
+          document.getElementById('pcb_' + key).disabled = false;
+
+          // promocode input field readonly 
+          document.getElementById('pc_' + key).readOnly = false;
+
+          // success
+          this.pc_readonly[key] = 1;
+
+          //clear field
+          this.promocode[key] = '';
+          document.getElementById('pc_' + key).value = '';
+
+          // promocode apply button text change
+          document.getElementById('pcb_' + key).innerHTML = trans('em.apply');
+
+          // error field set null
+          document.getElementById('pc_error_' + key).innerHTML = '';
+
+          // show promocode's reward
+          document.getElementById('pc_success_' + key).innerHTML = '';
+
+          // promocode input field readonly 
+          document.getElementById('pc_' + key).readOnly = true;
+
+          // promocode apply button disable
+          document.getElementById('pcb_' + key).disabled = true;
+          this.ticket_promocodes[key] = '';
+        } else {
+          if (this.promocode[key] == 'undefined' || this.promocode[key] == '') {
+            // promocode apply button disable
+            document.getElementById('pcb_' + key).disabled = false;
+
+            // promocode input field readonly 
+            document.getElementById('pc_' + key).readOnly = false;
+            this.pc_readonly[key] = 0;
+            document.getElementById('pc_' + key).value = '';
+
+            // promocode apply button text change
+            document.getElementById('pcb_' + key).innerHTML = trans('em.apply');
+
+            // error field set null
+            document.getElementById('pc_error_' + key).innerHTML = '';
+
+            // show promocode's reward
+            document.getElementById('pc_success_' + key).innerHTML = '';
+          }
+        }
+      }.bind(this));
     }
   }),
   watch: {
@@ -2894,6 +3069,10 @@ function _toPrimitive(input, hint) { if (typeof input !== "object" || input === 
       this.totalPrice();
       this.orderTotal();
       this.defaultPaymentMethod();
+
+      /* CUSTOM */
+      this.resetPromocode();
+      this.promocodeReward();
     },
     tickets: function tickets() {
       this.setDefaultQuantity();
@@ -3823,6 +4002,69 @@ var render = function render() {
     }), _vm._v("  " + _vm._s(_vm.trans("em.vacant")) + " 0")])]) : _vm._e()])]), _vm._v(" "), _c("div", [_c("strong", [_vm._v("\n                                                        " + _vm._s(_vm.total_price[index] ? _vm.total_price[index] : "0.00") + "\n                                                        "), _c("small", [_vm._v(_vm._s(_vm.currency))])]), _vm._v(" "), _vm.quantity[index] > 0 ? _c("span", [_c("i", {
       staticClass: "fas fa-check-circle text-success"
     })]) : _vm._e()])]), _vm._v(" "), _c("div", {
+      directives: [{
+        name: "show",
+        rawName: "v-show",
+        value: item.promocodes.length > 0,
+        expression: "item.promocodes.length > 0"
+      }],
+      staticClass: "break-flex w-50 w-m-100 my-2"
+    }, [_c("div", {
+      directives: [{
+        name: "show",
+        rawName: "v-show",
+        value: item.price > 0,
+        expression: "item.price > 0"
+      }],
+      staticClass: "input-group my-3 col-md-5"
+    }, [_c("input", {
+      directives: [{
+        name: "model",
+        rawName: "v-model",
+        value: _vm.promocode[index],
+        expression: "promocode[index]"
+      }],
+      staticClass: "form-control form-input-sm",
+      attrs: {
+        type: "text",
+        name: "promocode[]",
+        placeholder: _vm.trans("em.enter_promocode"),
+        id: "pc_" + index,
+        "aria-describedby": "button-addon2"
+      },
+      domProps: {
+        value: _vm.promocode[index]
+      },
+      on: {
+        input: function input($event) {
+          if ($event.target.composing) return;
+          _vm.$set(_vm.promocode, index, $event.target.value);
+        }
+      }
+    }), _vm._v(" "), _c("span", {
+      staticClass: "input-group-btn"
+    }, [_c("button", {
+      staticClass: "btn lgx-btn lgx-btn-sm lgx-btn-success",
+      attrs: {
+        type: "button",
+        id: "pcb_" + index
+      },
+      on: {
+        click: function click($event) {
+          _vm.pc_readonly[index] > 0 ? "" : _vm.applyPromocode(item.id, index);
+        }
+      }
+    }, [_vm._v("\n                                                                    " + _vm._s(_vm.trans("em.apply")) + "\n                                                            ")])])]), _vm._v(" "), _c("span", {
+      staticClass: "text-success",
+      attrs: {
+        id: "pc_success_" + index
+      }
+    }), _vm._v(" "), _c("span", {
+      staticClass: "text-danger",
+      attrs: {
+        id: "pc_error_" + index
+      }
+    })]), _vm._v(" "), _c("div", {
       staticClass: "break-flex w-30 w-m-100"
     }, [_vm.quantity[index] > 0 && item.price > 0 && item.taxes.length > 0 ? _c("ul", {
       staticClass: "list-group list-group-flush my-2"
@@ -3869,7 +4111,27 @@ var render = function render() {
     class: {
       "ticket-selected-text": _vm.bookedTicketsTotal() > 0
     }
-  }, [_vm._v(_vm._s(_vm.total) + " "), _c("small", [_vm._v(_vm._s(_vm.currency))])])])])])])]), _vm._v(" "), !_vm.login_user_id ? _c("div", {
+  }, [_vm._v(_vm._s(_vm.total) + " "), _c("small", [_vm._v(_vm._s(_vm.currency))])])])]), _vm._v(" "), _vm.total > 0 && _vm.promocode_reward > 0 ? _c("li", {
+    staticClass: "list-group-item mb-3 rounded border-2"
+  }, [_c("div", {
+    staticClass: "d-flex justify-content-between"
+  }, [_c("h6", {
+    staticClass: "my-0"
+  }, [_c("strong", [_vm._v(_vm._s(_vm.trans("em.rewards")))])]), _vm._v(" "), _c("strong", {
+    class: {
+      "ticket-selected-text": _vm.bookedTicketsTotal() > 0
+    }
+  }, [_vm._v(_vm._s(+_vm.promocode_reward.toFixed(2)) + " "), _c("small", [_vm._v(_vm._s(_vm.currency))])])])]) : _vm._e(), _vm._v(" "), _vm.total > 0 && _vm.promocode_reward > 0 ? _c("li", {
+    staticClass: "list-group-item mb-3 rounded border-2"
+  }, [_c("div", {
+    staticClass: "d-flex justify-content-between"
+  }, [_c("h6", {
+    staticClass: "my-0"
+  }, [_c("strong", [_vm._v(_vm._s(_vm.trans("em.net_order_total")))])]), _vm._v(" "), _c("strong", {
+    class: {
+      "ticket-selected-text": _vm.bookedTicketsTotal() > 0
+    }
+  }, [_vm._v(_vm._s((parseFloat(_vm.total) - parseFloat(_vm.promocode_reward)).toFixed(2)) + "  "), _c("small", [_vm._v(_vm._s(_vm.currency))])])])]) : _vm._e()])])]), _vm._v(" "), !_vm.login_user_id ? _c("div", {
     staticClass: "row"
   }, [_c("div", {
     staticClass: "col-12"
@@ -3885,7 +4147,7 @@ var render = function render() {
     staticClass: "mb-2 h6"
   }, [_vm._v(_vm._s(_vm.trans("em.payment")))]), _vm._v(" "), _c("div", {
     staticClass: "border-1 list-group-flush px-2"
-  }, [_vm.total <= 0 ? _c("div", {
+  }, [(parseFloat(_vm.total) - parseFloat(_vm.promocode_reward)).toFixed(2) <= 0 ? _c("div", {
     staticClass: "d-block my-3 pl-3"
   }, [_c("div", {
     staticClass: "radio-inline"
@@ -3904,7 +4166,7 @@ var render = function render() {
     }
   }, [_vm._v("  "), _c("i", {
     staticClass: "fas fa-glass-cheers"
-  }), _vm._v(" " + _vm._s(_vm.trans("em.free")) + " "), _c("small", [_vm._v("(" + _vm._s(_vm.trans("em.rsvp")) + " )")])])])]) : _c("div", {
+  }), _vm._v(" " + _vm._s(_vm.trans("em.free")) + " "), _c("small", [_vm._v("(" + _vm._s(_vm.trans("em.rsvp")) + " )")])])])]) : (parseFloat(_vm.total) - parseFloat(_vm.promocode_reward)).toFixed(2) > 0 ? _c("div", {
     staticClass: "d-block my-3 pl-3"
   }, [_vm.is_admin <= 0 && _vm.is_paypal > 0 ? _c("div", {
     staticClass: "radio-inline"
@@ -4044,7 +4306,7 @@ var render = function render() {
     domProps: {
       innerHTML: _vm._s(_vm.trans("em.order_terms"))
     }
-  })])])]), _vm._v(" "), _vm.payment_method == 9 ? _c("USAePay") : _vm._e(), _vm._v(" "), _c("div", {
+  })]) : _vm._e()])]), _vm._v(" "), _vm.payment_method == 9 ? _c("USAePay") : _vm._e(), _vm._v(" "), _c("div", {
     staticClass: "col-12 mt-2 pb-4"
   }, [_c("div", {
     staticClass: "d-grid"

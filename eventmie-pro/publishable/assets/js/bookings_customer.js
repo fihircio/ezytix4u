@@ -2102,25 +2102,75 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var _common_components_Pagination__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../common_components/Pagination */ "./resources/js/common_components/Pagination.vue");
-/* harmony import */ var _mixins_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../mixins.js */ "./resources/js/mixins.js");
-/* harmony import */ var _OnlineEvent_vue__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./OnlineEvent.vue */ "./resources/js/bookings_customer/components/OnlineEvent.vue");
-/* harmony import */ var _CreateGoogleEvent_vue__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./CreateGoogleEvent.vue */ "./resources/js/bookings_customer/components/CreateGoogleEvent.vue");
+/* harmony import */ var core_js_modules_es_object_to_string_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/es.object.to-string.js */ "./node_modules/core-js/modules/es.object.to-string.js");
+/* harmony import */ var core_js_modules_es_object_to_string_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_object_to_string_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _common_components_Pagination__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../common_components/Pagination */ "./resources/js/common_components/Pagination.vue");
+/* harmony import */ var _mixins_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../mixins.js */ "./resources/js/mixins.js");
+/* harmony import */ var _OnlineEvent_vue__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./OnlineEvent.vue */ "./resources/js/bookings_customer/components/OnlineEvent.vue");
+/* harmony import */ var _CreateGoogleEvent_vue__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./CreateGoogleEvent.vue */ "./resources/js/bookings_customer/components/CreateGoogleEvent.vue");
+
 
 
 
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
-  mixins: [_mixins_js__WEBPACK_IMPORTED_MODULE_1__["default"]],
+  mixins: [_mixins_js__WEBPACK_IMPORTED_MODULE_2__["default"]],
   props: [
   // pagination query string
   'page', 'is_success', 'date_format', 'disable_booking_cancellation', 'hide_ticket_download', 'hide_google_calendar'],
   components: {
-    PaginationComponent: _common_components_Pagination__WEBPACK_IMPORTED_MODULE_0__["default"],
-    OnlineEvent: _OnlineEvent_vue__WEBPACK_IMPORTED_MODULE_2__["default"],
-    CreateGoogleEvent: _CreateGoogleEvent_vue__WEBPACK_IMPORTED_MODULE_3__["default"]
+    PaginationComponent: _common_components_Pagination__WEBPACK_IMPORTED_MODULE_1__["default"],
+    OnlineEvent: _OnlineEvent_vue__WEBPACK_IMPORTED_MODULE_3__["default"],
+    CreateGoogleEvent: _CreateGoogleEvent_vue__WEBPACK_IMPORTED_MODULE_4__["default"]
   },
   data() {
+    //CUSTOM
+    var sortOrders = {};
+    var columns = [{
+      label: trans('em.order_id'),
+      name: 'order_number',
+      hide: true
+    }, {
+      label: trans('em.event'),
+      name: 'event_slug',
+      hide: true
+    }, {
+      label: trans('em.ticket'),
+      name: 'ticket_title',
+      hide: true
+    }, {
+      label: trans('em.order_total') + ' ' + trans('em.total'),
+      name: 'net_price',
+      hide: true
+    }, {
+      label: trans('em.reward'),
+      name: 'promocode_reward',
+      hide: true
+    }, {
+      label: trans('em.booked_on') + ' ' + trans('em.on'),
+      name: 'created_at',
+      hide: true
+    }, {
+      label: trans('em.payment'),
+      name: 'is_paid',
+      hide: true
+    }, {
+      label: trans('em.checked_in'),
+      name: 'checked_in',
+      hide: true
+    }, {
+      label: trans('em.status'),
+      name: 'status',
+      hide: true
+    }, {
+      label: trans('em.cancellation'),
+      name: 'booking_cancel',
+      hide: true
+    }];
+    columns.forEach(column => {
+      sortOrders[column.name] = -1;
+    });
+    //CUSTOM
     return {
       bookings: [],
       moment: moment,
@@ -2417,6 +2467,8 @@ var render = function render() {
     staticClass: "border-top-0 border-bottom-0"
   }, [_vm._v(_vm._s(_vm.trans("em.order_total")) + " ")]), _vm._v(" "), _c("th", {
     staticClass: "border-top-0 border-bottom-0"
+  }, [_vm._v(_vm._s(_vm.trans("em.reward")) + " ")]), _vm._v(" "), _c("th", {
+    staticClass: "border-top-0 border-bottom-0"
   }, [_vm._v(_vm._s(_vm.trans("em.booked_on")) + " ")]), _vm._v(" "), _c("th", {
     staticClass: "border-top-0 border-bottom-0"
   }, [_vm._v(_vm._s(_vm.trans("em.payment")) + " ")]), _vm._v(" "), _c("th", {
@@ -2480,6 +2532,11 @@ var render = function render() {
         "data-title": _vm.trans("em.order_total")
       }
     }, [_vm._v(_vm._s(booking.net_price + " " + _vm.currency) + " ")]), _vm._v(" "), _c("td", {
+      staticClass: "align-middle",
+      attrs: {
+        "data-title": _vm.trans("em.reward")
+      }
+    }, [_vm._v(_vm._s((booking.promocode_reward != null ? booking.promocode_reward : 0) + " " + booking.currency) + " ")]), _vm._v(" "), _c("td", {
       staticClass: "align-middle",
       attrs: {
         "data-title": _vm.trans("em.booked_on")

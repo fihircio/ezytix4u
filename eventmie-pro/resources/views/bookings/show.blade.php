@@ -206,6 +206,9 @@
 
                 </div>
 
+                {{-- CUSTOM --}}
+                @include('eventmie::bookings.promocode',[$booking])
+                {{-- CUSTOM --}}
                 @yield('eventmie-bookings-show')
 
             </div>

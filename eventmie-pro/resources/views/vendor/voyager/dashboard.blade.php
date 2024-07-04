@@ -189,7 +189,7 @@
                                                 <th>{{ __('voyager::generic.Ticket') }}</th>
                                                 <th>{{ __('voyager::generic.Order') }} {{ __('voyager::generic.total') }}
                                                 </th>
-
+                                                <th>{{ __('voyager::generic.reward') }}</th>
                                                 <th>{{ __('voyager::generic.Organiser') }}</th>
                                                 <th>{{ __('voyager::generic.Organiser Earning') }}</th>
                                                 <th>{{ __('voyager::generic.Admin Commission') }}</th>
@@ -200,6 +200,7 @@
 
                                         <tfoot class="custom-table-foot" id="tfoot">
                                             <tr>
+                                                <th></th>
                                                 <th></th>
                                                 <th></th>
                                                 <th></th>
@@ -381,6 +382,13 @@
                         name: 'net_price',
                         render: function(data, type, row) {
                             return row.net_price + ' ' + row.currency
+                        }
+                    },
+                    {
+                        data: 'promocode_reward',
+                        name: 'promocode_reward',
+                        render: function(data, type, row) {
+                            return row.promocode_reward ? row.promocode_reward : 0 + ' ' +row.currency;
                         }
                     },
                     {

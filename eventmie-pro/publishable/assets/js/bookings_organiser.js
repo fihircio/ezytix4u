@@ -2240,6 +2240,57 @@ __webpack_require__.r(__webpack_exports__);
     CreateGoogleEvent: _bookings_customer_components_CreateGoogleEvent_vue__WEBPACK_IMPORTED_MODULE_6__["default"]
   },
   data() {
+    //CUSTOM
+    var sortOrders = {};
+    var columns = [{
+      label: trans('em.order_id'),
+      name: 'order_number',
+      hide: true
+    }, {
+      label: trans('em.event'),
+      name: 'event_slug',
+      hide: false
+    }, {
+      label: trans('em.customer') + ' ' + trans('em.email'),
+      name: 'customer_email',
+      hide: true
+    }, {
+      label: trans('em.ticket'),
+      name: 'ticket_title',
+      hide: true
+    }, {
+      label: trans('em.order') + ' ' + trans('em.total'),
+      name: 'net_price',
+      hide: true
+    }, {
+      label: trans('em.reward'),
+      name: 'promocode_reward',
+      hide: true
+    }, {
+      label: trans('em.booked') + ' ' + trans('em.on'),
+      name: 'created_at',
+      hide: true
+    }, {
+      label: trans('em.payment'),
+      name: 'is_paid',
+      hide: true
+    }, {
+      label: trans('em.checked_in'),
+      name: 'checked_in',
+      hide: true
+    }, {
+      label: trans('em.status'),
+      name: 'status',
+      hide: true
+    }, {
+      label: trans('em.cancellation'),
+      name: 'booking_cancel',
+      hide: true
+    }];
+    columns.forEach(column => {
+      sortOrders[column.name] = -1;
+    });
+    //CUSTOM
     return {
       bookings: [],
       moment: moment,
@@ -3054,6 +3105,8 @@ var render = function render() {
     staticClass: "border-top-0 border-bottom-0"
   }, [_vm._v(_vm._s(_vm.trans("em.order_total")) + " ")]), _vm._v(" "), _c("th", {
     staticClass: "border-top-0 border-bottom-0"
+  }, [_vm._v(_vm._s(_vm.trans("em.reward")) + " ")]), _vm._v(" "), _c("th", {
+    staticClass: "border-top-0 border-bottom-0"
   }, [_vm._v(_vm._s(_vm.trans("em.booked_on")) + " ")]), _vm._v(" "), _c("th", {
     staticClass: "border-top-0 border-bottom-0"
   }, [_vm._v(_vm._s(_vm.trans("em.payment")))]), _vm._v(" "), _c("th", {
@@ -3122,6 +3175,11 @@ var render = function render() {
         "data-title": _vm.trans("em.order_total")
       }
     }, [_vm._v(_vm._s(booking.net_price + " " + _vm.currency) + " ")]), _vm._v(" "), _c("td", {
+      staticClass: "align-middle",
+      attrs: {
+        "data-title": _vm.trans("em.reward")
+      }
+    }, [_vm._v(_vm._s((booking.promocode_reward != null ? booking.promocode_reward : 0) + " " + booking.currency) + " ")]), _vm._v(" "), _c("td", {
       staticClass: "align-middle",
       attrs: {
         "data-title": _vm.trans("em.booked_on")

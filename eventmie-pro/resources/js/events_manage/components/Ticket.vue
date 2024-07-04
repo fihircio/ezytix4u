@@ -66,6 +66,25 @@
                                     </multiselect>
 
                                 </div>
+                                <div class="mb-3">
+                                    <label class="form-label">{{ trans('em.promocodes') }}</label>
+                                    <multiselect
+                                        v-model="tmp_promocodes_ids" 
+                                        :options="promocodes_options" 
+                                        :placeholder="trans('em.enter_promocode')" 
+                                        label="text" 
+                                        track-by="value" 
+                                        :multiple="true"
+                                        :close-on-select="false" 
+                                        :clear-on-select="false" 
+                                        :hide-selected="false" 
+                                        :preserve-search="true" 
+                                        :preselect-first="false"
+                                        :allow-empty="true"
+                                        :class="'form-control px-0 py-0 border-0'"
+                                    >
+                                    </multiselect>
+                                </div> 
 
                             </div>
                             
@@ -107,6 +126,13 @@ export default {
             tmp_taxes_ids     : [],
             selected_taxes    : [],
             customer_limit    : null,
+
+            // promocode
+            promocodes            : [],
+            promocodes_ids        : [],
+            promocodes_options    : [],
+            tmp_promocodes_ids    : [],
+            ticket_promocodes     : [],
             
         }
     },
@@ -133,6 +159,7 @@ export default {
             this.description  = this.edit_ticket.description;
             this.tax_id       = this.edit_ticket.tax_id ? this.edit_ticket.tax_id : 0;
             this.customer_limit       = this.edit_ticket.customer_limit;
+            this.getSelectedPromocodes();
         },
         
         // validate data on form submit
@@ -156,6 +183,9 @@ export default {
             // prepare form data for post request
             let post_url = route('eventmie.tickets_store');
             let post_data = new FormData(this.$refs.form);
+
+            /* CUSTOM */
+            post_data.append('promocodes_ids', this.promocodes_ids)
             
             // axios post request
             axios.post(post_url, post_data)
@@ -240,15 +270,94 @@ export default {
             
         },
 
+        /* CUSTOM */
+        getPromocodes(){
+            axios.get(route('eventmie.get_promocodes'),{
+                
+            })
+            .then(res => {
+                if(res.data.status > 0)
+                {
+                    this.promocodes  = res.data.promocodes;
+                    
+                    // set mutiple speaker for multiselect list
+                    if(this.promocodes.length > 0)
+                    {
+                        this.promocodes.forEach(function(v, key) {
+                            this.promocodes_options.push({value : v.id, text : v.code+' ('+v.reward+(v.p_type == 'fixed' ? ' '+v.currency : '%')+' OFF)' });
+                        }.bind(this));
+                        
+                    }   
+                }
+            
+            })
+            .catch(error => {
+                Vue.helpers.axiosErrors(error);
+            });    
+        },
+
+        // update promocodes for submit
+
+        updatePromocodes(){
+            
+            this.promocodes_ids = [];
+            
+            //speakers
+            if(this.tmp_promocodes_ids.length > 0)
+            {
+                var count = this.tmp_promocodes_ids.length;
+                this.tmp_promocodes_ids.forEach(function (value, key) {
+   
+                    this.promocodes_ids[key] = value.value;
+                    
+                }.bind(this));
+            }
+        },
+
+        //get selected promocodes for tickets
+        getSelectedPromocodes(){
+            if (!this.edit_ticket || !this.edit_ticket.id) {
+            console.error('Edit ticket or ticket ID is not set');
+            return;
+        }
+            axios.get(route('eventmie.get_ticket_promocodes',{ ticketd_id: this.edit_ticket.id }))
+            .then(res => {
+                if(res.data.status > 0)
+                {
+                    this.ticket_promocodes = res.data.ticket_promocodes;
+              
+                // set mutiple sponsors for multiselect list
+                if(this.ticket_promocodes.length > 0)
+                {
+                    this.tmp_promocodes_ids = []; 
+                    this.ticket_promocodes.forEach(function (v, key) {
+                        this.tmp_promocodes_ids.push({value : v.id, text : v.code+' ('+v.reward+(v.p_type == 'fixed' ? ' '+v.currency : '%')+' OFF)' });
+                    }.bind(this));
+                }  
+                }
+            
+            })
+            .catch(error => {
+                console.error('Error fetching promocodes:', error);
+                Vue.helpers.axiosErrors(error);
+            });    
+        }
+        /* CUSTOM */  
+
      
     },
     mounted() {
+        /* CUSTOM */
+        //this.getPromocodes();
+        /* CUSTOM */
         
         if(this.edit_ticket) {
             this.editTicket();
             
             // set selected tickets options
             this.setSelcetedTaxes();
+
+            this.getPromocodes();
         }
         
         // set taxes options
@@ -260,6 +369,13 @@ export default {
         tmp_taxes_ids : function() {
             this.updateTaxes();
         },
+
+        /* CUSTOM */
+        tmp_promocodes_ids : function() {
+            
+            this.updatePromocodes();
+        },
+        /* CUSTOM */
 
     },
 }

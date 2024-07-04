@@ -59,65 +59,72 @@ class MenuItemsTableSeeder extends Seeder
             $menuItem->fill(["target" => "_self", "icon_class" => "voyager-documentation", "color" => "#000000", "parent_id" => null, "order" => "7", ])->save();
         }
 
+        // Promocodes
+        $menuItem = MenuItem::firstOrNew(["menu_id" => $menu->id, "title" => "Promocodes", "url" => "", "route" => "voyager.promocodes.index", ]);
+        if (!$menuItem->exists) {
+            $menuItem->fill(["target" => "_self", "icon_class" => "voyager-tag", "color" => "", "parent_id" => null, "order" => "8", ])->save();
+        }
+
         // Users
         $menuItem = MenuItem::firstOrNew(["menu_id" => $menu->id, "title" => "Users", "url" => "", "route" => "voyager.users.index", ]);
         if (!$menuItem->exists) {
-            $menuItem->fill(["target" => "_self", "icon_class" => "voyager-people", "color" => "#000000", "parent_id" => null, "order" => "8", ])->save();
+            $menuItem->fill(["target" => "_self", "icon_class" => "voyager-people", "color" => "#000000", "parent_id" => null, "order" => "9", ])->save();
         }
 
         // Contacts
         $menuItem = MenuItem::firstOrNew(["menu_id" => $menu->id, "title" => "Contacts", "url" => "", "route" => "voyager.contacts.index", ]);
         if (!$menuItem->exists) {
-            $menuItem->fill(["target" => "_self", "icon_class" => "voyager-mail", "color" => "#000000", "parent_id" => null, "order" => "9", ])->save();
+            $menuItem->fill(["target" => "_self", "icon_class" => "voyager-mail", "color" => "#000000", "parent_id" => null, "order" => "10", ])->save();
         }
 
         // Media
         $menuItem = MenuItem::firstOrNew(["menu_id" => $menu->id, "title" => "Media", "url" => "", "route" => "voyager.media.index", ]);
         if (!$menuItem->exists) {
-            $menuItem->fill(["target" => "_self", "icon_class" => "voyager-images", "color" => "", "parent_id" => null, "order" => "10", ])->save();
+            $menuItem->fill(["target" => "_self", "icon_class" => "voyager-images", "color" => "", "parent_id" => null, "order" => "11", ])->save();
         }
 
         // Banners
         $menuItem = MenuItem::firstOrNew(["menu_id" => $menu->id, "title" => "Banners", "url" => "", "route" => "voyager.banners.index", ]);
         if (!$menuItem->exists) {
-            $menuItem->fill(["target" => "_self", "icon_class" => "voyager-photo", "color" => "#000000", "parent_id" => null, "order" => "11", ])->save();
+            $menuItem->fill(["target" => "_self", "icon_class" => "voyager-photo", "color" => "#000000", "parent_id" => null, "order" => "12", ])->save();
         }
 
         // Pages
         $menuItem = MenuItem::firstOrNew(["menu_id" => $menu->id, "title" => "Pages", "url" => "", "route" => "voyager.pages.index", ]);
         if (!$menuItem->exists) {
-            $menuItem->fill(["target" => "_self", "icon_class" => "voyager-file-text", "color" => "", "parent_id" => null, "order" => "12", ])->save();
+            $menuItem->fill(["target" => "_self", "icon_class" => "voyager-file-text", "color" => "", "parent_id" => null, "order" => "13", ])->save();
         }
 
         // Blog Posts
         $menuItem = MenuItem::firstOrNew(["menu_id" => $menu->id, "title" => "Blog Posts", "url" => "", "route" => "voyager.posts.index", ]);
         if (!$menuItem->exists) {
-            $menuItem->fill(["target" => "_self", "icon_class" => "voyager-news", "color" => "#000000", "parent_id" => null, "order" => "13", ])->save();
+            $menuItem->fill(["target" => "_self", "icon_class" => "voyager-news", "color" => "#000000", "parent_id" => null, "order" => "14", ])->save();
         }
         
         // Header Menu
         $menuItem = MenuItem::firstOrNew(["menu_id" => $menu->id, "title" => "Header Menu", "url" => "", "route" => "voyager.menus.builder", "parameters" => 2 ]);
         if (!$menuItem->exists) {
-            $menuItem->fill(["target" => "_self", "icon_class" => "voyager-list", "color" => "#000000", "parent_id" => null, "order" => "13", ])->save();
+            $menuItem->fill(["target" => "_self", "icon_class" => "voyager-list", "color" => "#000000", "parent_id" => null, "order" => "14", ])->save();
         }
         
         // Footer Menu
         $menuItem = MenuItem::firstOrNew(["menu_id" => $menu->id, "title" => "Footer Menu", "url" => "", "route" => "voyager.menus.builder", "parameters" => 3 ]);
         if (!$menuItem->exists) {
-            $menuItem->fill(["target" => "_self", "icon_class" => "voyager-list", "color" => "#000000", "parent_id" => null, "order" => "13", ])->save();
+            $menuItem->fill(["target" => "_self", "icon_class" => "voyager-list", "color" => "#000000", "parent_id" => null, "order" => "14", ])->save();
         }
         
         // Venues
         $menuItem = MenuItem::firstOrNew(["menu_id" => $menu->id, "title" => "Venues", "url" => "", "route" => "voyager.venues.index", ]);
         if (!$menuItem->exists) {
-            $menuItem->fill(["target" => "_self", "icon_class" => "voyager-lighthouse", "color" => "", "parent_id" => null, "order" => "14", ])->save();
+            $menuItem->fill(["target" => "_self", "icon_class" => "voyager-lighthouse", "color" => "", "parent_id" => null, "order" => "15", ])->save();
         }
 
         // Settings
         $menuItem = MenuItem::firstOrNew(["menu_id" => $menu->id, "title" => "Settings", "url" => "", "route" => "voyager.settings.index", ]);
         if (!$menuItem->exists) {
-            $menuItem->fill(["target" => "_self", "icon_class" => "voyager-settings", "color" => "", "parent_id" => null, "order" => "14", ])->save();
+            $menuItem->fill(["target" => "_self", "icon_class" => "voyager-settings", "color" => "", "parent_id" => null, "order" => "16", ])->save();
         }
+
     }
 
     protected function menuItem($field, $for)

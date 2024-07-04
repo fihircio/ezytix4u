@@ -154,6 +154,29 @@
                                                         </strong>
                                                         <span v-if="quantity[index] > 0"><i class="fas fa-check-circle text-success"></i></span>
                                                     </div>
+                                                    
+                                                </div>
+                                                
+                                                <div class="break-flex w-50 w-m-100 my-2" v-show="item.promocodes.length > 0">
+                                                        <div class="input-group my-3 col-md-5" v-show="item.price > 0">
+                                                            <input type="text" name="promocode[]" class="form-control form-input-sm" :placeholder="trans('em.enter_promocode')" 
+                                                                v-model="promocode[index]"
+                                                                :id="'pc_'+index"
+                                                                aria-describedby="button-addon2"
+                                                            >
+
+                                                            <span class="input-group-btn">
+                                                                <button class="btn lgx-btn lgx-btn-sm lgx-btn-success" type="button" 
+                                                                    @click="pc_readonly[index] > 0 ? '' : applyPromocode(item.id, index)"
+                                                                    :id="'pcb_'+index"
+                                                                >
+                                                                        {{ trans('em.apply') }}
+                                                                </button>
+                                                            </span>
+                                                        </div>
+
+                                                    <span class="text-success" :id="'pc_success_'+index"></span>
+                                                    <span class="text-danger" :id="'pc_error_'+index"></span>
                                                 </div>
 
                                                 <!-- show tax only if quantity is set -->
@@ -195,6 +218,20 @@
                                                     <strong :class="{'ticket-selected-text': bookedTicketsTotal() > 0 }">{{ total }} <small>{{currency}}</small></strong>
                                                 </div>
                                             </li>
+                                            <!-- *** CUSTOM *** -->
+                                            <li class="list-group-item mb-3 rounded border-2"v-if="total > 0 && promocode_reward > 0">
+                                                <div class="d-flex justify-content-between">
+                                                    <h6 class="my-0"><strong>{{ trans('em.rewards') }}</strong></h6>
+                                                    <strong :class="{'ticket-selected-text': bookedTicketsTotal() > 0 }">{{+ promocode_reward.toFixed(2)}} <small>{{currency}}</small></strong>   
+                                                </div>
+                                            </li>
+                                            <li class="list-group-item mb-3 rounded border-2"v-if="total > 0 && promocode_reward > 0">
+                                                <div class="d-flex justify-content-between">
+                                                    <h6 class="my-0"><strong>{{ trans('em.net_order_total') }}</strong></h6>
+                                                    <strong :class="{'ticket-selected-text': bookedTicketsTotal() > 0 }">{{ (parseFloat(total) - parseFloat(promocode_reward)).toFixed(2) }}  <small>{{currency}}</small></strong>                       
+                                                </div>
+                                            </li>
+                                            <!-- *** CUSTOM *** -->  
                                         </ul>
                                     </div>
                                 </div>
@@ -216,7 +253,7 @@
                                         <p class="mb-2 h6">{{ trans('em.payment') }}</p>
                                         <div class="border-1 list-group-flush px-2">
                                             <!-- Free -->
-                                            <div class="d-block my-3 pl-3" v-if="total <= 0">
+                                            <div class="d-block my-3 pl-3" v-if="(parseFloat(total) - parseFloat(promocode_reward)).toFixed(2) <= 0">
                                                 <div class="radio-inline">
                                                     <input id="free_order" name="free_order" type="radio" class="custom-control-input" checked>
                                                     <label class="custom-control-label" for="free_order"> &nbsp;<i class="fas fa-glass-cheers"></i> {{ trans('em.free') }} <small>({{ trans('em.rsvp') }} )</small></label>
@@ -224,7 +261,7 @@
                                             </div>
 
                                             <!-- Paid -->
-                                            <div class="d-block my-3 pl-3" v-else>
+                                            <div class="d-block my-3 pl-3" v-else-if="(parseFloat(total) - parseFloat(promocode_reward)).toFixed(2) > 0">
                                                 
                                                 <!-- For Organizer & Customer -->
                                                 <div class="radio-inline" v-if="is_admin <= 0 && is_paypal > 0">
@@ -353,6 +390,18 @@ export default {
             options             : [],
             //selected customer
             customer            : null,
+
+            //promocode
+            bookings_data         : null,
+            name                  : '',
+            email                 : '',
+            register_user_id      : this.login_user_id,
+            register_modal        : 0,  
+
+            promocode           : [],
+            ticket_promocodes   : [],
+            pc_readonly         : [],
+            promocode_reward    : 0,
 
             cardName    : "",
             cardNumber  : "",
@@ -599,6 +648,9 @@ export default {
             promise.then(function(successMessage) {
                 _this.totalPrice();
                 _this.orderTotal();
+                /* CUSTOM start*/
+                _this.resetPromocode();
+                /* CUSTOM end*/
             }, function(errorMessage) { 
                 
             }); 
@@ -638,8 +690,30 @@ export default {
         defaultPaymentMethod() {
             // if not admin
             // total > 0
-            if(this.is_admin <= 0 && this.bookedTicketsTotal() > 0)
+            //if(this.is_admin <= 0 && this.bookedTicketsTotal() > 0)
+            //    this.payment_method = 1;
+            
+               //CUSTOM
+            // if premium order & not-admin
+            if(this.is_admin <= 0 && this.orderTotal() > 0 && (parseFloat(this.total) - parseFloat(this.promocode_reward)).toFixed(2) > 0)
+                this.payment_method = 1; 
+            // if premium order & admin
+            else if(this.is_admin >= 1 && this.orderTotal() > 0 && (parseFloat(this.total) - parseFloat(this.promocode_reward)).toFixed(2) > 0)
+                this.payment_method = 'offline'; 
+            else
                 this.payment_method = 1;
+
+            if(this.is_bulk > 0)
+            {
+                this.payment_method = 'offline';
+            }
+
+            // for free
+            if((parseFloat(this.total) - parseFloat(this.promocode_reward)).toFixed(2) <= 0)
+                this.payment_method = 'free';
+
+            
+            //CUSTOM
         },
 
         loginFirst() {
@@ -705,6 +779,188 @@ export default {
             this.$refs["bottom-down"].scrollIntoView({ block: "end", inline: "nearest" })
         },
 
+        //apply promocode
+        applyPromocode(ticket_id =  null, index = null){
+            
+            if(this.register_user_id == null){
+                this.showNotification('error', trans('em.please_login'));
+                return true;
+            }    
+
+            if((this.is_admin > 0 || this.is_organiser > 0) && this.customer == null){
+                this.showNotification('error', trans('em.select_customer'));
+                return true;
+            }
+            
+
+            if(ticket_id != null && this.promocode[index] != null && this.promocode[index] != '' && this.promocode[index] != 'undefined'){
+                axios.post(route('eventmie.apply_promocodes'),{
+                    'ticket_id' : ticket_id,
+                    'promocode' : this.promocode[index],
+                    'customer_id' : (this.is_customer > 0) ? this.register_user_id : this.customer_id,
+                })
+                .then(res => {
+                    
+                    if(res.data.status > 0) {
+                        console.log('success');
+                        
+                        var _this   = this;
+                        var promise = new Promise(function(resolve, reject) { 
+                            _this.ticket_promocodes[index] = res.data.promocode;
+                            resolve(true);
+                        });     
+                            
+                        promise 
+                        .then(function(successMessage) { 
+                            _this.promocodeReward();
+                        }, function(errorMessage) { 
+                            console.log(errorMessage); 
+                        }); 
+                        
+                        // success
+                        this.pc_readonly[index]  = 1;
+                        
+                        // promocode apply button text change
+                        document.getElementById('pcb_'+index).innerHTML = trans('em.applied');
+
+                        // error field set null
+                        document.getElementById('pc_error_'+index).innerHTML = '';
+
+                        // show promocode's reward
+                        document.getElementById('pc_success_'+index).innerHTML = res.data.promocode.reward+
+                        (res.data.promocode.p_type == 'fixed' ? this.currency : '%')+' OFF!';
+
+                        // promocode input field readonly 
+                        document.getElementById('pc_'+index).readOnly = true; 
+                        
+                        // promocode apply button disable
+                        document.getElementById('pcb_'+index).disabled = true; 
+
+                    } else {
+                        console.log('error');
+                        // error
+                        this.pc_readonly[index]  = 0;
+
+                        // promocode input field readonly 
+                        document.getElementById('pc_'+index).readOnly = false; 
+                        
+                        // error field set 
+                        document.getElementById('pc_error_'+index).innerHTML   = res.data.message;
+
+                        //success message set null
+                        document.getElementById('pc_success_'+index).innerHTML = '';
+
+                        // promocode input field clear 
+                        document.getElementById('pc_'+index).value = ''; 
+
+                        // promocode v-model value set null    
+                        this.promocode[index] = '';
+                    }
+
+                    
+                })
+                .catch(error => {
+                    Vue.helpers.axiosErrors(error);
+                });   
+            }
+        },
+
+        // promocode' reward 
+        promocodeReward(){
+            
+            this.promocode_reward = 0;
+
+            if(Object.keys(this.ticket_promocodes).length > 0){
+            
+                this.ticket_promocodes.forEach(function(value, key){
+                    if(value != 'undefined' && value != '' && value != null) {
+
+                        if(value.p_type == 'fixed'){
+                            
+                            this.promocode_reward =  isNaN(parseFloat(this.promocode_reward) + parseFloat(value.reward)) ? this.promocode_reward :
+                                                     (parseFloat(this.promocode_reward) + parseFloat(value.reward)); 
+                        }
+                        else {
+                            
+                            if(this.total_price[key] > 0) {
+                                this.promocode_reward = this.promocode_reward + (isNaN((this.total_price[key]*value.reward)/100) ? this.promocode_reward : parseFloat((this.total_price[key]*value.reward)/100)); 
+                            }
+                        }  
+                    }
+                    
+                }.bind(this))
+            }
+            this.defaultPaymentMethod();
+            return this.promocode_reward.toFixed(2);
+        },
+
+        // reset promocode fields
+        resetPromocode(){   
+            
+            this.quantity.forEach(function(value, key){
+                
+                if(Number(value) <= 0 || value == '' || value == 'undefined'  || value == null  ){
+                    
+                    // promocode apply button disable
+                    document.getElementById('pcb_'+key).disabled = false; 
+
+                    // promocode input field readonly 
+                    document.getElementById('pc_'+key).readOnly = false; 
+
+                    // success
+                    this.pc_readonly[key]  = 1;
+
+                    //clear field
+                    this.promocode[key] = '';
+                    document.getElementById('pc_'+key).value = '';
+                    
+                    // promocode apply button text change
+                    document.getElementById('pcb_'+key).innerHTML = trans('em.apply');
+                   
+                    // error field set null
+                    document.getElementById('pc_error_'+key).innerHTML = '';
+
+                    // show promocode's reward
+                    document.getElementById('pc_success_'+key).innerHTML = '';
+                    
+                    // promocode input field readonly 
+                    document.getElementById('pc_'+key).readOnly = true; 
+
+                    // promocode apply button disable
+                    document.getElementById('pcb_'+key).disabled = true; 
+                    
+                    this.ticket_promocodes[key] = '';
+                }
+                else{
+                  
+                    if(this.promocode[key] == 'undefined' || this.promocode[key] == '') {
+
+                        // promocode apply button disable
+                        document.getElementById('pcb_'+key).disabled = false; 
+
+                        // promocode input field readonly 
+                        document.getElementById('pc_'+key).readOnly = false; 
+
+                        this.pc_readonly[key]  = 0;
+                        
+                        document.getElementById('pc_'+key).value = '';
+                        
+                        // promocode apply button text change
+                        document.getElementById('pcb_'+key).innerHTML = trans('em.apply');
+
+                        // error field set null
+                        document.getElementById('pc_error_'+key).innerHTML = '';
+
+                        // show promocode's reward
+                        document.getElementById('pc_success_'+key).innerHTML = '';
+                    }
+
+
+                }
+                
+            }.bind(this))   
+        },
+
     },
 
     watch: {
@@ -712,6 +968,10 @@ export default {
             this.totalPrice();
             this.orderTotal();
             this.defaultPaymentMethod();
+
+            /* CUSTOM */
+            this.resetPromocode();
+            this.promocodeReward();
         },
         tickets: function() {
             this.setDefaultQuantity();

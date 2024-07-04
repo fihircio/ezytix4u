@@ -21,6 +21,7 @@ use Classiebit\Eventmie\Models\Category;
 use Classiebit\Eventmie\Models\Country;
 use Classiebit\Eventmie\Models\Schedule;
 use Classiebit\Eventmie\Models\Tax;
+use Classiebit\Eventmie\Models\Promocode;
 
 class TicketsController extends Controller
 {
@@ -39,6 +40,8 @@ class TicketsController extends Controller
         $this->event    = new Event;
 
         $this->ticket   = new Ticket;
+
+        $this->promocode = new Promocode; 
 
         $this->tax      = new Tax;
         
@@ -74,6 +77,26 @@ class TicketsController extends Controller
  
         return response()->json(['tickets' => $tickets, 'status' => true, 'currency' => setting('regional.currency_default')]);
     }
+
+    // save promocode 
+    public function save_promocode(Request $request, $ticket_id = null)
+    {
+         // save promocodes
+         $promocodes = [];
+         $params     = [];
+ 
+         if(!empty($request->promocodes_ids))
+         {
+             $promocodes = explode (",", $request->promocodes_ids);
+          
+             foreach($promocodes as $key => $value)
+             {
+                 $params[$key]['ticket_id']    =  $ticket_id;
+                 $params[$key]['promocode_id'] =  $value;
+             }
+         }
+         $this->promocode->save_ticket_promocode($params, $ticket_id);
+    } 
 
     // get taxes for tickets
     public function taxes()
@@ -162,7 +185,16 @@ class TicketsController extends Controller
                 // update price type column of event table by 0
                 $this->event->update_price_type($request->event_id, $params);
             }
-        }  
+        }
+
+         /* CUSTOM */
+        // Update ticket_id in case of new ticket
+        if(!$ticket_id)
+            $ticket_id = $ticket->id;
+            
+        // save promocodes
+        $this->save_promocode($request, $ticket_id);
+        /* CUSTOM */
 
         // get update event
         $event            = $this->event->get_user_event($request->event_id, $this->organiser_id);

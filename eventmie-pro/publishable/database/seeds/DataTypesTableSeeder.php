@@ -148,6 +148,27 @@ class DataTypesTableSeeder extends Seeder
                 'details'               => json_decode('{"order_column":"updated_at","order_display_column":"id","order_direction":"desc","default_search_key":"name","scope":null}'),
             ])->save();
         }
+
+        $singular       = 'promocode';
+        $slug           = 'promocodes';
+        $dataType       = $this->dataType('slug', $slug);
+        if (!$dataType->exists) {
+            $dataType->fill([
+                'name'                  => $slug,
+                'slug'                  => $slug,
+                'display_name_singular' => ucfirst($singular),
+                'display_name_plural'   => ucfirst($slug),
+
+                'icon'                  => 'voyager-tag',
+                'model_name'            => 'Classiebit\\Eventmie\\Models\\Promocode',
+                'policy_name'           => NULL,
+                'controller'            => NULL,
+                'description'           => NULL,
+                'generate_permissions'  => 1,
+                'server_side'           => 1,
+                'details'               => '{"order_column":"id","order_display_column":"id","order_direction":"asc","default_search_key":"title","scope":null}',
+            ])->save();
+        } 
         
         $singular       = 'tax';
         $slug           = 'taxes';

@@ -323,7 +323,10 @@ return [
     "Contact Email"        => "Contact Email",
     "Google Lattitude"     => "Google Lattitude",
     "Google Longitude"     => "Google Longitude",
-    
+
+    'Promocodes'             => 'Promocodes',
+    'Code'                   => 'Code',
+    'reward'      => 'Promocode Reward',
     
     
 ];

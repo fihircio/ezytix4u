@@ -11,6 +11,7 @@
                                     <th class="border-top-0 border-bottom-0">{{ trans('em.event') }}</th>
                                     <th class="border-top-0 border-bottom-0">{{ trans('em.ticket') }}</th>
                                     <th class="border-top-0 border-bottom-0">{{ trans('em.order_total') }} </th>
+                                    <th class="border-top-0 border-bottom-0">{{ trans('em.reward') }} </th>
                                     <th class="border-top-0 border-bottom-0">{{ trans('em.booked_on') }} </th>
                                     <th class="border-top-0 border-bottom-0">{{ trans('em.payment') }} </th>
                                     <th class="border-top-0 border-bottom-0">{{ trans('em.checked_in') }}</th>
@@ -55,6 +56,7 @@
                                     
                                     <td class="align-middle" :data-title="trans('em.ticket')"><i class="fas fa-ticket"></i> {{ booking.ticket_title }} <strong>{{ ' x '+booking.quantity }}</strong></td>
                                     <td class="align-middle" :data-title="trans('em.order_total')">{{ booking.net_price+' '+ currency }} </td>
+                                    <td class="align-middle" :data-title="trans('em.reward')">{{ (booking.promocode_reward != null ? booking.promocode_reward : 0 )+' '+ booking.currency }} </td>
                                     <td class="align-middle" :data-title="trans('em.booked_on')">{{ moment(userTimezone(booking.created_at, 'YYYY-MM-DD HH:mm:ss').format('YYYY-MM-DD')).format(date_format.vue_date_format) }} {{ showTimezone() }}</td>
                                     <td class="align-middle text-capitalize" :data-title="trans('em.payment')">
                                         <span class="badge bg-secondary text-white" v-if="booking.payment_type == 'offline'">
@@ -166,6 +168,24 @@ export default {
     },
     
     data() {
+        //CUSTOM
+        let sortOrders = {};
+        let columns = [
+            {label: trans('em.order_id'), name: 'order_number', hide: true },
+            {label: trans('em.event'), name: 'event_slug', hide: true },
+            {label: trans('em.ticket'), name: 'ticket_title', hide: true},
+            {label: trans('em.order_total')+' '+trans('em.total'), name: 'net_price', hide: true},
+            {label: trans('em.reward'), name: 'promocode_reward', hide: true },
+            {label: trans('em.booked_on')+' '+trans('em.on') , name: 'created_at', hide: true},
+            {label: trans('em.payment') , name: 'is_paid', hide: true},
+            {label: trans('em.checked_in') , name: 'checked_in', hide: true},
+            {label: trans('em.status') , name: 'status', hide: true},
+            {label: trans('em.cancellation') , name: 'booking_cancel', hide: true},
+        ];
+        columns.forEach((column) => {
+            sortOrders[column.name] = -1;
+        });
+        //CUSTOM
         return {
             bookings : [],
             moment   : moment,

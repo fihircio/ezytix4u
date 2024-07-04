@@ -7,6 +7,7 @@ use DB;
 use Composer\DependencyResolver\Request;
 use Classiebit\Eventmie\Models\Tax;
 use Classiebit\Eventmie\Models\Booking;
+use Classiebit\Eventmie\Models\Promocode;
 
 class Ticket extends Model
 {
@@ -32,7 +33,10 @@ class Ticket extends Model
         
         if(!empty($params['ticket_ids']))
         {
-            $result = Ticket::with(['taxes'])
+            $result = Ticket::with([
+                    'taxes',
+                    'promocodes',
+                    ])
                     ->whereIn('id', $params['ticket_ids'])
                     ->where('event_id', $params['event_id'])
                     ->orderBy('price')
@@ -40,7 +44,11 @@ class Ticket extends Model
         }
         else
         {
-            $result = Ticket::with(['taxes'])->where(['event_id' => $params['event_id'] ])
+            $result = Ticket::with([
+                'taxes',
+                'promocodes',
+                ])
+                ->where(['event_id' => $params['event_id'] ])
                 ->orderBy('price')
                 ->get();
         }
@@ -126,6 +134,14 @@ class Ticket extends Model
     public function bookings()
     {
         return $this->hasMany(Booking::class);
+    }
+
+    /**
+     * Get the promocodes record associated with the ticket.
+     */
+    public function promocodes()
+    {
+        return $this->belongsToMany(Promocode::class, 'ticket_promocode');
     }
     
 
