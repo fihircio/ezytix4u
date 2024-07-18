@@ -172,7 +172,7 @@ export default {
             offline_payment_info :  null,
 
             short           : '',
-            short_url       : route('eventmie.welcome')+'/events'+'/',
+            short_url       : route('eventmie.welcome')+'/',
             e_soldout       : 0,
         }
     },
@@ -296,15 +296,25 @@ export default {
             return '';
         },
 
+        ShortSlugUrl() {
+            if (this.shortUrl != null)
+                return route('eventmie.events_index')+'/'+this.shortUrl;
+        
+            return '';
+        },
+
          // slug route
          shortUrl(){
             this.short_url     = '';
             
             if(this.short.length > 0)
-                this.short_url     = route('eventmie.welcome')+'/events'+'/'+this.sanitizeTitle(this.short);
+            {
+                //return route('eventmie.events_index')+'/'+this.shortUrl;
+                this.short_url     = route('eventmie.welcome')+'/'+this.sanitizeTitle(this.short);
+            }
             else{
 
-                this.short_url     = route('eventmie.welcome')+'/events'+'/';
+                this.short_url     = route('eventmie.welcome')+'/';
                 this.short         = '';
             }    
         },
