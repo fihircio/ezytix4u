@@ -277,7 +277,7 @@ Route::group([
          Route::get('/bookings/bulk/show/{id}', "$controller@bulk_bookings_show")->name('bookings.bulk_show'); 
  
          /* Override Voyager bulk bookings Routes */
-         Route::get('/bookings/bulk/zip/{ticket_id}/{bulk_code}', "\Classiebit\Eventmie\Http\Controllers\DownloadsController@create_bulk_zip")->name('bookings.bulk_zip');
+         Route::get('/bookings/bulk/zip/{ticket_id}/{bulk_code}', $namespace."\DownloadsController@create_bulk_zip")->name('bookings.bulk_zip');
          
          /* Override Voyager bulk bookings Routes */
          Route::get('/bookings/bulk/export/{ticket_id}/{bulk_code}', "$controller@bulk_export_attendees")->name('bookings.bulk_export');
@@ -498,7 +498,7 @@ Route::group([
     /* Send Email */
     Route::get('/send/email', $namespace.'\SendEmailController@send_email')->name('send_email');
 
-    Route::get('/{event_short_url}', '\Classiebit\Eventmie\Http\Controllers\EventsController@shortUrl')->name('eventmie.shortUrl');
+    Route::get('/{event_short_url}', $namespace.'\EventsController@shortUrl')->name('eventmie.shortUrl');
 
     /* ============================= ALL OTHER ROUTES ABOVE ============================= */
     /* Wildcard routes (add all other routes above) */
