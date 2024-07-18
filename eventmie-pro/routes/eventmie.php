@@ -212,6 +212,7 @@ Route::group([
             Route::post('/api/check/session', "$controller@check_session")->name('check_session');
 
             Route::get('/search-events', "$controller@searchEvents")->name('searchEvents');
+            Route::get('/{event_short_url}', "$controller@shortUrl")->name('eventmie.shortUrl');
 
         });
 
@@ -498,7 +499,7 @@ Route::group([
     /* Send Email */
     Route::get('/send/email', $namespace.'\SendEmailController@send_email')->name('send_email');
 
-    Route::get('/{event_short_url}', $namespace.'\EventsController@shortUrl')->name('eventmie.shortUrl');
+    
 
     /* ============================= ALL OTHER ROUTES ABOVE ============================= */
     /* Wildcard routes (add all other routes above) */
