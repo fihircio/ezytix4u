@@ -1,4 +1,4 @@
-<section class="bg-gradient">
+<section class="bg-primary">
     <div class="container">
         <div class="row">
             <div class="col-xl-12 col-md-12 col-12 mt-15">

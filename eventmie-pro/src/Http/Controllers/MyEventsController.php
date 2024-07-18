@@ -282,7 +282,8 @@ class MyEventsController extends Controller
             "featured"      => 0,
             "offline_payment_info" => $request->offline_payment_info,
             //CUSTOM
-            "short_url"     => $this->slugify($request->short_url)
+            "short_url"     => $this->slugify($request->short_url),
+            "e_soldout"     => !empty($request->e_soldout) ? 1 : 0,
         ];
 
         //featured
@@ -470,6 +471,24 @@ class MyEventsController extends Controller
                 $images[$key]    = $path.$image[$key];
             }
         }
+
+        if($request->hasfile('seatingchart_image')) 
+        { 
+            // if have  image and database have images no images this event then apply this rule 
+            $request->validate([
+                'seatingchart_image'      => 'required|mimes:jpeg,png,jpg,gif,svg',
+            ]); 
+        
+            $file = $request->file('seatingchart_image');
+    
+            
+            $extension              = $file->getClientOriginalExtension(); // getting image extension
+            $seatingchart_image     = time().rand(1,988).'.'.$extension;
+            $file->storeAs('/app/public/'.$path, $seatingchart_image);
+            
+            $seatingchart_image     = $path.$seatingchart_image;
+
+        }
         
         $params = [
             "thumbnail"     => !empty($thumbnail) ? $path.$thumbnail : null ,
@@ -490,7 +509,11 @@ class MyEventsController extends Controller
 
             $params["images"] = json_encode(array_values($images));
 
-        }    
+        }
+        
+        // if seatingchart_image 
+        if(!empty($seatingchart_image))
+            $params["seatingchart_image"] = $seatingchart_image;    
         
         $status   = $this->event->save_event($params, $request->event_id);
 
@@ -992,6 +1015,18 @@ class MyEventsController extends Controller
 
             
             $bookings[$key]['checked_in']           = $item['checked_in'].' / '.$item['quantity'];
+
+            $bookings[$key]['attendee_name']        = null;
+            $bookings[$key]['attendee_email']       = null;
+            $bookings[$key]['attendee_phone']       = null;
+            //attendees
+            if(!empty($bookings[$key]['attendees']))
+            {
+                $bookings[$key]['attendee_name']  = $bookings[$key]['attendees'][0]['name'];
+                $bookings[$key]['attendee_email'] = $bookings[$key]['attendees'][0]['address'];
+                $bookings[$key]['attendee_phone'] = $bookings[$key]['attendees'][0]['phone'];
+                
+            }
         }    
 
         // convert array to collection for csv
@@ -1016,7 +1051,12 @@ class MyEventsController extends Controller
             'event_repetitive',
 
             'customer_name', 
-            'customer_email', 
+            'customer_email',
+            
+            
+            'attendee_name',
+            'attendee_email',
+            'attendee_phone',
 
             'order_number',
             'ticket_title',
@@ -1561,6 +1601,31 @@ class MyEventsController extends Controller
         
         return response()->json(['status' => true, 'organizers' => $organizers ]);
     }
+
+     /**
+     *  delete seatchart image
+     */
+
+     public function delete_seatchart(Request $request)
+     {
+         // 1. validate data
+         $request->validate([
+             'event_id'                => 'required|numeric|min:1|regex:^[1-9][0-9]*$^',
+             
+         ]);
+ 
+         $params = [
+             'seatingchart_image' => null, 
+         ];
+         
+         $status   = $this->event->save_event($params, $request->event_id);
+ 
+         if(empty($status))
+         {
+             return error('Database failure!', Response::HTTP_BAD_REQUEST );
+         }
+         return response()->json(['status' => true]);
+     }
 
     /**
      *  delete image

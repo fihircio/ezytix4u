@@ -195,7 +195,7 @@
 
     <!-- New Themes Categories START-->
     @if (!empty($categories))
-        <div class="py-5 bg-gradient">
+        <div class="py-5 bg-primary">
             <div class="container">
                 <div class="row">
                     <div class="col-12">
@@ -229,7 +229,7 @@
 
     <!-- New Themes cities_events START-->
     @if (!empty($cities_events))
-        <div class="py-5 bg-gradient">
+        <div class="py-5 bg-primary">
             <div class="container">
                 <div class="row">
                     <div class="col-12">

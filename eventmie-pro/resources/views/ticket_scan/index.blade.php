@@ -45,7 +45,19 @@
                                 <input type="hidden" name="_token" value="<?php echo csrf_token(); ?>">
                                 <input type="hidden" name="booking_id" id="booking_id">
                                 <input type="hidden" name="order_number" id="order_number">
-
+                                <input type="hidden" name="attendee_id" id="attendee_id" class="form-control" >
+                                <div class="form-group row mt-5" id="attendee">
+                                    <label class="col-md-3" for="attendee_id"> @lang('eventmie-pro::em.attendee')</label>
+                                    <div class="col-md-9">
+                                        
+                                        <input type="text" name="attendee_name" id="attendee_name" class="form-control" readonly>
+                                    </div>
+                                    @if ($errors->has('attendee_id'))
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $errors->first('attendee_id') }}</strong>
+                                        </span>
+                                    @endif
+                                </div>
                                 <div class="d-grid">
                                     <button type="submit" id="check_in_button" class="btn btn-success btn-lg"
                                         style="display: none;">@lang('eventmie-pro::em.verify_n_checkin')</button>

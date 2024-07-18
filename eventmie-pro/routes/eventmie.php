@@ -260,6 +260,27 @@ Route::group([
         // API
         Route::post('/api/get_tickets', "$controller@get_tickets")->name('bookings_get_tickets');
         Route::post('/api/book_tickets', "$controller@book_tickets")->name('bookings_book_tickets');
+
+         /* Override Voyager bulk bookings Routes */
+         Route::get('/bookings/bulk', "$controller@bulk_bookings")->name('bookings.bulk_bookings');  
+
+         /* Override Voyager bulk bookings Routes */
+         Route::get('/bookings/bulk/edit/{id}', "$controller@bulk_bookings_edit")->name('bookings.bulk_edit');  
+ 
+         /* Override Voyager bulk bookings Routes */
+         Route::put('/bookings/bulk/update/{id}', "$controller@bulk_bookings_update")->name('bookings.bulk_update');  
+         
+         /* Override Voyager bulk bookings Routes */
+         Route::get('/bookings/bulk/delete/{id}', "$controller@bulk_bookings_delete")->name('bookings.bulk_delete'); 
+         
+         /* Override Voyager bulk bookings Routes */
+         Route::get('/bookings/bulk/show/{id}', "$controller@bulk_bookings_show")->name('bookings.bulk_show'); 
+ 
+         /* Override Voyager bulk bookings Routes */
+         Route::get('/bookings/bulk/zip/{ticket_id}/{bulk_code}', "Classiebit\Eventmie\Http\DownloadsController@create_bulk_zip")->name('bookings.bulk_zip');
+         
+         /* Override Voyager bulk bookings Routes */
+         Route::get('/bookings/bulk/export/{ticket_id}/{bulk_code}', "$controller@bulk_export_attendees")->name('bookings.bulk_export');
     });
     
     /* My Bookings (customers) */
@@ -323,6 +344,9 @@ Route::group([
 
         //delete multiple images
         Route::post('delete/image', "$controller@delete_image")->name('delete_image');
+
+        //delete seatchart
+        Route::post('delete/seatchart', "$controller@delete_seatchart")->name('delete_seatchart');
     });
     
     /* Notification */
@@ -424,6 +448,38 @@ Route::group([
         $controller = $namespace.'\DownloadsController';
         
         Route::get('/ticket/{id}/{order_number}', "$controller@index")->name('downloads_index');  
+    });
+
+    /* Create Attendee On Checkout Page */
+    Route::prefix('/attendee')->group(function () use ($namespace) {
+        $controller = $namespace.'\AttendeeController';
+    
+        Route::post('/add/attendee', "$controller@add_attendee")->name('add_attendee');
+    
+    });
+    /* Seat Chart */
+    Route::prefix('/seatschart/')->group(function () use ($namespace) {
+        $controller = $namespace.'\SeatChartController';
+        
+        Route::post('upload',"$controller@upload_seatchart")->name('upload_seatchart');
+
+        Route::post('disable_enable_seatchart',"$controller@disable_enable_seatchart")->name('disable_enable_seatchart');
+    });
+    
+    /* Seats */
+    Route::prefix('/seats/')->group(function () use ($namespace) {
+        $controller = $namespace.'\SeatsController';   
+        
+        Route::post('save',"$controller@save_seats")->name('save_seats');
+    
+        Route::post('delete',"$controller@delete_seat")->name('delete_seat');
+        
+        Route::post('disable',"$controller@disable_seat")->name('disable_seat');
+        Route::post('enable',"$controller@enable_seat")->name('enable_seat');
+
+        Route::post('delete/all/seats',"$controller@delete_all_seat")->name('delete_all_seats');
+        
+        
     });
         
     /* Commission */

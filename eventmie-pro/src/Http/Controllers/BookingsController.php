@@ -5,16 +5,19 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Validator;
 use Auth;
 use Classiebit\Eventmie\Services\PaypalExpress;
 use Classiebit\Eventmie\Models\Event;
 use Classiebit\Eventmie\Models\Ticket;
+use Classiebit\Eventmie\Models\Seat;
 use Classiebit\Eventmie\Models\Booking;
 use Classiebit\Eventmie\Models\User;
 use Classiebit\Eventmie\Models\Commission;
 use Classiebit\Eventmie\Models\Transaction;
 use Classiebit\Eventmie\Models\Tax;
 use Classiebit\Eventmie\Models\Promocode;
+use Classiebit\Eventmie\Models\Attendee;
 use Classiebit\Eventmie\Services\USAePay;
 use Illuminate\Support\Facades\DB;
 use Classiebit\Eventmie\Services\BillplzService;
@@ -81,18 +84,27 @@ class BookingsController extends Controller
             // customer id = Auth::id();
             $this->customer_id = Auth::id();
 
+            // for complimentary booking
+            if(Auth::user()->hasRole('admin') && !empty($request->is_bulk)) 
+            {
+                $this->customer_id = 1;
+            }
+
             // if admin and organiser is creating booking
             // then user Auth::id() as $customer_id
             // and customer id will be the id selected from Vue dropdown
             if(Auth::user()->hasRole('admin') || Auth::user()->hasRole('organiser') )
             {
-                // 1. validate data
-                $request->validate([
-                    'customer_id'       => 'required|numeric|min:1|regex:^[1-9][0-9]*$^',
-                ], [
-                    'customer_id.*' => __('eventmie-pro::em.customer').' '.__('eventmie-pro::em.required'),
-                ]);
-                $this->customer_id = $request->customer_id;
+                if(empty($request->is_bulk))
+                {
+                    // 1. validate data
+                    $request->validate([
+                        'customer_id'       => 'required|numeric|min:1|regex:^[1-9][0-9]*$^',
+                    ], [
+                        'customer_id.*' => __('eventmie-pro::em.customer').' '.__('eventmie-pro::em.required'),
+                    ]);
+                    $this->customer_id = $request->customer_id;
+                }
             }
 
             return true;
@@ -107,17 +119,20 @@ class BookingsController extends Controller
         $selected_tickets   = $params['selected_tickets'];
         $ticket_ids         = $params['ticket_ids'];
         $booking_date       = $params['booking_date'];
-        
-        // 1. Check booking.max_ticket_qty
-        foreach($selected_tickets as $key => $value)
-        {
-            $ticket = Ticket::where('id', $value['ticket_id'])->first();
 
-            // user can't book tickets more than limitation 
-            if($value['quantity'] > ( !empty($ticket->customer_limit) ? $ticket->customer_limit : setting('booking.max_ticket_qty') )) 
+        if(empty($params['is_bulk']))
+        {
+            // 1. Check booking.max_ticket_qty
+            foreach($selected_tickets as $key => $value)
             {
-                $msg = __('eventmie-pro::em.max_ticket_qty');
-                return ['status' => false, 'error' => $msg.( !empty($ticket->customer_limit) ? $ticket->customer_limit : setting('booking.max_ticket_qty') )];
+                $ticket = Ticket::where('id', $value['ticket_id'])->first();
+
+                // user can't book tickets more than limitation 
+                if($value['quantity'] > ( !empty($ticket->customer_limit) ? $ticket->customer_limit : setting('booking.max_ticket_qty') )) 
+                {
+                    $msg = __('eventmie-pro::em.max_ticket_qty');
+                    return ['status' => false, 'error' => $msg.( !empty($ticket->customer_limit) ? $ticket->customer_limit : setting('booking.max_ticket_qty') )];
+                }
             }
         }
 
@@ -132,15 +147,31 @@ class BookingsController extends Controller
         // actual tickets (quantity) - already booked tickets on booking_date (total_booked)
         foreach($tickets as $key => $ticket)
         {
+            if($ticket->t_soldout > 0)
+            {
+                return ['status' => false, 'error' => $ticket->title .':- '.__('eventmie-pro::em.t_soldout')];
+            
+            }
+
             foreach($selected_tickets as $k => $selected_ticket)
             {
                 if($ticket->id == $selected_ticket['ticket_id'])
                 {
+                    if(empty($params['is_bulk']))
+                    {
+                        if(!Auth::user()->hasRole('pos'))
+                        {
+                            // Customer limit check
+                            $error = $this->customer_limit($ticket, $selected_ticket, $booking_date);
+                            if(!empty($error))
+                                return $error;
+                        }
                     
-                    // First. check selected quantity against actual ticket capacity
-                    if( $selected_ticket['quantity'] > $ticket->quantity )
-                        return ['status' => false, 'error' => $ticket->title .' '.__('eventmie-pro::em.vacant').' - '.$ticket->quantity];
-                    
+                        // First. check selected quantity against actual ticket capacity
+                        if( $selected_ticket['quantity'] > $ticket->quantity )
+                            return ['status' => false, 'error' => $ticket->title .' '.__('eventmie-pro::em.vacant').' - '.$ticket->quantity];
+                        
+                    }
                     // Second. seat availability for selected booking-date in bookings table
                     foreach($bookings as $k2 => $booking)
                     {
@@ -148,7 +179,9 @@ class BookingsController extends Controller
                         if($booking->event_start_date == $booking_date && $booking->ticket_id == $ticket->id)
                         {
                             $available = $ticket->quantity - $booking->total_booked;
-                            
+
+                            if(empty($params['is_bulk']))
+                            {
                             // false condition
                             // if selected ticket quantity is greator than available
                             if( $selected_ticket['quantity'] > $available )
@@ -158,6 +191,7 @@ class BookingsController extends Controller
                             $error = $this->customer_limit($ticket, $selected_ticket, $booking_date);
                             if(!empty($error))
                                 return $error;
+                            }
                         }
                     }
                     
@@ -171,6 +205,12 @@ class BookingsController extends Controller
     // validate user post data
     protected function general_validation(Request $request)
     {
+        $attedees = [];
+        
+        if(empty($request->is_bulk))
+        {
+            $attedees = $this->attendeesValidations($request);
+        }
         
         $request->validate([
             'event_id'          => 'required|numeric|gte:1',
@@ -209,6 +249,10 @@ class BookingsController extends Controller
         
         // get event by event_id
         $event          = $this->event->get_event(null, $request->event_id);
+
+        //CUSTOM
+        if($event->e_soldout > 0)
+        return ['status' => false, 'error' => __('eventmie-pro::em.e_soldout')];
         
         // if event not found then access denied
         if(empty($event))
@@ -217,6 +261,15 @@ class BookingsController extends Controller
         // get only ticket_ids which quantity is >0
         $ticket_ids         = [];
         $selected_tickets   = [];
+
+        $customer = null;
+        
+        if(!empty($request->is_bulk))
+        {
+            $customer = Auth::user();
+        }   
+
+        $selected_attendees = [];
         
         foreach($request->quantity as $key => $val)
         {
@@ -226,9 +279,50 @@ class BookingsController extends Controller
                 $selected_tickets[$key]['ticket_id']        = $request->ticket_id[$key]; 
                 $selected_tickets[$key]['ticket_title']     = $request->ticket_title[$key];  
                 $selected_tickets[$key]['quantity']         = $val < 1 ? 1 : $val; // min qty = 1
+                
+                if(empty($request->is_bulk))
+                {
+                    $selected_attendees[$key]['name']           = $attedees['name'][$key];
+                    $selected_attendees[$key]['phone']          = $attedees['phone'][$key];
+                    $selected_attendees[$key]['address']        = $attedees['address'][$key];
+                    $selected_attendees[$key]['ticket_id']      = $request->ticket_id[$key];
+                }
             }
         }
- 
+        
+        // Loop through each ticket and selected seats to get the quantity
+        foreach($request->ticket_id as $key => $ticket_id) 
+        {
+            $seat_ticket = 'seat_id_' . $ticket_id;
+            $quantity = 0;
+
+            if (!empty($request->$seat_ticket)) {
+                $quantity = count($request->$seat_ticket);
+            } elseif (!empty($request->quantity[$key])) {
+                $quantity = (int)$request->quantity[$key];
+            }
+            
+            if ($quantity > 0) {
+                $ticket_ids[] = $ticket_id;
+                $selected_tickets[$key] = [
+                    'ticket_id' => $ticket_id,
+                    'ticket_title' => $request->ticket_title[$key],
+                    'quantity' => $quantity
+                ];
+            }
+            
+        } 
+
+        
+        /*dd($selected_tickets, array_map(function($ticket_id) use ($request) {
+            $seat_ticket = 'seat_id_' . $ticket_id;
+            return [
+                'ticket_id' => $ticket_id,
+                'seat_ticket' => $seat_ticket,
+                'selected_seats' => $request->$seat_ticket ?? []
+            ];
+        }, $request->ticket_id)); */
+
         if(empty($ticket_ids))
             return ['status' => false, 'error' => __('eventmie-pro::em.select_a_ticket')];
             
@@ -239,12 +333,62 @@ class BookingsController extends Controller
 
         // check ticket in tickets table that exist or not
         $tickets   = $this->ticket->get_event_tickets($params);
-
+        
         // if ticket not found then access denied
         if($tickets->isEmpty())
             return ['status' => false, 'error' => __('eventmie-pro::em.tickets').' '.__('eventmie-pro::em.not_found')];
 
-        return [
+        $seats = [];
+        
+            foreach($tickets as $key => $ticket)
+            {
+                $seat_ticket = 'seat_id_'.$ticket->id;
+
+                if(!empty($ticket->seatchart))
+                {
+                    if($ticket->seatchart->seats->isNotEmpty() && !empty($request->$seat_ticket))
+                    {
+                        foreach($request->$seat_ticket as $key1 => $seat_id)
+                        {   
+                            //check seat in database
+                            $seats[$seat_ticket][$key1] = Seat::with(['attendees', 'attendees.booking'])->where(['id' => $seat_id, 'status' => 1])->first()->toArray();
+    
+                            //if seat not found then show error
+                            if(empty($seats[$seat_ticket][$key1]))
+                                return ['status' => false, 'error' => __('eventmie-pro::em.seat').' '.__('eventmie-pro::em.not_found')];
+    
+                            //attendees on particular seat
+                            $attendees = collect($seats[$seat_ticket][$key1]['attendees'])->where(['status' => 1]);
+                            
+                            if($attendees->isNotEmpty())
+                            {
+                                // date wise validation and check that the seat reserved on specific date or not
+                                $seat_available = $attendees->every(function ($attendee, $ak) use($request) {
+                                    
+                                    return $attendee['booking']['event_start_date'] != $request->booking_date;
+                                });
+            
+                                if(!$seat_available)
+                                    return ['status' => false, 
+                                            'error' => __('eventmie-pro::em.seat_name').' => '.$seats[$seat_ticket][$key1]['name'].' '.__('eventmie-pro::em.seat_already_booked')];
+                            }
+                            
+                        }    
+                        
+                    }
+                }
+            }
+            
+            if(!empty($seats))
+            {
+                \Session::put('seats', $seats);
+            }
+
+            \Session::put('selected_attendees', $attedees);
+
+            //CUSTOM
+
+        $result = [
             'status'            => true,
             'event_id'          => $request->event_id,
             'selected_tickets'  => $selected_tickets,
@@ -254,7 +398,10 @@ class BookingsController extends Controller
             'booking_date'      => $request->booking_date,
             'start_time'        => $request->start_time,
             'end_time'          => $request->end_time,
+            'customer'          => $customer,
+            'is_bulk'           => $request->is_bulk,
         ];
+        return $result;
 
     }
 
@@ -343,6 +490,11 @@ class BookingsController extends Controller
         // get customer information by customer id    
         $customer   = $this->user->get_customer($params);
 
+        if(!empty($request->is_bulk))
+        {
+            $customer = $data['customer'];
+        }
+
         if(empty($customer))
             return error($pre_time_booking['error'], Response::HTTP_BAD_REQUEST);     
 
@@ -380,7 +532,9 @@ class BookingsController extends Controller
                 $booking[$key]['currency']          = setting('regional.currency_default');
 
                 $booking[$key]['event_repetitive']  = $data['event']->repetitive > 0 ? 1 : 0;
-
+                $booking[$key]['is_bulk']           = !empty($request->is_bulk) ? $request->is_bulk : 0;
+                //$booking[$key]['attendees']           = !empty($request->attedees) ? $request->attedees : 0;
+                
                 // non-repetitive
                 $booking[$key]['event_start_date']  = $data['event']->start_date;
                 $booking[$key]['event_end_date']    = $data['event']->end_date;
@@ -435,6 +589,12 @@ class BookingsController extends Controller
                     // except free ticket
                     if(((int) $booking[$key]['net_price']))
                         $booking[$key]['is_paid'] = 0;
+
+
+                    if(!empty($request->is_bulk))
+                    {
+                        $booking[$key]['is_paid'] = 1; 
+                    } 
                 }
                 else
                 {
@@ -473,6 +633,13 @@ class BookingsController extends Controller
                 'order_number' => Carbon::now()->timestamp,
                 'transaction_id' => 0
             ];
+
+            $data['bulk_code'] = null;
+            if(!empty($request->is_bulk))
+            {
+                $data['bulk_code']         = time().rand(1,988);
+            }
+
             $flag =  $this->finish_booking($booking, $data);
 
             // in case of database failure
@@ -493,6 +660,9 @@ class BookingsController extends Controller
             
             if(Auth::user()->hasRole('admin'))
                 $url = route('voyager.bookings.index');
+
+            if(!empty($request->is_bulk))
+                $url = route('voyager.bookings.bulk_bookings');
 
             return response([
                 'status'    => true,
@@ -787,7 +957,7 @@ class BookingsController extends Controller
                     //dd('Transaction ID after add_transaction:', $transactionId);
 
                     $flag = $this->finish_booking($booking, $data);
-                   // dd('Flag after finish_booking:', $flag);
+                    //dd('Flag after finish_booking:', $flag);
 
                 });
                 
@@ -801,7 +971,7 @@ class BookingsController extends Controller
             // in case of database failure
             if(empty($flag))
             {
-                dd('Transaction failed, flag is empty:', $flag);
+                //dd('Transaction failed, flag is empty:', $flag);
                 session()->forget(['booking_email_data']);
 
                 $msg = __('eventmie-pro::em.booking').' '.__('eventmie-pro::em.failed');
@@ -827,25 +997,25 @@ class BookingsController extends Controller
         // if fail
         // redirect no matter what so that it never turns back
         $msg = __('eventmie-pro::em.payment').' '.__('eventmie-pro::em.failed');
-       // dd('Final failure message:', $msg, $url);
 
         if(\Request::wantsJson()) 
             return response(['status' => false, 'url'=>$url, 'message'=>$msg], Response::HTTP_OK);
       
         session()->flash('error', $msg);
         return redirect($url)->withErrors($msg);
+
+        $booking = session('booking');
+        $this->finish_booking($booking, $data);
     }
 
     // 5. finish booking
     protected function finish_booking($booking = [], $data = [])
     {   
-        //dd('Start finish_booking:', $booking, $data);
         $admin_commission   = setting('multi-vendor.admin_commission');
             
         $params = [];
         foreach($booking as $key => $value)
         {
-            //dd('Before foreach loop:', $key, $value, $data);
             $params[$key] = $value;
             $params[$key]['order_number']    = time().rand(1,988);
             $params[$key]['transaction_id']  = $data['transaction_id'];
@@ -855,34 +1025,32 @@ class BookingsController extends Controller
             if($data['transaction_id'])
                 $params[$key]['payment_type']   = 'online';
         }
-       // dd('After foreach loop:', $params);
         
         // get booking_id
         // update commission session array
         // insert into commission
         $commission_data            = [];
         $commission                 = session('commission');
-        //dd('Before updating commission session array:', $commission);
 
         // delete commission data from session
         session()->forget(['commission']);
         
         $common_order_exist = Booking::where(['common_order' => $booking[key($booking)]['common_order']])->first();
-        //dd('Checking common order exist:', $common_order_exist);
 
         if(!empty($common_order_exist))
             return true;
         
-       // dd('Before inserting bookings:', $params);
+        //dd('Before inserting bookings', session('selected_attendees'), $params); // Check the session again
         DB::enableQueryLog(); 
         //dd(DB::getQueryLog());
         Booking::insert($params);
 
         $booking_data = Booking::where(['common_order' => $booking[key($booking)]['common_order']])->get()->all();
-       // dd('Retrieved booking data:', $booking_data);
+       
 
         foreach($booking_data as $key => $data)
         {
+           
             if($data['net_price'] > 0)
             {
                 $commission_data[$key]                 = $commission[$key];
@@ -893,17 +1061,23 @@ class BookingsController extends Controller
                 $commission_data[$key]['event_id']     = $data->event_id;
                 $commission_data[$key]['status']       = $data->is_paid > 0 ? 1 : 0; 
             }
+
+            // insert data in commission table
+            $this->commission->add_commission($commission_data);
+
+            //CUSTOM
+            $this->check_promocode();
+
+            $this->save_attendee($booking_data);
+        
+            // store booking date for email notification
+            if(empty($bulk_code))
+            {         
+                session(['booking_email_data'=> $booking_data]);
+            }
+
+            return true;
         }
-        // insert data in commission table
-        $this->commission->add_commission($commission_data);
-
-        //CUSTOM
-        $this->check_promocode();
-    
-        // store booking date for email notification        
-        session(['booking_email_data'=> $booking_data]);
-
-        return true;
     }
 
     /**
@@ -1107,7 +1281,8 @@ class BookingsController extends Controller
         // if Organizer
         // check if offline_payment_organizer enabled
         if(Auth::user()->hasRole('organiser'))
-            if(setting('booking.offline_payment_organizer'))
+            //if(setting('booking.offline_payment_organizer'))
+            if(setting('booking.offline_payment_organizer')  || !empty($request->is_bulk))
                 return true;
 
         // if Customer
@@ -1340,12 +1515,13 @@ class BookingsController extends Controller
         $tickets            = $request->ticket_id;
         $tickets_quantity   = $request->quantity;
         $promocodes         = $request->promocode;
+        //dd($booking, $tickets, $tickets_quantity);
         
         if($net_total_price > 0)
         {
             foreach($tickets as $key => $value)
             {
-                if($value && $tickets_quantity[$key] > 0 && $promocodes[$key])
+                if($value /*&& $tickets_quantity[$key] > 0*/ && $promocodes[$key])
                 {
                     // check promocode
                     try {
@@ -1486,6 +1662,88 @@ class BookingsController extends Controller
             }
 
             session()->forget(['valid_promocodes']);
+        }
+    }
+
+    /**
+     *  attendees validations
+     */
+
+     protected function attendeesValidations(Request $request)
+     {
+         $attedees = [
+             'name'      => json_decode($request->name, true),
+             'phone'     => json_decode($request->phone, true),
+             'address'   => json_decode($request->address, true),
+         ];
+ 
+         $rules = [
+             'name'              => [ 'required', 'array'],
+             'name.*'            => [ 'max:255'],
+             
+             'phone'             => [ 'required', 'array'],
+             'phone.*'         => [ 'max:255'],
+             
+             'address'           => [ 'required', 'array'],
+             'address.*'         => [ 'max:255'],
+         ];
+ 
+         Validator::make($attedees, $rules)->validate();
+ 
+         return $attedees;
+     }
+ 
+     /**
+      * create attendee 
+      */
+ 
+    protected function save_attendee($booking_data = [])
+    {
+        $seats = session('seats');
+        $selected_attendees = session('selected_attendees');
+        //dd('selected attendee, seats checking & booking data', $booking_data, $selected_attendees, $seats);
+            
+        if(empty($selected_attendees))
+                return true;
+            
+            session()->forget(['seats', 'selected_attendees']);
+
+            $count = 0;
+
+            foreach($selected_attendees['name'] as $ticket_index => $names)
+            {
+                if (empty($names)) {
+                    continue; // Skip empty ticket types
+                }
+            
+                $attedees           = [];
+               
+                foreach($names as $seat_index => $name)
+                {
+                    if($count >= count($booking_data)) {
+                        // Handle the case where there are more attendees than booking data
+                        break;
+                    }
+        
+                    $attendees[] = [
+                        'name'        => $name,
+                        'phone'       => $selected_attendees['phone'][$ticket_index][$seat_index] ?? null,
+                        'address'     => $selected_attendees['address'][$ticket_index][$seat_index] ?? null,
+                        'ticket_id'   => $booking_data[$count]->ticket_id,
+                        'event_id'    => $booking_data[$count]->event_id,
+                        'booking_id'  => $booking_data[$count]->id,
+                        'created_at'  => Carbon::now()->toDateTimeString(),
+                        'updated_at'  => Carbon::now()->toDateTimeString(),
+                        'seat_name'   => $seats['seat_id_' . $booking_data[$count]->ticket_id][$seat_index]['name'] ?? null,
+                        'seat_id'     => $seats['seat_id_' . $booking_data[$count]->ticket_id][$seat_index]['id'] ?? null,
+                    ];
+                    
+                    $count++;
+                }
+                if (!empty($attendees)) {
+                // save attendees
+                \Classiebit\Eventmie\Models\Attendee::insert($attendees);
+                }
         }
     }
 

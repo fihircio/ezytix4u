@@ -2184,7 +2184,21 @@ __webpack_require__.r(__webpack_exports__);
       document.getElementById("order_number").value = this.booking.order_number;
       document.getElementById('check_in_button').style.display = 'block';
       this.hide_scanner = 1;
+      if (this.booking.is_bulk == 0) {
+        document.getElementById("attendee").style.display = 'block';
+        document.getElementById("attendee_id").value = this.booking.attendees[0].id;
+        document.getElementById("attendee_name").value = this.booking.attendees[0].name;
+        document.getElementById("attendee_id").disabled = this.booking.attendees[0].checked_in > 0 ? true : false;
+      }
+      document.getElementById("check_in_button").disabled = this.booking.attendees[0].checked_in > 0 ? true : false;
+      document.getElementById("scan_info").style.display = this.booking.attendees[0].checked_in > 0 ? 'block' : 'none';
     }
+  },
+  mounted() {
+    document.getElementById("scan_info").style.display = 'none';
+    document.getElementById("attendee").style.display = 'none';
+    // 2-un-comment-when-testing
+    // this.getBookingTesting();
   }
 });
 

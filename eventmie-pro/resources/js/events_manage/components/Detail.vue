@@ -106,6 +106,18 @@
                 </li>
                 <li class="list-group-item d-flex justify-content-between px-0" v-if="is_admin">
                     <div>
+                        <h5 class="mb-0">{{ trans('em.e_soldout') }}</h5>
+                        <span class="small text-muted text-wrap">{{ trans('em.e_soldout') }}</span>
+                    </div>
+                    <div>
+                        <div class="form-check form-switch">
+                            <input type="checkbox" class="form-check-input form-check-input-lg"  id="e_soldout" name="e_soldout" v-model="e_soldout" :value="1" @change="isDirty()">
+                            <label class="custom-control-label" for="e_soldout"></label>
+                        </div>                     
+                    </div>
+                </li>
+                <li class="list-group-item d-flex justify-content-between px-0" v-if="is_admin">
+                    <div>
                         <h5 class="mb-0">{{ trans('em.event_status') }}</h5>
                         <span class="small text-muted text-wrap">{{ trans('em.event_status_ie') }}</span>
                     </div>
@@ -159,6 +171,10 @@ export default {
             //selected organizer
             organizer       : this.selected_organiser,
             offline_payment_info :  null,
+
+            short           : '',
+            short_url       : route('eventmie.welcome')+'/',
+            e_soldout       : 0,
         }
     },
 
@@ -191,7 +207,9 @@ export default {
                 this.organiser_ids  = this.organiser_id ;
                 this.featured       = this.event.featured > 0 ? 1 : 0; 
                 this.status         = this.event.status > 0 ? 1 : 0;
-                this.offline_payment_info = this.event.offline_payment_info
+                this.offline_payment_info = this.event.offline_payment_info;
+                this.e_soldout       = this.event.e_soldout > 0 ? 1 : 0;
+                this.short           = (this.event.short_url == '' || this.event.short_url == null ) ? '' : this.event.short_url;
             }    
             
             

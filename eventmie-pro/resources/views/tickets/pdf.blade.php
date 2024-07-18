@@ -199,11 +199,18 @@
                                         <p class="label mt-0">@lang('eventmie-pro::em.customer')</p>
                                         <p class="value-data text-capitalize text-large">{{ ucfirst($booking['customer_name']) }}</p>
                                         <p class="value-data">#{{ $booking['order_number'] }}</p>
-                                        
+                                        <tr>
+                                        <p class="label mt-0">@lang('eventmie-pro::em.attendees')</p>
+                                            @foreach($booking['attendees'] as $key => $attendee)
+                                                <p class="value-data text-small">{{ ucfirst($attendee['name']) }}</p>
+                                                <p class="value-data text-small">{{ $attendee['phone'] }}</p>
+                                                <p class="value-data text-small">{{ $attendee['address'] }}</p>
+                                            @endforeach                                       
+
                                         <p class="label">@lang('eventmie-pro::em.ticket')</p>
                                         <p class="value-data">
-                                            {{ $booking['ticket_title'] }} <strong> x {{ $booking['quantity'] }}</strong> &nbsp;
-                                            @if (!empty($booking['attendees'][0]['seat'])) ({{ $booking['attendees'][0]['seat'] }}) @endif
+                                            {{ $booking['ticket_title'] }} <strong> x {{ $booking['quantity'] }}</strong> @if(!empty($attendee['seat']))( @lang('eventmie-pro::em.seat') {{ $attendee['seat']['name'] }} )@endif
+                                            
                                         </p>
 
                                         <p class="label">@lang('eventmie-pro::em.timings')</p>
@@ -216,7 +223,7 @@
 
                                         <p class="label">@lang('eventmie-pro::em.venue')</p>
                                         <p class="value-data">{{ ucfirst($event->venue) }} | {{ ucfirst($event->address) }}</p>
-                                    </td>
+                                    
                                     <td class="row-divide">
                                         <p class="label" style="margin-top: 0px;margin-left: 78px;float: left;display: inline-block; font-size: 10px;text-transform: capitalize;padding-bottom: 5px;">{{ $event->title }}</p><br>
                                         <img style="width: 80%;border-radius: 12px;float: right;margin-top: 5px;" src="{{ "data:image/png;base64,".base64_encode(file_get_contents(public_path('/storage/'.$event->thumbnail))) }}">

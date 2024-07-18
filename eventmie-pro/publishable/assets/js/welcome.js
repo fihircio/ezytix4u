@@ -2579,7 +2579,7 @@ var render = function render() {
     }, [_c("i", {
       staticClass: "fas fa-book"
     }), _vm._v(" See What's New v2.0")])])]) : _c("div", [item.button_url != null && item.button_title != null ? _c("a", {
-      staticClass: "btn btn-primary bg-gradient text-white",
+      staticClass: "btn btn-primary bg-primary text-white",
       attrs: {
         href: item.button_url
       }

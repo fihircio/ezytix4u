@@ -8,6 +8,7 @@ use DB;
 use Classiebit\Eventmie\Models\User;
 use Classiebit\Eventmie\Models\Transaction;
 use Classiebit\Eventmie\Models\Commission;
+use Classiebit\Eventmie\Models\Attendee;
 
 use Classiebit\Eventmie\Scopes\BulkScope;
 use Illuminate\Database\Eloquent\Builder;
@@ -101,6 +102,7 @@ class Booking extends Model
     public function get_organiser_bookings($params = [])
     {
         $query = Booking::query();
+        $query->with(['attendees']);
         
         $query->select('bookings.*', 'CM.customer_paid', 'E.slug as event_slug', 'E.thumbnail as event_thumbnail')
             ->from('bookings')
@@ -144,7 +146,11 @@ class Booking extends Model
     // organiser view booking of customer
     public function organiser_view_booking($params = [])
     {
-        return Booking::select('bookings.*')->from('bookings')
+        //return Booking::select('bookings.*')->from('bookings')
+        return Booking::with(['attendees' => function ($query) {
+            $query->where(['status' => 1]);
+        },'attendees.seat'])
+
             ->where($params)
             ->first();  
     }
@@ -164,7 +170,11 @@ class Booking extends Model
     // only admin and organiser can get particular event's booking
     public function get_event_bookings($params = [], $select = ['*'])
     {
-        $booking = Booking::select($select)->where($params)->get();
+        //$booking = Booking::select($select)->where($params)->get();
+
+        $booking = Booking::with(['attendees' => function ($query) {
+            $query->where(['status' => 1]);
+        }, 'attendees.seat'])->where($params)->get();
 
         return to_array($booking);
     }
@@ -275,5 +285,14 @@ class Booking extends Model
     public function getTransaction()
     {
         return $this->belongsTo(Transaction::class, 'transaction_id');
+    }
+
+    /**
+     * Get the attendees for the bookings.
+     */
+    public function attendees()
+    {
+        return $this->hasMany(Attendee::class);
+        
     }
 }

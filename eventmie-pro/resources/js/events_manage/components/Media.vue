@@ -107,7 +107,29 @@
                                 <input type="text" class="form-control" name="video_link" placeholder="e.g Zjq1zRWpcgs"  v-model="video_link" @change="isDirty()">
                                 <span class="text-muted">{{ trans('em.enter_video_id_only') }} https://www.youtube.com/watch?v=<strong>Zjq1zRWpcgs</strong></span>
                             </div>
-                        </div> 
+                        </div>
+
+                        <!-- CUSTOM -->
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">{{ trans('em.seatingchart_image') }}</label>
+                            <div class="col-md-4">
+                                <input  type="file" class="form-control" ref="seatingchart_image" name="seatingchart_image">
+                                
+                                <span v-show="errors.has('seatingchart_image')" class="help text-danger">{{ errors.first('seatingchart_image') }}</span>
+                            </div>
+                             <div class="col-md-6">
+                                <div class="row" v-if="event.seatingchart_image != null">
+                                    <div class="col-3" style="position:relative;">
+                                        <button @click="deleteSeatchart(event.id)"  type="button" style="right:0%; z-index: 1;position: absolute; background: white; border:none">
+                                            <span style=" background:red; " class="badge badge-light">&times;</span>
+                                        </button>
+                                        
+                                        <img :src="'/storage/'+event.seatingchart_image" class="img-responsive img-rounded">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>    
+                        <!-- CUSTOM --> 
                     
                         <div class="mb-3">
                             <div class="col-sm-12">

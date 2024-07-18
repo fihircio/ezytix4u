@@ -143,6 +143,7 @@ class TicketsController extends Controller
             "quantity"     => $request->quantity,
             "description"  => $request->description,
             "event_id"     => $request->event_id,
+            "t_soldout"     => !empty($request->t_soldout) ? 1 : 0,
         ];
 
         $params['customer_limit'] = empty($request->customer_limit) ? null : $request->customer_limit;

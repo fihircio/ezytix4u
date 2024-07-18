@@ -2699,8 +2699,6 @@ var render = function render() {
     staticClass: "border-top-0 border-bottom-0"
   }, [_vm._v(_vm._s(_vm.trans("em.event")))]), _vm._v(" "), _c("th", {
     staticClass: "border-top-0 border-bottom-0"
-  }, [_vm._v(_vm._s(_vm.trans("em.is_private")))]), _vm._v(" "), _c("th", {
-    staticClass: "border-top-0 border-bottom-0"
   }, [_vm._v(_vm._s(_vm.trans("em.timings")))]), _vm._v(" "), _c("th", {
     staticClass: "border-top-0 border-bottom-0"
   }, [_vm._v(_vm._s(_vm.trans("em.repetitive")))]), _vm._v(" "), _c("th", {

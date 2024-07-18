@@ -1,6 +1,31 @@
 <!-- Event schedules-->
 <template>
     <div class="col-xs-12">
+        <div v-if="event.e_soldout > 0">
+            <div class="lgx-tab col-md-offset-2 single-event-schedule">
+                <div class="tab-content lgx-tab-content">
+                    <div class="tab-pane active">
+                        <div role="tablist" aria-multiselectable="true" class="panel-group">
+                            <div class="panel panel-default lgx-panel">
+                                <div role="tab" class="panel-heading">
+                                    <div class="panel-title">
+                                        <a role="button" data-toggle="collapse" aria-expanded="true" aria-controls="collapseOne">
+                                            <div class="lgx-single-schedule outofstock-event">
+                                             <div class="schedule-info">
+                                                    <h3 class="title">{{ trans('em.e_soldout') }}</h3> 
+                                                    <h4 class="time event-outofstock"><span>{{ trans('em.out_of_stock') }}</span></h4> 
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div  v-if="event.repetitive > 0">
             <div class="bg-white rounded-3 px-3 mb-3">
                 <ul class="nav nav-lb-tab h-scroll">

@@ -15,7 +15,6 @@
                     <thead class="table-light text-nowrap">
                         <tr>
                             <th class="border-top-0 border-bottom-0">{{ trans('em.event') }}</th>
-                            <th class="border-top-0 border-bottom-0">{{ trans('em.is_private') }}</th>
                             <th class="border-top-0 border-bottom-0">{{ trans('em.timings') }}</th>
                             <th class="border-top-0 border-bottom-0">{{ trans('em.repetitive') }}</th>
                             <th class="border-top-0 border-bottom-0">{{ trans('em.payment_frequency') }}</th>

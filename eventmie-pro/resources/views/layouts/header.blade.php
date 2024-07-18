@@ -132,7 +132,7 @@
                         </ul>
 
                         <a href="{{ route('eventmie.events_index') }}"
-                            class="btn btn-primary d-none d-lg-block bg-gradient">
+                            class="btn btn-primary d-none d-lg-block bg-blue">
                             <i class="fas fa-calendar-day"></i> @lang('eventmie-pro::em.browse_events')
                         </a>
                     </div>

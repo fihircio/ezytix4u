@@ -58,7 +58,7 @@
                                     @endif
                                 </p>
                             </div>
-                            <div class="card-footer bg-gradient">
+                            <div class="card-footer bg-dark">
                                 <div class="text-white">
                                     <span><strong>@lang('eventmie-pro::em.share_event') &nbsp;</strong></span>
                                     <a class="me-1 text-white  badge text-bg-primary" target="_blank"
@@ -152,6 +152,33 @@
                             </div>
                         </div>
                         <!--SCHEDULE END-->
+                        
+                        <div class="card mb-4">
+                        {{-- Seating Chart Image --}}
+                        @if($event->seatingchart_image)
+                            <div id="lgx-schedule" class="lgx-schedule lgx-schedule-light">
+                                <div class="lgx-inner" style="background-image: url({{ eventmie_asset('img/bg-pattern.png') }});">
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <div class="lgx-heading">
+                                                    <h2 class="heading">@lang('eventmie-pro::em.seating_chart')</h2>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!--//main row-->
+                                        <div class="row">
+                                            <div class="col-12 text-center">
+                                                <img src="/storage/{{ $event->seatingchart_image }}" alt="{{ $event->title }}"/>
+                                            </div>
+                                            <!--//col-->
+                                        </div>
+                                    </div>
+                                    <!--//container-->
+                                </div>
+                            </div>
+                        @endif
+                        </div>
 
                         <!-- post single -->
                         <div class="card mb-4">

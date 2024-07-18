@@ -52,8 +52,20 @@
                             <input type="hidden" class="form-control" name="merge_schedule" :value="event.merge_schedule" >
                             <input type="hidden" name="customer_id" v-model="customer_id" v-validate="'required'" >
 
+                            
                             <div class="px-lg-3">
                                 <!-- only for admin & organizer -->
+                                <div class="row" v-if="is_customer <= 0 && is_bulk <= 0">
+                                    <!-- CUSTOM -->
+                                    <div class="col-md-5 mb-5 ml-4" >
+                                        <label for="customer_id">{{ trans('em.add') }} {{ trans('em.new') }} {{ trans('em.attendee') }}</label><br>
+                                        <button class="btn btn-dark btn-sm" type="button"  @click="add_attendee = 1"><i class="fas fa-user-plus"></i> {{ trans('em.create')+' '+trans('em.attendee') }}</button>
+                                        <!-- add attendee -->
+                                        <add-attendee v-if="add_attendee > 0" :add_attendee="add_attendee"></add-attendee >
+                                    </div>
+                                    <!-- CUSTOM -->
+                                </div>
+
                                 <div class="row" v-if="is_customer <= 0">
                                     <div class="col-md-4 mb-3">
                                         <div v-if="is_customer <= 0">
@@ -86,119 +98,153 @@
                                                 <input type="hidden" class="form-control" name="ticket_title[]" :value="item.title" >
                                                 
                                                 <div class="d-flex justify-content-between lh-condensed d-flex-wrap">
-                                                    <div class="w-40">
-                                                        <h6 class="my-0"><strong>{{ item.title }}</strong></h6>
-                                                        <p class="my-0 h6">{{ item.price > 0 ? item.price : '0.00' }} <small>{{currency}}</small></p>
-                                                    </div>
-                                                    
-                                                    <div class="w-20">
-                                                        <!-- Live stock alert  -->
-                                                        <!-- if any booked tickets -->
-                                                        <div v-if='typeof(booked_tickets[item.id+"-"+booked_date_server]) != "undefined"
-                                                        '>
+                                                        <div class="w-50">
+                                                            <h6 class="my-0"><strong>{{ item.title }}</strong></h6>
+                                                            <p class="my-0 h6">{{ item.price > 0 ? item.price : '0.00' }} <small>{{currency}}</small></p>
+                                                        </div>
+                                                        
+                                                        <div class="w-25">
+                                                            <div  v-if="item.t_soldout > 0" class="w-10 w-20-mobile">
+                                                                <p class="text-danger"><small><i class="fas fa-times-circle"></i> {{ trans('em.t_soldout') }}</small></p>
+                                                            </div>    
+
+                                                            <div  v-show="item.t_soldout <= 0" class="w-10 w-20-mobile">
+                                                            <!-- CUSTOM -->
+                                                                <div  v-if="item.seatchart != null && item.seatchart.status > 0 && is_bulk <= 0">
+                                                                    <p>{{ trans('em.quantity') }}: {{ quantity[index] }}</p>
+                                                                </div>
+                                                            </div>
+                                                        
+                                                            <!-- <div class="w-10 w-20-mobile"> -->
+                                                            <!-- Hide quantity dropdown in case of reserved seating -->
+                                                            <div  v-if="(item.seatchart == null || (item.seatchart != null  && item.seatchart.status <= 0) )  && is_bulk <= 0 " >
+                                                                <!-- CUSTOM -->    
+                                                                <!-- Live stock alert  -->
+                                                                <!-- if any booked tickets -->
                                                             
-                                                            <select class="form-select border-2 form-select-lg" 
-                                                                name="quantity[]" 
-                                                                v-model="quantity[index]"
-                                                                v-if='(item.customer_limit != null ? item.customer_limit :  max_ticket_qty) <= 100'
-                                                            >
-                                                                <option value="0" selected>0</option>
-                                                                <option :key="ind"
-                                                                    v-if="booked_tickets[item.id+'-'+booked_date_server].total_vacant <= (item.customer_limit != null ? item.customer_limit :  max_ticket_qty)" 
-                                                                    :value="itm" v-for=" (itm, ind) in booked_tickets[item.id+'-'+booked_date_server].total_vacant"  
-                                                                >{{itm }}</option>
-                                                                <option v-else :value="itm" v-for=" (itm, ind) in (item.quantity > (item.customer_limit != null ? item.customer_limit :  max_ticket_qty) ? parseInt(item.customer_limit != null ? item.customer_limit :  max_ticket_qty) : parseInt(item.quantity))"  :key="ind">{{itm }}</option>
-                                                            </select>
-                                                            <input v-else type="number" name="quantity[]" 
-                                                                v-model="quantity[index]" value="0" class="form-control form-input-sm" 
-                                                                min="0" :max="booked_tickets[item.id+'-'+booked_date_server].total_vacant < (item.customer_limit != null ? item.customer_limit :  max_ticket_qty) ? booked_tickets[item.id+'-'+booked_date_server].total_vacant : (item.customer_limit != null ? item.customer_limit :  max_ticket_qty)"
-                                                            >
-                                                            <!-- Show if vacant less than max_ticket_qty -->
-                                                            <p class="text-muted" 
-                                                                v-if="booked_tickets[item.id+'-'+booked_date_server].total_vacant < (item.customer_limit != null ? item.customer_limit :  max_ticket_qty) && booked_tickets[item.id+'-'+booked_date_server].total_vacant > 0">
-                                                                <small><i class="fas fa-exclamation"></i> {{ trans('em.vacant') }} 
-                                                                {{ booked_tickets[item.id+'-'+booked_date_server].total_vacant }}</small>
-                                                            </p>
-                                                            <p class="text-danger" 
-                                                                v-if="booked_tickets[item.id+'-'+booked_date_server].total_vacant < (item.customer_limit != null ? item.customer_limit :  max_ticket_qty) && booked_tickets[item.id+'-'+booked_date_server].total_vacant <= 0">
-                                                                <small><i class="fas fa-times-circle"></i>  {{ trans('em.vacant') }} 0</small>
-                                                            </p>
-                                                        </div>
-                                                        <div v-else>
-                                                            <select class="form-select border-2 form-select-lg" 
-                                                                name="quantity[]" 
-                                                                v-model="quantity[index]"
-                                                                v-if="(item.customer_limit != null ? item.customer_limit :  max_ticket_qty) <= 100"
-                                                            >
-                                                                <option value="0" selected>0</option>
-                                                                <option :value="itm" v-for=" (itm, ind) in item.quantity > (item.customer_limit != null ? item.customer_limit :  max_ticket_qty) ? parseInt((item.customer_limit != null ? item.customer_limit :  max_ticket_qty)) : parseInt(item.quantity)"  :key="ind">{{itm }}</option>
-                                                            </select>
-                                                            <input v-else type="number" name="quantity[]" v-model="quantity[index]" value="0" class="form-control form-input-sm" min="0" :max="item.quantity > (item.customer_limit != null ? item.customer_limit :  max_ticket_qty) ? parseInt((item.customer_limit != null ? item.customer_limit :  max_ticket_qty)) : parseInt(item.quantity)">
-                                                            <!-- Show if vacant less than max_ticket_qty -->
-                                                            <p class="text-primary h6" 
-                                                                v-if="item.quantity < (item.customer_limit != null ? item.customer_limit :  max_ticket_qty) && item.quantity > 0">
-                                                                <small><i class="fas fa-exclamation"></i> {{ trans('em.vacant') }} 
-                                                                {{ item.quantity }}</small>
-                                                            </p>
-                                                            <p class="text-danger" 
-                                                                v-if="item.quantity <= 0">
-                                                                <small><i class="fas fa-times-circle"></i>  {{ trans('em.vacant') }} 0</small>
-                                                            </p>
-                                                        </div>
+                                                                <div v-if='typeof(booked_tickets[item.id+"-"+booked_date_server]) != "undefined"
+                                                                '>
+                                                                    
+                                                                    <select class="form-select border-2 form-select-lg" 
+                                                                        name="quantity[]" 
+                                                                        v-model="quantity[index]"
+                                                                        v-if='(item.customer_limit != null ? item.customer_limit :  max_ticket_qty) <= 100'
+                                                                    >
+                                                                        <option value="0" selected>0</option>
+                                                                        <option :key="ind"
+                                                                            v-if="booked_tickets[item.id+'-'+booked_date_server].total_vacant <= (item.customer_limit != null ? item.customer_limit :  max_ticket_qty)" 
+                                                                            :value="itm" v-for=" (itm, ind) in booked_tickets[item.id+'-'+booked_date_server].total_vacant"  
+                                                                        >{{itm }}</option>
+                                                                        <option v-else :value="itm" v-for=" (itm, ind) in (item.quantity > (item.customer_limit != null ? item.customer_limit :  max_ticket_qty) ? parseInt(item.customer_limit != null ? item.customer_limit :  max_ticket_qty) : parseInt(item.quantity))"  :key="ind">{{itm }}</option>
+                                                                    </select>
+                                                                    <input v-else type="number" name="quantity[]" 
+                                                                        v-model="quantity[index]" value="0" class="form-control form-input-sm" 
+                                                                        min="0" :max="booked_tickets[item.id+'-'+booked_date_server].total_vacant < (item.customer_limit != null ? item.customer_limit :  max_ticket_qty) ? booked_tickets[item.id+'-'+booked_date_server].total_vacant : (item.customer_limit != null ? item.customer_limit :  max_ticket_qty)"
+                                                                    >
+                                                                    <!-- Show if vacant less than max_ticket_qty -->
+                                                                    <p class="text-muted" 
+                                                                        v-if="booked_tickets[item.id+'-'+booked_date_server].total_vacant < (item.customer_limit != null ? item.customer_limit :  max_ticket_qty) && booked_tickets[item.id+'-'+booked_date_server].total_vacant > 0">
+                                                                        <small><i class="fas fa-exclamation"></i> {{ trans('em.vacant') }} 
+                                                                        {{ booked_tickets[item.id+'-'+booked_date_server].total_vacant }}</small>
+                                                                    </p>
+                                                                    <p class="text-danger" 
+                                                                        v-if="booked_tickets[item.id+'-'+booked_date_server].total_vacant < (item.customer_limit != null ? item.customer_limit :  max_ticket_qty) && booked_tickets[item.id+'-'+booked_date_server].total_vacant <= 0">
+                                                                        <small><i class="fas fa-times-circle"></i>  {{ trans('em.vacant') }} 0</small>
+                                                                    </p>
+                                                                </div>
+                                                                <div v-else>
+                                                                    <select class="form-select border-2 form-select-lg" 
+                                                                        name="quantity[]" 
+                                                                        v-model="quantity[index]"
+                                                                        v-if="(item.customer_limit != null ? item.customer_limit :  max_ticket_qty) <= 100"
+                                                                    >
+                                                                        <option value="0" selected>0</option>
+                                                                        <option :value="itm" v-for=" (itm, ind) in item.quantity > (item.customer_limit != null ? item.customer_limit :  max_ticket_qty) ? parseInt((item.customer_limit != null ? item.customer_limit :  max_ticket_qty)) : parseInt(item.quantity)"  :key="ind">{{itm }}</option>
+                                                                    </select>
+                                                                    <input v-else type="number" name="quantity[]" v-model="quantity[index]" value="0" class="form-control form-input-sm" min="0" :max="item.quantity > (item.customer_limit != null ? item.customer_limit :  max_ticket_qty) ? parseInt((item.customer_limit != null ? item.customer_limit :  max_ticket_qty)) : parseInt(item.quantity)">
+                                                                    <!-- Show if vacant less than max_ticket_qty -->
+                                                                    <p class="text-primary h6" 
+                                                                        v-if="item.quantity < (item.customer_limit != null ? item.customer_limit :  max_ticket_qty) && item.quantity > 0">
+                                                                        <small><i class="fas fa-exclamation"></i> {{ trans('em.vacant') }} 
+                                                                        {{ item.quantity }}</small>
+                                                                    </p>
+                                                                    <p class="text-danger" 
+                                                                        v-if="item.quantity <= 0">
+                                                                        <small><i class="fas fa-times-circle"></i>  {{ trans('em.vacant') }} 0</small>
+                                                                    </p>
+                                                                </div>
+                                                            </div>
                                                     </div>
-
-                                                    <div>
-                                                        <strong>
-                                                            {{ total_price[index] ? total_price[index] : '0.00' }}
-                                                            <small>{{currency}}</small>
-                                                        </strong>
-                                                        <span v-if="quantity[index] > 0"><i class="fas fa-check-circle text-success"></i></span>
-                                                    </div>
-                                                    
-                                                </div>
-                                                
-                                                <div class="break-flex w-50 w-m-100 my-2" v-show="item.promocodes.length > 0">
-                                                        <div class="input-group my-3 col-md-5" v-show="item.price > 0">
-                                                            <input type="text" name="promocode[]" class="form-control form-input-sm" :placeholder="trans('em.enter_promocode')" 
-                                                                v-model="promocode[index]"
-                                                                :id="'pc_'+index"
-                                                                aria-describedby="button-addon2"
-                                                            >
-
-                                                            <span class="input-group-btn">
-                                                                <button class="btn lgx-btn lgx-btn-sm lgx-btn-success" type="button" 
-                                                                    @click="pc_readonly[index] > 0 ? '' : applyPromocode(item.id, index)"
-                                                                    :id="'pcb_'+index"
-                                                                >
-                                                                        {{ trans('em.apply') }}
-                                                                </button>
-                                                            </span>
+                                                    <div class="ticket-price w-25 text-end">
+                                                            <strong>
+                                                                {{ total_price[index] ? total_price[index] : '0.00' }}
+                                                                <small>{{currency}}</small>
+                                                            </strong>
+                                                            <span v-if="quantity[index] > 0"><i class="fas fa-check-circle text-success"></i></span>
                                                         </div>
-
-                                                    <span class="text-success" :id="'pc_success_'+index"></span>
-                                                    <span class="text-danger" :id="'pc_error_'+index"></span>
                                                 </div>
-
-                                                <!-- show tax only if quantity is set -->
-                                                <div class="break-flex w-30 w-m-100">
-                                                    <ul class="list-group list-group-flush my-2" v-if="quantity[index] > 0 && item.price > 0 && item.taxes.length > 0">
-                                                        <li class="list-group-item small px-2 p-1 text-muted" v-for="(tax, index1) in item.taxes" :key ="index1">
-                                                            <span>{{ tax.title }} 
-                                                                <small>{{ total_price[index] > 0 ? countTax(item.price, tax.rate, tax.rate_type, tax.net_price, quantity[index]) : 0 }}</small>
-                                                            </span>
-                                                        </li>
-                                                    </ul>
+                                                <div class="d-flex justify-content-between lh-condensed d-flex-wrap">
+                                                    <div style="overflow: auto;" class="break-flex w-50 w-m-100 my-2" v-if="item.seatchart != null && item.seatchart.status > 0 && is_bulk <= 0 && item.t_soldout <= 0">
+                                                        <seat-component :ticket="item" :ticket_index="index" :max_ticket_qty="max_ticket_qty" :quantity="quantity[index]" :event="event"></seat-component> 
+                                                    </div>
                                                 </div>
 
                                                 <div class="break-flex">
-                                                    <!-- hide/show below ticket description -->
-                                                    <a class="pointer ticket-info-toggle small" @click="ticket_info = !ticket_info">
-                                                        <small v-if="ticket_info">{{ trans('em.hide_info') }}</small>
-                                                        <small v-else>{{ trans('em.show_info') }}</small>
-                                                    </a>
-                                                    <p class="ticket-info small text-muted" v-if="ticket_info">{{ item.description }}</p>
+                                                    <div class="row mt-2 mb-2" 
+                                                        v-if="parseInt(quantity[index]) > 0 && is_bulk <= 0"  
+                                                        v-for="(q_num, q_index) in parseInt(quantity[index]) "  
+                                                        :key="q_index">
+                                                        
+                                                        <attendee-component ref="attendee" 
+                                                                            v-if="q_num !== undefined && parseInt(q_num) > 0" 
+                                                                            :ticket_index="index" 
+                                                                            :quantity_index="q_index">
+                                                        </attendee-component>
+                                                    </div>
                                                 </div>
-                                                
+
+                                                    <div class="break-flex w-50 w-m-100 my-2" v-show="item.promocodes.length > 0 && item.t_soldout <= 0 && is_bulk <= 0">
+                                                            <div class="input-group my-3 col-md-5" v-show="item.price > 0">
+                                                                <input type="text" name="promocode[]" class="form-control form-input-sm" :placeholder="trans('em.enter_promocode')" 
+                                                                    v-model="promocode[index]"
+                                                                    :id="'pc_'+index"
+                                                                    aria-describedby="button-addon2"
+                                                                >
+
+                                                                <span class="input-group-btn btn-success">
+                                                                    <button class="btn lgx-btn lgx-btn-sm lgx-btn-success" type="button" 
+                                                                        @click="pc_readonly[index] > 0 ? '' : applyPromocode(item.id, index)"
+                                                                        :id="'pcb_'+index"
+                                                                    >
+                                                                            {{ trans('em.apply') }}
+                                                                    </button>
+                                                                </span>
+                                                            </div>
+
+                                                        <span class="text-success" :id="'pc_success_'+index"></span>
+                                                        <span class="text-danger" :id="'pc_error_'+index"></span>
+                                                    </div>
+
+                                                    <!-- show tax only if quantity is set -->
+                                                    <div class="break-flex w-30 w-m-100">
+                                                        <ul class="list-group list-group-flush my-2" v-if="quantity[index] > 0 && item.price > 0 && item.taxes.length > 0">
+                                                            <li class="list-group-item small px-2 p-1 text-muted" v-for="(tax, index1) in item.taxes" :key ="index1">
+                                                                <span>{{ tax.title }} 
+                                                                    <small>{{ total_price[index] > 0 ? countTax(item.price, tax.rate, tax.rate_type, tax.net_price, quantity[index]) : 0 }}</small>
+                                                                </span>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+
+                                                    <div class="break-flex">
+                                                        <!-- hide/show below ticket description -->
+                                                        <a class="pointer ticket-info-toggle small" @click="ticket_info = !ticket_info">
+                                                            <small v-if="ticket_info">{{ trans('em.hide_info') }}</small>
+                                                            <small v-else>{{ trans('em.show_info') }}</small>
+                                                        </a>
+                                                        <p class="ticket-info small text-muted" v-if="ticket_info">{{ item.description }}</p>
+                                                    </div>
+                                                   
                                             </li>
                                         </ul>
                                     </div>
@@ -286,7 +332,7 @@
                     
                                                 <!-- For Admin & Organizer & Customer -->
                                                 <div class="radio-inline" 
-                                                    v-if="(is_organiser > 0 && is_offline_payment_organizer > 0) || (is_customer > 0 && is_offline_payment_customer > 0) || (is_admin > 0)">
+                                                    v-if="(is_organiser > 0 && is_offline_payment_organizer > 0) || (is_customer > 0 && is_offline_payment_customer > 0) || (is_admin > 0) || (is_bulk > 0)">
                                                     
                                                     <input type="radio" class="custom-control-input" id="payment_method_offline" name="payment_method" v-model="payment_method" value="offline">
 
@@ -345,6 +391,9 @@ import { mapState, mapMutations} from 'vuex';
 import mixinsFilters from '../../mixins.js';
 import _ from 'lodash';
 import USAePay from './USAePay.vue';
+import AddAttendee   from './AddAttendee';
+import AttendeeComponent from './Attendee.vue';
+import SeatComponent from './Seat';
 
 export default {
     
@@ -354,6 +403,9 @@ export default {
 
     components: {
         USAePay,
+        AddAttendee,
+        AttendeeComponent,
+        SeatComponent,
     },
     props : [
         'tickets', 
@@ -398,10 +450,17 @@ export default {
             register_user_id      : this.login_user_id,
             register_modal        : 0,  
 
+            add_attendee        : 0,
+            phone_t               : '',
             promocode           : [],
             ticket_promocodes   : [],
             pc_readonly         : [],
             promocode_reward    : 0,
+
+            name                : [[],[],[],[],[],[]],
+            phone               : [[],[],[],[],[],[]],
+            address             : [[],[],[],[],[],[]],
+            is_bulk             : 0,
 
             cardName    : "",
             cardNumber  : "",
@@ -447,6 +506,10 @@ export default {
 
             let post_url = route('eventmie.bookings_book_tickets');
             let post_data = new FormData(this.$refs.form);
+
+            post_data.append('name', JSON.stringify(this.name) );
+            post_data.append('phone', JSON.stringify(this.phone) );
+            post_data.append('address', JSON.stringify(this.address) );
             
             // axios post request
             axios.post(post_url, post_data)

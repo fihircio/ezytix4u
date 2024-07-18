@@ -3,6 +3,7 @@
 namespace Classiebit\Eventmie\Http\Controllers;
 use App\Http\Controllers\Controller; 
 use Classiebit\Eventmie\Models\Ticket;
+use Classiebit\Eventmie\Models\Seatchart;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Classiebit\Eventmie\Models\Event;
@@ -92,10 +93,10 @@ class CloneEventController extends Controller
         $this->save_tickets($old_event, $new_event);
 
         // save seatchart
-       // $this->save_seatchart($old_event, $new_event);
+        $this->save_seatchart($old_event, $new_event);
 
         // save seats
-        //$this->save_seats($old_event, $new_event);
+        $this->save_seats($old_event, $new_event);
 
 
     }

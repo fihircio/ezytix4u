@@ -204,6 +204,10 @@
                         </div>
                     </div>
 
+                    {{-- CUSTOM --}}
+                    @include('eventmie::bookings.show_attendees')
+                    {{-- CUSTOM --}}
+
                 </div>
 
                 {{-- CUSTOM --}}

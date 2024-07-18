@@ -84,8 +84,20 @@
                                         :class="'form-control px-0 py-0 border-0'"
                                     >
                                     </multiselect>
-                                </div> 
-
+                                </div>
+                                <ul class="list-group list-group-flush mb-4">
+                                    <li class="list-group-item d-flex justify-content-between px-0">
+                                        <div>
+                                            <h5 class="mb-0">{{ trans('em.t_soldout') }}</h5>
+                                            <span class="small text-muted text-wrap">{{ trans('em.t_soldout') }}</span>
+                                        </div>
+                                        <div>
+                                            <div class="form-check form-switch" >
+                                                <input type="checkbox" class="form-check-input form-check-input-lg" :value=1 name="t_soldout" v-model="t_soldout" >
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
                             </div>
                             
                             <div class="modal-footer">
@@ -133,6 +145,8 @@ export default {
             promocodes_options    : [],
             tmp_promocodes_ids    : [],
             ticket_promocodes     : [],
+
+            t_soldout         : 0,
             
         }
     },
@@ -160,6 +174,7 @@ export default {
             this.tax_id       = this.edit_ticket.tax_id ? this.edit_ticket.tax_id : 0;
             this.customer_limit       = this.edit_ticket.customer_limit;
             this.getSelectedPromocodes();
+            this.t_soldout    = this.edit_ticket.t_soldout > 0 ? 1 : 0;
         },
         
         // validate data on form submit

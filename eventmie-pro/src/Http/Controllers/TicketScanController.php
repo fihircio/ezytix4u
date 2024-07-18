@@ -8,6 +8,7 @@ use Facades\Classiebit\Eventmie\Eventmie;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Classiebit\Eventmie\Models\Booking;
+use Classiebit\Eventmie\Models\Attendee;
 use Illuminate\Support\Carbon;
 use Auth;
 use Classiebit\Eventmie\Models\Event;
@@ -34,8 +35,24 @@ class TicketScanController extends Controller
             'order_number'  => 'required',
         ]);
 
-        $booking = Booking::where(['id'=>$request->id, 'order_number'=>$request->order_number])->first();
+        $organiser_id = Auth::user()->organizer_id;
 
+        // so that we can pass organizer other than logged in user
+        if(!$organiser_id)
+        $organiser_id = Auth::id();
+    
+        //$booking = Booking::where(['id'=>$request->id, 'order_number'=>$request->order_number])->first();
+        
+        if(Auth::user()->hasRole('admin'))
+        {
+            $booking = Booking::with(['attendees'])->where(['id'=>$request->id, 'order_number'=>$request->order_number])->first();
+            
+        }
+        else
+        {
+            $booking = Booking::with(['attendees'])->where(['id'=>$request->id, 'order_number'=>$request->order_number, 'organiser_id' => $organiser_id])->first();
+
+        }
         if(empty($booking))
         {
             
@@ -134,6 +151,8 @@ class TicketScanController extends Controller
             'order_number'  => $request->order_number,
         ];
 
+        $organiser_id = Auth::user()->organizer_id;
+
         // so that we can pass organizer other than logged in user
         if(!$organiser_id)
             $organiser_id = Auth::id();
@@ -224,6 +243,24 @@ class TicketScanController extends Controller
                 ]);
                     
             }
+        }
+
+        if(empty($booking->is_bulk))
+        {
+            $request->validate([
+                'attendee_id'         => 'required|numeric|min:1|regex:^[1-9][0-9]*$^',
+            ]);
+            
+            //CUSTOM
+            $attendee = Attendee::where(['id' => $request->attendee_id, 'checked_in' => 0 ])->first();
+            
+            if(empty($attendee))
+            {
+                $msg = __('eventmie-pro::em.already_cheked_in');
+                session()->flash('error', $msg);
+                return error_redirect($msg);
+            }
+            $attendee->update(['checked_in' => 1]);
         }
 
         $data = [

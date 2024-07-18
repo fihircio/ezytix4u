@@ -33,7 +33,7 @@
                                     </div>    
                                 </div>
                                 <div v-else>
-                                    <a v-if="item.button_url != null && item.button_title != null" class="btn btn-primary bg-gradient text-white" :href="item.button_url">{{ item.button_title }} &nbsp;&nbsp; <i class="fas fa-long-arrow-alt-right"></i></a>
+                                    <a v-if="item.button_url != null && item.button_title != null" class="btn btn-primary bg-primary text-white" :href="item.button_url">{{ item.button_title }} &nbsp;&nbsp; <i class="fas fa-long-arrow-alt-right"></i></a>
                                 </div>
                             </div>
                         </div>

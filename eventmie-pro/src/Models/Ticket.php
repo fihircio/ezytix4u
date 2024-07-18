@@ -8,6 +8,8 @@ use Composer\DependencyResolver\Request;
 use Classiebit\Eventmie\Models\Tax;
 use Classiebit\Eventmie\Models\Booking;
 use Classiebit\Eventmie\Models\Promocode;
+use Classiebit\Eventmie\Models\Seatchart;
+use Classiebit\Eventmie\Models\Attendee;
 
 class Ticket extends Model
 {
@@ -35,7 +37,13 @@ class Ticket extends Model
         {
             $result = Ticket::with([
                     'taxes',
+                    'seatchart', 
+                    'attendees',
+                    'attendees.booking',
                     'promocodes',
+                    'seatchart.seats'  => function ($query) {
+                        // $query->where(['status' => 1]);
+                    },
                     ])
                     ->whereIn('id', $params['ticket_ids'])
                     ->where('event_id', $params['event_id'])
@@ -46,7 +54,13 @@ class Ticket extends Model
         {
             $result = Ticket::with([
                 'taxes',
+                'seatchart', 
+                'attendees',
+                'attendees.booking',
                 'promocodes',
+                'seatchart.seats'  => function ($query) {
+                    // $query->where(['status' => 1]);
+                },
                 ])
                 ->where(['event_id' => $params['event_id'] ])
                 ->orderBy('price')
@@ -134,6 +148,23 @@ class Ticket extends Model
     public function bookings()
     {
         return $this->hasMany(Booking::class);
+    }
+
+    /**
+     * Get the seatchart record associated with the ticket.
+     */
+    public function seatchart()
+    {
+        return $this->hasOne(Seatchart::class);
+    }
+
+    
+    /**
+     * Get the attendees record associated with the ticket.
+     */
+    public function attendees()
+    {
+        return $this->hasMany(Attendee::class);
     }
 
     /**

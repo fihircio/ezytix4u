@@ -3,7 +3,7 @@
 @section('content')
     <!--BANNER-->
     <section>
-        <div class="bg-gradient">
+        <div class="bg-light">
             <div class="login-wrapper">
                 <div class="container">
                     <div class="row">

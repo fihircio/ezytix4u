@@ -23,8 +23,12 @@
                             <td :data-title="trans('em.quantity')">{{ ticket.quantity }}</td>
                             <td :data-title="trans('em.actions')">
                                 <div class="btn-group text-nowrap">
-                                    <button type="button" class="btn btn-sm bg-primary text-white" @click="()=>{edit_index = index; openModal_2 = true}" ><i class="fas fa-edit"></i> {{ trans('em.edit') }}</button>
-                                    <button type="button" class="btn btn-sm bg-danger text-white" @click="deleteTicket(ticket.id)"><i class="fas fa-trash"></i> {{ trans('em.delete') }}</button>
+                                    <button type="button" class="btn btn-sm bg-primary text-white" @click="setSeatTicketId(ticket.id)">
+                                        {{ trans('em.seating_chart') }}
+                                        <span v-if="ticket.seatchart != null" class="badge badge-light">{{ ticket.seatchart.seats.length }}</span>
+                                    </button>
+                                    <button type="button" class="btn btn-sm bg-info text-black" @click="()=>{edit_index = index; openModal_2 = true}" ><i class="fas fa-edit"></i> {{ trans('em.edit') }}</button>
+                                    <button type="button" class="btn btn-sm bg-danger text-black" @click="deleteTicket(ticket.id)"><i class="fas fa-trash"></i> {{ trans('em.delete') }}</button>
                                 </div>
 
                                 <ticket-component 
@@ -35,6 +39,9 @@
                                     :currency="currency"
                                     :openModal_2="openModal_2"
                                 ></ticket-component>
+
+                                <file-upload v-if="ticket.id == seat_ticket_id" :ticket="ticket"></file-upload>
+                                            
                             </td>
                         </tr>
                     </tbody>
@@ -51,6 +58,7 @@ import { mapState, mapMutations} from 'vuex';
 
 import TicketComponent from './Ticket.vue';
 import mixinsFilters from '../../mixins.js';
+import FileUpload from './FileUpload.vue';
 
 export default {
 
@@ -61,6 +69,7 @@ export default {
             currency   : null,
             openModal_1  : false,
             openModal_2  : false,
+            seat_ticket_id : 0,
         }
     },
 
@@ -69,6 +78,7 @@ export default {
     ],
     components: {
         TicketComponent,
+        FileUpload,
     },
     computed: {
         // get global variables
@@ -165,6 +175,11 @@ export default {
 
         isDirtyReset() {
             this.add({is_dirty: false});
+        },
+
+        setSeatTicketId(ticketId) {
+        this.seat_ticket_id = ticketId;
+        console.log('seat_ticket_id:', this.seat_ticket_id);  // Log to confirm the id is set
         },
     },
     

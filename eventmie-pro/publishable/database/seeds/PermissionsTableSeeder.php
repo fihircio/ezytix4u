@@ -45,6 +45,7 @@ class PermissionsTableSeeder extends Seeder
         Permission::generateFor('tags');
         Permission::generateFor('venues');
         Permission::generateFor('promocodes');
+        Permission::generateFor('attendees');
                 
     }
 }
