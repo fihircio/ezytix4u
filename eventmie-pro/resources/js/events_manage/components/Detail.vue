@@ -59,8 +59,8 @@
             <div class="mb-3">
                 <label class="form-label">{{ trans('em.short_url') }}</label>
                 <div class="input-group">
-                    <span id="basic-addon3" class="input-group-text text-wrap text-left">{{ShortSlugUrl() }}</span>
-                    <input type="text" class="form-control" name="short_url" v-model="shortUrl" v-validate="'required'" @change="isDirty()">
+                    <span id="basic-addon3" class="input-group-text text-wrap text-left">{{ short_url }}</span>
+                    <input type="text" class="form-control" name="short_url" v-model="short" @change="isDirty()">
                     <span v-show="errors.has('short_url')" class="help text-danger">{{ errors.first('short_url') }}</span>
                 </div>
             </div>
@@ -156,7 +156,6 @@ export default {
         return {
 
             title           : null,
-            short_url       : null,
             excerpt         : null,
             organiser_ids   : null,
             categories      : [],
@@ -173,7 +172,7 @@ export default {
             offline_payment_info :  null,
 
             short           : '',
-            short_url       : route('eventmie.welcome')+'/',
+            short_url       : route('eventmie.welcome')+'/events'+'/',
             e_soldout       : 0,
         }
     },
@@ -201,7 +200,6 @@ export default {
             if(Object.keys(this.event).length > 0)
             {
                 this.title          = this.event.title;
-                this.short_url      = this.event.short_url;
                 this.excerpt        = this.event.excerpt;
                 this.category_id    = this.event.category_id;
                 this.organiser_ids  = this.organiser_id ;
@@ -298,12 +296,17 @@ export default {
             return '';
         },
 
-        // shorturl route
-        ShortSlugUrl() {
-            if (this.shortUrl != null)
-                return route('eventmie.events_index')+'/'+this.shortUrl;
-        
-            return '';
+         // slug route
+         shortUrl(){
+            this.short_url     = '';
+            
+            if(this.short.length > 0)
+                this.short_url     = route('eventmie.welcome')+'/events'+'/'+this.sanitizeTitle(this.short);
+            else{
+
+                this.short_url     = route('eventmie.welcome')+'/events'+'/';
+                this.short         = '';
+            }    
         },
 
         // get organizers
@@ -383,6 +386,10 @@ export default {
         organizer: function () {
             this.organiser_ids = this.organizer != null ?  this.organizer.id : null;
         },
+
+        short : function(){
+            this.shortUrl();
+        }
     }
 
     
