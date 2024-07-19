@@ -459,26 +459,26 @@ Route::group([
     
     });
     /* Seat Chart */
-    Route::prefix('/seatschart/')->group(function () use ($namespace) {
+    Route::prefix('/seatschart')->group(function () use ($namespace) {
         $controller = $namespace.'\SeatChartController';
         
-        Route::post('upload',"$controller@upload_seatchart")->name('upload_seatchart');
+        Route::post('/upload',"$controller@upload_seatchart")->name('upload_seatchart');
 
-        Route::post('disable_enable_seatchart',"$controller@disable_enable_seatchart")->name('disable_enable_seatchart');
+        Route::post('/disable_enable_seatchart',"$controller@disable_enable_seatchart")->name('disable_enable_seatchart');
     });
     
     /* Seats */
-    Route::prefix('/seats/')->group(function () use ($namespace) {
+    Route::prefix('/seats')->group(function () use ($namespace) {
         $controller = $namespace.'\SeatsController';   
         
-        Route::post('save',"$controller@save_seats")->name('save_seats');
+        Route::post('/save',"$controller@save_seats")->name('save_seats');
     
-        Route::post('delete',"$controller@delete_seat")->name('delete_seat');
+        Route::post('/delete',"$controller@delete_seat")->name('delete_seat');
         
-        Route::post('disable',"$controller@disable_seat")->name('disable_seat');
-        Route::post('enable',"$controller@enable_seat")->name('enable_seat');
+        Route::post('/disable',"$controller@disable_seat")->name('disable_seat');
+        Route::post('/enable',"$controller@enable_seat")->name('enable_seat');
 
-        Route::post('delete/all/seats',"$controller@delete_all_seat")->name('delete_all_seats');
+        Route::post('/delete/all/seats',"$controller@delete_all_seat")->name('delete_all_seats');
         
         
     });
