@@ -212,7 +212,7 @@ Route::group([
             Route::post('/api/check/session', "$controller@check_session")->name('check_session');
 
             Route::get('/search-events', "$controller@searchEvents")->name('searchEvents');
-            Route::get('/{event_short_url}', "$controller@shortUrl")->name('eventmie.shortUrl')->middleware(CheckPrivateEvent::class);
+            Route::get('/{event_short_url}', "$controller@shortUrl")->name('shortUrl');
 
         });
 

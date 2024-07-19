@@ -14,7 +14,7 @@ class CheckPrivateEvent
         $event = $request->route('event');
 
         if ($event->is_private && !$this->passwordIsVerified($event)) {
-            //dd($event);
+
             return redirect()->route('eventmie.private_eventform_password', ['event' => $event->slug]);
         }
 

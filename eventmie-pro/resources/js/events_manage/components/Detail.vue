@@ -201,6 +201,7 @@ export default {
             {
                 this.title          = this.event.title;
                 this.excerpt        = this.event.excerpt;
+                //this.short_url      = this.event.short_url;
                 this.category_id    = this.event.category_id;
                 this.organiser_ids  = this.organiser_id ;
                 this.featured       = this.event.featured > 0 ? 1 : 0; 
@@ -295,13 +296,13 @@ export default {
 
             return '';
         },
-
+        /*
         ShortSlugUrl() {
             if (this.shortUrl != null)
                 return route('eventmie.events_index')+'/'+this.shortUrl;
         
             return '';
-        },
+        },*/
 
          // slug route
          shortUrl(){
@@ -309,8 +310,7 @@ export default {
             
             if(this.short.length > 0)
             {
-                //return route('eventmie.events_index')+'/'+this.shortUrl;
-                this.short_url     = route('eventmie.welcome')+'/'+this.sanitizeTitle(this.short);
+                this.short_url     = route('eventmie.events_index')+'/'+this.sanitizeTitle(this.short);
             }
             else{
 
