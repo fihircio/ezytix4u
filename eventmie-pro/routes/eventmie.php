@@ -153,15 +153,6 @@ Route::group([
         'venues' => VenueController::class,
     ]);
 
-    /* Seat Chart */
-    Route::prefix('/seatschart')->group(function () use ($namespace) {
-        $controller = $namespace.'\SeatChartController';
-        
-        Route::post('/upload',"$controller@upload_seatchart")->name('upload_seatchart');
-
-        Route::post('/disable_enable_seatchart',"$controller@disable_enable_seatchart")->name('disable_enable_seatchart');
-    });
-
     Route::prefix('/venues')->group(function () use ($namespace) {
         $controller = VenueController::class;
 
@@ -467,7 +458,14 @@ Route::group([
         Route::post('/add/attendee', "$controller@add_attendee")->name('add_attendee');
     
     });
+    /* Seat Chart */
+    Route::prefix('/seatschart')->group(function () use ($namespace) {
+        $controller = $namespace.'\SeatChartController';
+        
+        Route::post('/upload',"$controller@upload_seatchart")->name('upload_seatchart');
 
+        Route::post('/disable_enable_seatchart',"$controller@disable_enable_seatchart")->name('disable_enable_seatchart');
+    });
     
     /* Seats */
     Route::prefix('/seats')->group(function () use ($namespace) {
