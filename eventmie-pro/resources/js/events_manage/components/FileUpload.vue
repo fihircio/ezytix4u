@@ -27,6 +27,7 @@
 </template>
   
 <script>
+import route from '../../ziggy.js';
 import mixinsFilters from '../../mixins.js';
 import SeatComponent from './Seat.vue';
 
