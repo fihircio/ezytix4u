@@ -27,9 +27,8 @@
 </template>
   
 <script>
-import SeatComponent from './SeatComponent.vue';
 import mixinsFilters from '../../mixins.js';
-//import SeatComponent from './Seat';
+import SeatComponent from './Seat.vue';
 
 export default {
 
