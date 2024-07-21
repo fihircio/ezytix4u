@@ -43,6 +43,8 @@ import Tickets from './components/Tickets';
 import Poweredby from './components/Poweredby';
 import Seo from './components/Seo';
 import FileUpload from './components/FileUpload';
+import SeatComponent from './components/Seat';
+import UpdateSeat from './components/UpdateSeat';
 
 
 /**
