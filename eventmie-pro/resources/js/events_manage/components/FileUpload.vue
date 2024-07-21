@@ -55,9 +55,10 @@ export default {
 
             formData.append('file', this.$refs.file.files[0]);
 
-            axios.post(route('upload_seatchart'),
-                formData
-            ).then(res => {
+            let post_url = route('eventmie.upload_seatchart');
+
+            axios.post(post_url, formData)
+            .then(res => {
                 this.local_ticket = res.data.ticket; 
 
                 this.showNotification('success', trans('em.seatchart_uploaded'));
