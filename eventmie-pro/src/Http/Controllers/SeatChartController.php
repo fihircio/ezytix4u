@@ -24,7 +24,7 @@ class SeatChartController extends Controller
         $this->middleware('auth');
 
     }
-    /*
+    
     public function upload_seatchart(Request  $request)
     {
         // 1. validate data
@@ -67,7 +67,7 @@ class SeatChartController extends Controller
         return response()->json(['ticket' => $ticket, 'status' => true]);
         
     }
-*/
+
     /**
      *  disable or enable seatchart
      */

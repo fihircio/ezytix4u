@@ -14,7 +14,7 @@
                             
                             <div class="form-group col-md-4 text-wrap">
                                 <h4 class="mb-2 form-label">{{ trans('em.upload_seatchart') }}</h4>
-                                <input type="file" class="form-control" id="file" ref="file" @change="onChangeFileUpload()">
+                                <input type="file" class="form-control" ref="file" @change="onChangeFileUpload">
                             </div>   
                         </form>
                     </div>
@@ -52,7 +52,7 @@ export default {
         // on change file upload
         onChangeFileUpload(){
             let formData = new FormData(this.$refs.form);
-
+            
             formData.append('file', this.$refs.file.files[0]);
 
             axios.post(route('eventmie.upload_seatchart'),
