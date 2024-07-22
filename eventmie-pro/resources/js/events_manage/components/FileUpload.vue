@@ -27,7 +27,6 @@
 </template>
   
 <script>
-import route from '../../ziggy.js';
 import mixinsFilters from '../../mixins.js';
 import SeatComponent from './Seat.vue';
 
@@ -56,7 +55,7 @@ export default {
 
             formData.append('file', this.$refs.file.files[0]);
 
-            axios.post(route('eventmie.upload_seatchart'),
+            axios.post(route('eventmie.seatschart.upload_seatchart'),
                 formData
             ).then(res => {
                 this.local_ticket = res.data.ticket; 

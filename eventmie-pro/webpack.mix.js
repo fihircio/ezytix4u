@@ -57,8 +57,6 @@ mix
 // profile vue js
 .js('resources/js/profile/index.js', 'publishable/assets/js/profile.js')
 
-.js('resources/js/ziggy.js', 'publishable/assets/js/ziggy.js')
-
 // use vue 2
 .vue({ version: 2 })
 
