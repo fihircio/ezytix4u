@@ -286,7 +286,8 @@ export default {
         },
 
         /* CUSTOM */
-        getPromocodes(){
+        getPromocodes()
+        {
             axios.get(route('eventmie.get_promocodes'),{
                 
             })
@@ -362,10 +363,6 @@ export default {
      
     },
     mounted() {
-        /* CUSTOM */
-        //this.getPromocodes();
-        /* CUSTOM */
-        
         if(this.edit_ticket) {
             this.editTicket();
             
