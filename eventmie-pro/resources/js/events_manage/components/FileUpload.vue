@@ -1,3 +1,4 @@
+
 <template>
     <div>
         <div class="modal modal-mask modal-big" v-if="$parent.seat_ticket_id > 0">
