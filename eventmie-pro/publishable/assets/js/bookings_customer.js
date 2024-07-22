@@ -3584,7 +3584,7 @@ vue_dist_vue__WEBPACK_IMPORTED_MODULE_0___default().component('alert-message', (
  * Global Vue Config 
  */
 (vue_dist_vue__WEBPACK_IMPORTED_MODULE_0___default().config).productionTip = false;
-(vue_dist_vue__WEBPACK_IMPORTED_MODULE_0___default().config).devtools = false;
+(vue_dist_vue__WEBPACK_IMPORTED_MODULE_0___default().config).devtools = true;
 (vue_dist_vue__WEBPACK_IMPORTED_MODULE_0___default().config).debug = false;
 (vue_dist_vue__WEBPACK_IMPORTED_MODULE_0___default().config).silent = true;
 

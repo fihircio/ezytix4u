@@ -108,7 +108,7 @@ Vue.component('alert-message', require('./common_components/AlertComponent.vue')
  * Global Vue Config 
  */
 Vue.config.productionTip = false;
-Vue.config.devtools = false;
+Vue.config.devtools = true;
 Vue.config.debug = false;
 Vue.config.silent = true; 
 

@@ -210,7 +210,7 @@ const routes = new VueRouter({
         {
             path: '/seatschart',
             name: 'seatschart',
-            component: FileUpload,
+            component: SeatComponent,
             props: true,
             beforeEnter(to, from, next) {
                 routeBeforeEnter(to, from, next);
