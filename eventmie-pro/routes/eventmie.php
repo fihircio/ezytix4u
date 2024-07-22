@@ -179,6 +179,8 @@ Route::group([
         Route::get('/api/taxes', "$controller@taxes")->name('tickets_taxes');
         Route::post('/api/store', "$controller@store")->name('tickets_store');   
         Route::post('/api/delete', "$controller@delete")->name('tickets_delete');
+
+        Route::post('/upload',"$controller@upload_seatchart")->name('upload_seatchart');
     });
     
     /* Schedules */
