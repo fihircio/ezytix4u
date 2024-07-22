@@ -207,6 +207,15 @@ const routes = new VueRouter({
                 routeBeforeEnter(to, from, next);
             },
         },
+        {
+            path: '/seatschart',
+            name: 'seatschart',
+            component: FileUpload,
+            props: true,
+            beforeEnter(to, from, next) {
+                routeBeforeEnter(to, from, next);
+            },
+        },
     ],
 });
 
