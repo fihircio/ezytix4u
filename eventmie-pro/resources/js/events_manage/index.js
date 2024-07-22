@@ -42,9 +42,7 @@ import Timing from './components/Timing';
 import Tickets from './components/Tickets';
 import Poweredby from './components/Poweredby';
 import Seo from './components/Seo';
-import FileUpload from './components/FileUpload';
-import SeatComponent from './components/Seat';
-import UpdateSeat from './components/UpdateSeat';
+
 
 
 /**
@@ -202,15 +200,6 @@ const routes = new VueRouter({
             path: '/publish',
             name: 'publish',
             component: Poweredby,
-            props: true,
-            beforeEnter(to, from, next) {
-                routeBeforeEnter(to, from, next);
-            },
-        },
-        {
-            path: '/seatschart',
-            name: 'seatschart',
-            component: SeatComponent,
             props: true,
             beforeEnter(to, from, next) {
                 routeBeforeEnter(to, from, next);

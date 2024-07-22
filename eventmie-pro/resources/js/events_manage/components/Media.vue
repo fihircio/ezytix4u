@@ -170,6 +170,8 @@ export default {
             images              : [],
             multiple_images     : [],
             video_link          : null,
+            seatingchart_image  : null,
+            addMore             : 1,
         }
     },
 
@@ -318,6 +320,40 @@ export default {
         isDirtyReset() {
             this.add({is_dirty: false});
         },
+
+        deleteSeatchart(event_id){
+               this.showConfirm(trans('em.delete')).then((res) => {
+                if(res) {
+                    // prepare form data for post request
+                    let post_url = route('delete_seatchart');
+                    let post_data = {
+                        'event_id' : this.event.id
+                    };
+                    
+                    // axios post request
+                    axios.post(post_url, post_data)
+                    .then(res => {
+                        // on success
+                        // use vuex to update global sponsors array
+                        if(res.data.status)
+                        {
+                            this.showNotification('success', trans('em.event_save_success'));
+                            // reload page   
+                            setTimeout(function() {
+                                location.reload(true);
+                            }, 1000);
+                        }    
+                    })
+                    .catch(error => {
+                        let serrors = Vue.helpers.axiosErrors(error);
+                        if (serrors.length) {
+                            this.serverValidate(serrors);
+                        }
+                    });
+                }
+            })
+
+        }
         
     },
     mounted(){
