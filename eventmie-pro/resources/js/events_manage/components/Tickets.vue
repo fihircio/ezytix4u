@@ -59,6 +59,7 @@ import { mapState, mapMutations} from 'vuex';
 import TicketComponent from './Ticket.vue';
 import mixinsFilters from '../../mixins.js';
 import FileUpload from './FileUpload.vue';
+import SeatComponent from './Seat.vue';
 
 export default {
 
@@ -79,6 +80,7 @@ export default {
     components: {
         TicketComponent,
         FileUpload,
+        SeatComponent,
     },
     computed: {
         // get global variables
