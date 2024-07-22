@@ -54,7 +54,7 @@ export default {
         onChangeFileUpload(){
             let formData = new FormData(this.$refs.form);
             
-            //formData.append('file', this.$refs.file.files[0]);
+            formData.append('file', this.$refs.file.files[0]);
 
             axios.post(route('eventmie.upload_seatchart'),
                 formData
