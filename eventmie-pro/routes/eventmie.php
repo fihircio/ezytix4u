@@ -345,7 +345,8 @@ Route::group([
 
         //delete multiple images
         Route::post('delete/image', "$controller@delete_image")->name('delete_image');
-
+        
+        Route::post('/upload',"$controller@upload_seatchart")->name('upload_seatchart');
         //delete seatchart
         Route::post('delete/seatchart', "$controller@delete_seatchart")->name('delete_seatchart');
     });
@@ -462,7 +463,7 @@ Route::group([
     Route::prefix('/seatschart')->group(function () use ($namespace) {
         $controller = $namespace.'\SeatChartController';
         
-        Route::post('/upload',"$controller@upload_seatchart")->name('upload_seatchart');
+        //Route::post('/upload',"$controller@upload_seatchart")->name('upload_seatchart');
 
         Route::post('/disable_enable_seatchart',"$controller@disable_enable_seatchart")->name('disable_enable_seatchart');
     });
