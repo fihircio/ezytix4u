@@ -40,7 +40,15 @@ class SeatChartController extends Controller
         $extension       = $file->getClientOriginalExtension(); // getting image extension
         $image           = time().rand(1,988).'.'.$extension;
         
-        $file->storeAs('public/'.$path, $image);
+        if (app('env') === 'production') 
+        {
+
+            $file->storeAs(''.$path, $image);
+            
+        } else 
+        {
+            $file->storeAs('public/'.$path, $image);
+        }
 
         $chart_image           = $path.$image;
 
