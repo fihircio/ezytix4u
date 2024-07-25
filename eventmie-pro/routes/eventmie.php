@@ -463,7 +463,7 @@ Route::group([
     Route::prefix('/seatschart')->group(function () use ($namespace) {
         $controller = $namespace.'\SeatChartController';
         
-        Route::post('/upload',"$controller@upload_seatchart")->name('upload_seatchart');
+       // Route::post('/upload',"$controller@upload_seatchart")->name('upload_seatchart');
 
         Route::post('/disable_enable_seatchart',"$controller@disable_enable_seatchart")->name('disable_enable_seatchart');
     });
