@@ -314,14 +314,14 @@ class BookingsController extends Controller
         } 
 
         
-        dd($selected_tickets, array_map(function($ticket_id) use ($request) {
+        /*dd($selected_tickets, array_map(function($ticket_id) use ($request) {
             $seat_ticket = 'seat_id_' . $ticket_id;
             return [
                 'ticket_id' => $ticket_id,
                 'seat_ticket' => $seat_ticket,
                 'selected_seats' => $request->$seat_ticket ?? []
             ];
-        }, $request->ticket_id)); 
+        }, $request->ticket_id)); */
 
         if(empty($ticket_ids))
             return ['status' => false, 'error' => __('eventmie-pro::em.select_a_ticket')];
