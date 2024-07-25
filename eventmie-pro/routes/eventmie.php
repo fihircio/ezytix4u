@@ -348,6 +348,7 @@ Route::group([
 
         //delete seatchart
         Route::post('delete/seatchart', "$controller@delete_seatchart")->name('delete_seatchart');
+        Route::post('/api/upload',"$controller@upload_seatchart")->name('upload_seatchart');
     });
     
     /* Notification */
