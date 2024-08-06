@@ -364,7 +364,7 @@ class EventsController extends Controller
      {
          // if have Billplz keys then will show Billplz payment option otherwise hide
          $is_billplz = 1;
-         if(empty(setting('apps.billplz_secret_key')) || empty(setting('apps.billplz_collection_id')))
+         if(empty(setting('apps.billplz_secret_key')) || empty(setting('apps.billplz_app_id')) || empty(setting('apps.billplz_redirect_uri')))
              $is_billplz = 0;
          
          return $is_billplz;

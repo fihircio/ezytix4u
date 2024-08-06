@@ -390,6 +390,10 @@
                                     @if($setting->key == 'apps.billplz_collection_id')
                                         <input type="text" class="form-control" name="{{ $setting->key }}" value="{{ $setting->value }}">
                                     @endif
+
+                                    @if($setting->key == 'apps.billplz_redirect_uri')
+                                        <input type="text" class="form-control" name="{{ $setting->key }}" value="{{ $setting->value }}">
+                                    @endif
                                         
                                    
                                     @if($setting->key == 'apps.billplz_sandbox')

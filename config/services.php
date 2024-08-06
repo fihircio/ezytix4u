@@ -32,6 +32,7 @@ return [
 
      'billplz' => [
         'key' => env('BILLPLZ_API_KEY'),
+        'redirect_uri' => env('BILLPLZ_REDIRECT_URI'),
         'version' => env('BILLPLZ_VERSION', 'v4'),
         'x-signature' => env('BILLPLZ_X_SIGNATURE'),
         'sandbox' => env('BILLPLZ_SANDBOX', false),

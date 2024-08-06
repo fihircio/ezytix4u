@@ -50,7 +50,6 @@ class BookingsController extends Controller
         $this->organiser_id = null;
         $this->billplzService = new BillplzService(setting('apps'));
         $this->toyyibPayService = new ToyyibPayService(setting('apps'));
-       // $this->billplz = new Billplz(setting('apps'.billplz_secret_key'), setting('apps.billplz_sandbox') ? 'staging' : 'live');
         
         $this->USAePay      = new USAePay;
         
@@ -312,9 +311,8 @@ class BookingsController extends Controller
             }
             
         } 
-
-        
-        /*dd($selected_tickets, array_map(function($ticket_id) use ($request) {
+        /*
+        dd($selected_tickets, array_map(function($ticket_id) use ($request) {
             $seat_ticket = 'seat_id_' . $ticket_id;
             return [
                 'ticket_id' => $ticket_id,
@@ -764,43 +762,61 @@ class BookingsController extends Controller
     protected function billplz($order = [], $currency = 'MYR', $booking = [])
     {  
         try {
-                $response = $this->billplz->createBill([
-                'collection_id'       => setting('apps.billplz_collection_id'),
-                'email'               => $booking[key($booking)]['customer_email'],
-                'name'                => $booking[key($booking)]['customer_name'],
-                'amount'              => (int) ($order['price'] * 100), // amount in cents
-                'callback_url'        => route('eventmie.bookings_billplz_callback'),
-                'description'         => $order['product_title'].' ('.$order['price_title'].')',
+            $response = $this->billplz->createPayment($order, $currency, $booking);
             
-            ]);
-
-            if ($response->getStatusCode() === 200) {
-                return response(['status' => true, 'url' => $response->json()['url'], 'message' => ''], Response::HTTP_OK);
+            if ($response['status']) {
+                return redirect($response['url']);
             }
             
-            return error($response->json()['error']['message'], Response::HTTP_REQUEST_TIMEOUT);
+            return error($response['error'], Response::HTTP_BAD_REQUEST);
         } catch (\Throwable $th) {
-            return error($th->getMessage(), Response::HTTP_REQUEST_TIMEOUT);
+            return error($th->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+    
     // 3. Get payment status on redirect from gateway
     public function billplzCallback(Request $request)
     {
-        // Payment success
-        if($request->billplz['paid'] == 'true') {
-            return $this->finish_checkout([
-                'transaction_id'    => $request->billplz['id'],
-                'payer_reference'   => $request->billplz['paid_at'],
-                'message'           => 'Paid',
-                'status'            => true,
-            ]);
+        $data = $request->all();
+        //Log::info('Received Billplz callback', ['data' => $data]);
+        //dd($data);
+
+        // Verify the webhook data
+       /* if (!$this->billplzService->verifyWebhook($data)) {
+            //Log::error('Billplz webhook verification failed', ['data' => $data]);
+            return response('Invalid signature', Response::HTTP_BAD_REQUEST);
+        }*/
+
+        $billplzData = $data['billplz'];
+        $billCode = $billplzData['id'];
+        $paymentStatus = $this->billplzService->verifyPaymentStatus($billCode);
+        //dd($paymentStatus, $data);
+
+        if (isset($paymentStatus['error'])) {
+            return error($paymentStatus['error'], Response::HTTP_BAD_REQUEST);
         }
 
-        // Payment failed
-        return $this->finish_checkout([
-            'error' => 'Payment Failed!',
-            'status' => false,
-        ]);
+        $statusId = $paymentStatus[0]['billpaymentStatus'];
+        $transactionId = $billCode; // Using bill ID as transaction ID
+        $orderId = $billCode; // Using bill ID as order ID, adjust if you have a different reference
+
+        if ($statusId === '1') {
+            $flag = [
+                'status' => true,
+                'transaction_id' => $transactionId,
+                'message' => 'Payment successful',
+                'payer_reference' => $billplzData['id'], // Adjust if you have a different reference
+                'price' => $paymentStatus[0]['billpaymentAmount'] ?? null,
+            ];
+        } else {
+            $flag = [
+                'status' => false,
+                'transaction_id' => $transactionId,
+                'message' => 'Payment failed'
+            ];
+        }
+
+        return $this->finish_checkout($flag);
     }
     /* =================== BILLPLIZ ==================== */
 
@@ -1463,15 +1479,17 @@ class BookingsController extends Controller
 
         if($payment_method == 2)
         {
-            if(empty(setting('apps.billplz_collection_id')) || empty(setting('apps.billplz_secret_key')))
+            if(empty(setting('apps.billplz_app_id')) || empty(setting('apps.billplz_secret_key')) || empty(setting('apps.billplz_redirect_uri')))
             return response()->json(['status' => false, 'url'=>$url, 'message'=>$msg]);
    
-            $customer = [
-                'email' => $booking[0]['customer_email'],
-                'name' => $booking[0]['customer_name'],
-            ];
-
-            return $this->finish_checkout($this->billplzService->createBill($order, $currency, $customer));                    
+            // Call createPayment to get the payment link
+            $billplzResponse = $this->billplzService->createPayment($order, $currency, $booking);
+            
+            if ($billplzResponse['status']) {
+                return response()->json($billplzResponse);
+            } else {
+                return error($billplzResponse['error'], Response::HTTP_REQUEST_TIMEOUT);
+            }                
         }
         
         if($payment_method == 9)

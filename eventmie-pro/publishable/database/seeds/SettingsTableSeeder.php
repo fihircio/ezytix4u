@@ -268,6 +268,12 @@ class SettingsTableSeeder extends Seeder
             $setting->fill(["display_name" => "Billplz Secret Key","value" => "", "details" => null, 
             "type" => "text", "order" => "48", "group" => "Apps", ])->save();
         }
+
+        $setting = $this->findSetting("apps.billplz_xsignature");
+        if (!$setting->exists) {
+            $setting->fill(["display_name" => "Billplz X-Signature","value" => "", "details" => null, 
+            "type" => "text", "order" => "48", "group" => "Apps", ])->save();
+        }
         $setting = $this->findSetting("apps.billplz_app_id");
         if (!$setting->exists) {
             $setting->fill([
@@ -279,7 +285,17 @@ class SettingsTableSeeder extends Seeder
                 "group" => "Apps",
             ])->save();
         }
-
+        $setting = $this->findSetting("apps.billplz_redirect_uri");
+        if (!$setting->exists) {
+            $setting->fill([
+                "display_name" => "Billplz Redirect URI",
+                "value" => "",
+                "details" => null,
+                "type" => "text",
+                "order" => "48",  // Adjust order as needed
+                "group" => "Apps",
+            ])->save();
+        }
         $setting = $this->findSetting("apps.billplz_sandbox");
         if (!$setting->exists) {
             $setting->fill([

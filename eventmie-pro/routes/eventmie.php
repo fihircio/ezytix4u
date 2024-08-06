@@ -249,7 +249,7 @@ Route::group([
         Route::match(['get', 'post'], '/paypal/callback', "$controller@paypal_callback")->name('bookings_paypal_callback');  
 
         // Billplz Callback
-        Route::post('/bookings/billplz/callback', "$controller@billplzCallback")->name('bookings_billplz_callback');  
+        Route::match(['get', 'post'],'/billplz/callback', "$controller@billplzCallback")->name('bookings_billplz_callback');  
 
         // Toyyibpay Callback
         Route::match(['get', 'post'], '/bookings/toyyibpay/callback', "$controller@toyyibpayCallback")->name('bookings_toyyibpay_callback');
