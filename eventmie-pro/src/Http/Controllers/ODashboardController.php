@@ -88,44 +88,4 @@ class ODashboardController extends Controller
 
     }
 
-    public function luckyDraw(Request $request)
-    {
-        // Validate the request (ensure event_id is provided)
-        $request->validate([
-            'event_id' => 'required|integer|exists:events,id',
-        ]);
-
-        $event_id = $request->event_id;
-        $organiser_id = Auth::id(); // Get the organizer's ID
-
-        // Fetch the paid users for the selected event
-        $paidUsers = Booking::where([
-            'event_id' => $event_id,
-            'is_paid' => 1,
-        ])
-        ->distinct('customer_id')
-        ->pluck('customer_id')
-        ->toArray();
-
-        // Implement the lucky draw logic (e.g., use rand() to select a random user)
-        $winnerId = $paidUsers ? $paidUsers[array_rand($paidUsers)] : null;
-
-        if ($winnerId) {
-            // Fetch the winner's details from the User model
-            $winner = User::find($winnerId);
-
-            // Display or process the winner's information
-            // ...
-
-            // You can send a notification to the winner, update event status, etc.
-
-        } else {
-            // Handle the case where no paid users were found
-            // ...
-        }
-
-        // Return a response (e.g., a success message, the winner's details, etc.)
-        return response()->json(['status' => true, 'winnerId' => $winnerId ?? null]);
-    }
-
 }

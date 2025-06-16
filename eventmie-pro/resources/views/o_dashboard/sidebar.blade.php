@@ -21,6 +21,14 @@
                 </li>
 
                 <li class="nav-item tooltip-custom">
+                    <a class="nav-link {{ Route::currentRouteName() == 'eventmie.luckyDraw' ? 'active' : '' }}"
+                        href="{{ route('eventmie.luckydraw_index') }}" title="@lang('eventmie-pro::em.lucky_draw')">
+                        <span class="nav-icon"><i class="fas fa-gift"></i></span>
+                        <span class="tooltiptext">@lang('eventmie-pro::em.lucky_draw')</span>
+                    </a>
+                </li> 
+
+                <li class="nav-item tooltip-custom">
                     <a class="nav-link {{ Route::currentRouteName() == 'eventmie.ticket_scan' ? 'active' : '' }}"
                         href="{{ route('eventmie.ticket_scan') }}" title="@lang('eventmie-pro::em.scan_ticket')">
                         <span class="nav-icon"><i class="fas fa-qrcode"></i></span>
@@ -60,14 +68,6 @@
                         <span class="tooltiptext">@lang('eventmie-pro::em.myvenues')</span>
                     </a>
                 </li>
-
-              <!--  <li class="nav-item tooltip-custom">
-                    <a class="nav-link {{ Route::currentRouteName() == 'eventmie.luckyDraw' ? 'active' : '' }}"
-                        href="{{ route('eventmie.luckyDraw') }}" title="@lang('eventmie-pro::em.luckydraw')">
-                        <span class="nav-icon"><i class="fas fa-map-location"></i></span>
-                        <span class="tooltiptext">@lang('eventmie-pro::em.luckydraw')</span>
-                    </a>
-                </li> -->
 
             </ul>
         </div>

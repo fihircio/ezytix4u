@@ -14,6 +14,7 @@ class BillplzService
     protected $collectionId;
     protected $apiKey;
     protected $xSignatureKey;
+    protected $guzzleClient;
 
     public function __construct($settings = [])
     {
@@ -21,29 +22,51 @@ class BillplzService
         $this->xSignatureKey = $settings['billplz_xsignature'];
         $this->collectionId = $settings['billplz_app_id'];
 
-        // Add logging
-        Log::info('Billplz Settings', [
-            'apiKey' => $this->apiKey,
-            'xSignatureKey' => $this->xSignatureKey,
+        // Add detailed logging for initialization
+        Log::info('Billplz Service Initialization', [
+            'environment' => app()->environment(),
+            'apiKey_length' => strlen($this->apiKey),
+            'xSignatureKey_length' => strlen($this->xSignatureKey),
             'collectionId' => $this->collectionId,
             'redirectUri' => $settings['billplz_redirect_uri']
         ]);
 
-        $this->client = Client::make($this->apiKey, $settings['billplz_redirect_uri']);
+        // Configure Guzzle client with timeout settings and basic auth
+        $this->guzzleClient = new GuzzleClient([
+            'timeout' => 30,
+            'connect_timeout' => 10,
+            'http_errors' => false,
+            'verify' => true,
+            'auth' => [$this->apiKey, ''], // Basic auth with API key
+            'headers' => [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+            ]
+        ]);
+
+        $this->client = Client::make($this->apiKey, $settings['billplz_redirect_uri'], $this->guzzleClient);
         
-        // Check if we're in a development environment
         if (app()->environment('local', 'development')) {
             $this->client->useSandbox();
+            Log::info('Using Billplz Sandbox environment');
+        } else {
+            Log::info('Using Billplz Production environment');
         }
 
         $this->signature = new Signature($this->xSignatureKey, ['x_signature']);
-
         $this->callbackUrl = route('eventmie.bookings_billplz_callback');
     }
 
     public function createPayment($order = [], $currency = 'MYR', $booking = [])
     {
         try {
+            $startTime = microtime(true);
+            Log::info('Starting Billplz payment creation', [
+                'order_number' => $order['order_number'],
+                'amount' => $order['price'],
+                'currency' => $currency
+            ]);
+
             $customer = $booking[0];
 
             $billplzParams = [
@@ -62,36 +85,52 @@ class BillplzService
             // Log the parameters we're sending to Billplz
             Log::info('Billplz Create Bill Parameters', $billplzParams);
 
-            $response = $this->client->bill()->create(
-                $billplzParams['collection_id'],
-                $billplzParams['email'],
-                $billplzParams['mobile'],
-                $billplzParams['name'],
-                $billplzParams['amount'],
-                $billplzParams['callback_url'],
-                $billplzParams['description'],
-                [
-                    'redirect_url' => $billplzParams['redirect_url'],
-                    'reference_1_label' => $billplzParams['reference_1_label'],
-                    'reference_1' => $billplzParams['reference_1'],
-                ]
-            );
+            // Add request timing
+            $requestStartTime = microtime(true);
+            
+            // Make direct API call using Guzzle
+            $response = $this->guzzleClient->post('https://www.billplz.com/api/v3/bills', [
+                'json' => $billplzParams
+            ]);
 
-            // Log the response from Billplz
-            Log::info('Billplz Create Bill Response', $response->toArray());
+            $requestEndTime = microtime(true);
+            $requestDuration = $requestEndTime - $requestStartTime;
 
-            if ($response->isSuccessful()) {
+            // Log the response and timing
+            Log::info('Billplz Create Bill Response', [
+                'status_code' => $response->getStatusCode(),
+                'response' => json_decode($response->getBody(), true),
+                'request_duration' => $requestDuration,
+                'total_duration' => microtime(true) - $startTime
+            ]);
+
+            if ($response->getStatusCode() === 200) {
+                $responseData = json_decode($response->getBody(), true);
                 return [
-                    'url' => $response->toArray()['url'],
-                    'billCode' => $response->toArray()['id'],
+                    'url' => $responseData['url'],
+                    'billCode' => $responseData['id'],
                     'status' => true
                 ];
             }
 
+            // Log error response
+            Log::error('Billplz Create Bill Failed', [
+                'status_code' => $response->getStatusCode(),
+                'response' => json_decode($response->getBody(), true),
+                'request_duration' => $requestDuration
+            ]);
+
             return ['error' => 'Failed to create bill', 'status' => false];
         } catch (\Throwable $th) {
-            // Log any exceptions
-            Log::error('Billplz Create Bill Exception', ['message' => $th->getMessage(), 'trace' => $th->getTraceAsString()]);
+            // Enhanced error logging
+            Log::error('Billplz Create Bill Exception', [
+                'message' => $th->getMessage(),
+                'code' => $th->getCode(),
+                'file' => $th->getFile(),
+                'line' => $th->getLine(),
+                'trace' => $th->getTraceAsString(),
+                'duration' => microtime(true) - $startTime
+            ]);
             return ['error' => $th->getMessage(), 'status' => false];
         }
     }
@@ -99,11 +138,10 @@ class BillplzService
     public function verifyPaymentStatus($billCode)
     {
         try {
-            $response = $this->client->bill()->get($billCode);
+            $response = $this->guzzleClient->get("https://www.billplz.com/api/v3/bills/{$billCode}");
             
-            if ($response->isSuccessful()) {
-                $billData = $response->toArray();
-                //dd($billData);
+            if ($response->getStatusCode() === 200) {
+                $billData = json_decode($response->getBody(), true);
                 return [
                     [
                         'billpaymentStatus' => $billData['paid'] ? '1' : '0',

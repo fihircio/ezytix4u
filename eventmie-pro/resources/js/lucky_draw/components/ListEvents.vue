@@ -75,15 +75,7 @@
                                 <div class="d-grid gap-2 text-nowrap">
                                     <a class="btn btn-primary btn-sm" :href="eventEdit(event.slug)"><i class="fas fa-edit"></i> {{ trans('em.edit') }}
                                     </a>
-                                    <a class="btn btn-warning btn-sm" @click="eventClone(event.slug)">
-                                        <i class="fas fa-copy"></i> {{ trans('em.clone_event') }}
-                                    </a>
-                                    <a class="btn btn-info btn-sm" @click="triggerPrivateEvent(event)">
-                                        <i class="fas fa-lock"></i> {{ trans('em.add_password') }}
-                                    </a>
-                                    <a class="btn btn-success btn-sm" :class="{ 'disabled' : event.count_bookings < 1 }" :href="exportAttendies(event.slug, event.count_bookings)">
-                                        <i class="fas fa-file-csv"></i> {{ trans('em.export_attendees') }}
-                                    </a>
+
                                 </div>
                             </td>
                         </tr>
@@ -96,19 +88,43 @@
             <!-- Pagination Component -->
         <div class="px-4 pb-4" v-if="events.length > 0">
             <pagination-component v-if="pagination.last_page > 1" :pagination="pagination" :offset="pagination.total" @paginate="getMyEvents()"></pagination-component>
+
         </div>
-        <!-- Event Password Modal -->
-        <EventPassword :event_id="selectedEventId" :event="selectedEvent" v-if="showEventPasswordModal" @close="closeEventPasswordModal"/>
+        <div class="panel-group">
+            <div class="panel panel-default lgx-panel">
+                <div class="panel-heading px-5">
+                    <h3>{{ trans('em.lucky_draw') }}</h3>
+                    <p class="mb-0">{{ trans('em.lucky_draw_info') }}</p>
+                    <form class="form-horizontal" ref="form" @submit.prevent="validateForm" method="POST">
+                        <input type="hidden" name="_token" id="csrf-token" :value="csrf_token" />
+                        <div class="form-group row mt-3">
+                            <label class="col-md-3 form-label">{{ trans("em.select_event") }}*</label>
+                            <div class="col-md-9">
+                                <select class="form-control" name="event_id" v-model="event_id" v-validate="'required|decimal|is_not:0'" @change="isDirty()">
+                                <option value="0">-- {{ trans('em.event') }} --</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group row mt-3">
+                            <div class="col-md-9 offset-md-3">
+                                <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-sd-card"></i>
+                                {{ trans("em.draw") }}
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-        </div>
-    </div>       
+    </div> 
+    </div>      
 </template>
 
 <script>
 
 import { clone } from 'lodash';
 import PaginationComponent from '../../common_components/Pagination'
-import EventPassword from './EventPassword';
 import mixinsFilters from '../../mixins.js';
 
 
@@ -122,7 +138,6 @@ export default {
 
     components: {
         PaginationComponent,
-        EventPassword
     },
     
     mixins:[
@@ -138,7 +153,6 @@ export default {
             moment           : moment,
             selectedEventId: null,
             selectedEvent: null,
-            showEventPasswordModal:false
         }
     },
     
@@ -180,42 +194,11 @@ export default {
             return route('eventmie.myevents_form', {id: event_id});
         },
 
-         // clone myevents
-         eventClone(slug) {
-            const url = route('eventmie.clone_event', { event: slug });
-            window.location.href = url;
-        },
-
-         // private event
-        triggerPrivateEvent(event) {
-            
-            this.selectedEventId = event.id;
-            this.selectedEvent = event;
-            this.showEventPasswordModal = true; // Show the modal
-            
-        },
-        closeEventPasswordModal() {
-            this.showEventPasswordModal = false; // Hide the modal
-            this.selectedEventId = null;
-            this.selectedEvent = null;
-        },
-
-        // create newevents
-        createEvent() {
-            return route('eventmie.myevents_form');
-        },
 
         // return route with event slug
         eventSlug(slug){
             return route('eventmie.events_show',[slug]);
         },
-
-        // ExportAttendies
-        exportAttendies(event_slug = null, event_bookings = 0){
-            if(event_slug != null && event_bookings > 0)
-                return route('eventmie.export_attendees', [event_slug]);
-            
-        }
     },
     mounted() {
         this.getMyEvents();

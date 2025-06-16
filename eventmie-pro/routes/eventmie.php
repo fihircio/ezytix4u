@@ -131,7 +131,6 @@ Route::group([
         
         Route::get('/', "$controller@index")->name('o_dashboard');
         Route::get('/organiser_monthly_revenue', "$controller@organizer_booking_revenue")->name('monthly_revenue');
-        Route::get('/lucky-draw', "$controller@luckyDraw")->name('luckyDraw');
     });
 
     /* Tags */
@@ -348,6 +347,14 @@ Route::group([
 
         //delete seatchart
         Route::post('delete/seatchart', "$controller@delete_seatchart")->name('delete_seatchart');
+    });
+
+    /* Lucky Draw (organiser) */
+    Route::prefix('/dashboard/luckydraw')->group(function () use ($namespace){
+        $controller = $namespace.'\LuckyDrawController';
+        
+        Route::get('/', "$controller@index")->name('luckydraw_index');
+        Route::get('/participants', "$controller@participants")->name('participants');
     });
     
     /* Notification */

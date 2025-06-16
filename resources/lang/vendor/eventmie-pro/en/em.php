@@ -68,7 +68,7 @@ return [
     'actions'                           => 'Actions',
     /* ================ Labels ================ */
     'link'                              => 'Link',
-    'name'                              => 'Name',
+    'name'                              => 'Company Name',
     'details'                           => 'Details',
     'info'                              => 'Info',
     'type'                              => 'Type',
@@ -275,7 +275,7 @@ return [
     'map'                               => 'Map',
     'lat'                               => 'Lat',
     'long'                              => 'Long',
-    'address'                           => 'Address',
+    'address'                           => 'Full Name',
     'city'                              => 'City',
     'state'                             => 'State',
     'zipcode'                           => 'Zipcode / Pincode',
@@ -659,6 +659,8 @@ return [
     'order_terms'             => 'This order is subject to '.config('app.name').' <a href="'.route('eventmie.page', ['page'=>'terms']).'" target="_blank">Terms of Service</a> and <a href="'.route('eventmie.page', ['page'=>'privacy']).'" target="_blank">Privacy Policy</a>.',
 
     'incorrect_email_password' => 'Incorrect Email or Password',
+    'add_password'             => 'Private Event',
+    'lucky_draw'               => 'Lucky Draw',
     
     // v1.8 
     'unauthenticated'          => 'Unauthenticated',

@@ -26,6 +26,9 @@ mix
 // organiser events
 .js('resources/js/myevents/index.js', 'publishable/assets/js/myevents.js')
 
+// lucky draw events
+.js('resources/js/lucky_draw/index.js', 'publishable/assets/js/luckydraw.js')
+
 // customer bookings seperate vue js
 .js('resources/js/bookings_customer/index.js', 'publishable/assets/js/bookings_customer.js')
 
