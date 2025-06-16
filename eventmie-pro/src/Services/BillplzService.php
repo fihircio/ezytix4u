@@ -64,15 +64,38 @@ class BillplzService
             Log::info('Starting Billplz payment creation', [
                 'order_number' => $order['order_number'],
                 'amount' => $order['price'],
-                'currency' => $currency
+                'currency' => $currency,
+                'environment' => app()->environment(),
+                'callback_url' => $this->callbackUrl,
+                'redirect_url' => $this->callbackUrl
             ]);
 
             $customer = $booking[0];
 
+            // Format mobile number for Billplz
+            $mobile = $customer['customer_phone'] ?? null;
+            if ($mobile) {
+                // Remove any non-numeric characters
+                $mobile = preg_replace('/[^0-9]/', '', $mobile);
+                
+                // If number starts with '1', remove it
+                if (substr($mobile, 0, 1) === '1') {
+                    $mobile = substr($mobile, 1);
+                }
+                
+                // If number doesn't start with '60', add it
+                if (substr($mobile, 0, 2) !== '60') {
+                    $mobile = '60' . $mobile;
+                }
+                
+                // Add '+' prefix
+                $mobile = '+' . $mobile;
+            }
+
             $billplzParams = [
                 'collection_id' => $this->collectionId,
                 'email' => $customer['customer_email'],
-                'mobile' => $customer['customer_phone'] ?? null,
+                'mobile' => $mobile,
                 'name' => $customer['customer_name'],
                 'amount' => $order['price'] * 100, // Amount in cents
                 'callback_url' => $this->callbackUrl,
@@ -88,39 +111,57 @@ class BillplzService
             // Add request timing
             $requestStartTime = microtime(true);
             
-            // Make direct API call using Guzzle
-            $response = $this->guzzleClient->post('https://www.billplz.com/api/v3/bills', [
-                'json' => $billplzParams
-            ]);
+            try {
+                // Make direct API call using Guzzle
+                $response = $this->guzzleClient->post('https://www.billplz.com/api/v3/bills', [
+                    'json' => $billplzParams
+                ]);
 
-            $requestEndTime = microtime(true);
-            $requestDuration = $requestEndTime - $requestStartTime;
+                $requestEndTime = microtime(true);
+                $requestDuration = $requestEndTime - $requestStartTime;
 
-            // Log the response and timing
-            Log::info('Billplz Create Bill Response', [
-                'status_code' => $response->getStatusCode(),
-                'response' => json_decode($response->getBody(), true),
-                'request_duration' => $requestDuration,
-                'total_duration' => microtime(true) - $startTime
-            ]);
+                // Log the response and timing
+                Log::info('Billplz Create Bill Response', [
+                    'status_code' => $response->getStatusCode(),
+                    'response' => json_decode($response->getBody(), true),
+                    'request_duration' => $requestDuration,
+                    'total_duration' => microtime(true) - $startTime
+                ]);
 
-            if ($response->getStatusCode() === 200) {
-                $responseData = json_decode($response->getBody(), true);
-                return [
-                    'url' => $responseData['url'],
-                    'billCode' => $responseData['id'],
-                    'status' => true
-                ];
+                if ($response->getStatusCode() === 200) {
+                    $responseData = json_decode($response->getBody(), true);
+                    return [
+                        'url' => $responseData['url'],
+                        'billCode' => $responseData['id'],
+                        'status' => true
+                    ];
+                }
+
+                // Log error response
+                Log::error('Billplz Create Bill Failed', [
+                    'status_code' => $response->getStatusCode(),
+                    'response' => json_decode($response->getBody(), true),
+                    'request_duration' => $requestDuration,
+                    'request_params' => $billplzParams
+                ]);
+
+                return ['error' => 'Failed to create bill', 'status' => false];
+            } catch (\GuzzleHttp\Exception\ConnectException $e) {
+                Log::error('Billplz Connection Error', [
+                    'message' => $e->getMessage(),
+                    'code' => $e->getCode(),
+                    'request_params' => $billplzParams
+                ]);
+                return ['error' => 'Connection error: ' . $e->getMessage(), 'status' => false];
+            } catch (\GuzzleHttp\Exception\RequestException $e) {
+                Log::error('Billplz Request Error', [
+                    'message' => $e->getMessage(),
+                    'code' => $e->getCode(),
+                    'response' => $e->hasResponse() ? json_decode($e->getResponse()->getBody(), true) : null,
+                    'request_params' => $billplzParams
+                ]);
+                return ['error' => 'Request error: ' . $e->getMessage(), 'status' => false];
             }
-
-            // Log error response
-            Log::error('Billplz Create Bill Failed', [
-                'status_code' => $response->getStatusCode(),
-                'response' => json_decode($response->getBody(), true),
-                'request_duration' => $requestDuration
-            ]);
-
-            return ['error' => 'Failed to create bill', 'status' => false];
         } catch (\Throwable $th) {
             // Enhanced error logging
             Log::error('Billplz Create Bill Exception', [
@@ -129,7 +170,8 @@ class BillplzService
                 'file' => $th->getFile(),
                 'line' => $th->getLine(),
                 'trace' => $th->getTraceAsString(),
-                'duration' => microtime(true) - $startTime
+                'duration' => microtime(true) - $startTime,
+                'environment' => app()->environment()
             ]);
             return ['error' => $th->getMessage(), 'status' => false];
         }
