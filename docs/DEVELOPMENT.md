@@ -50,9 +50,15 @@ php artisan migrate --seed
 # Terminal 1 - Laravel development server
 php artisan serve
 
-# Terminal 2 - Vite development server
-npm run dev
+# Terminal 2 - Frontend assets (Eventmie Pro uses Laravel Mix)
+cd eventmie-pro
+npm install
+npm run watch
 ```
+
+Notes:
+- Eventmie Pro compiles assets from `eventmie-pro/resources/js` and `eventmie-pro/resources/sass` into `eventmie-pro/publishable/assets` using Laravel Mix.
+- Pages include their bundles via the `eventmie_asset()` helper and the `frontend-assets` route; no Vite dev server is used.
 
 ## Git Workflow
 

@@ -52,7 +52,7 @@ EzyTix4U is a comprehensive event ticketing platform built with Laravel and Even
 ### Frontend
 - **Vue.js**: Progressive JavaScript framework
 - **Bootstrap**: UI framework
-- **Vite**: Build tool and development server
+- **Laravel Mix**: Build tool (assets compiled in `eventmie-pro`)
 
 ### Payment Gateways
 - **PayPal Express**: International payments
@@ -113,6 +113,12 @@ php artisan migrate --seed
 
 6. **Compile assets**
 ```bash
+# Root-level assets (if any)
+npm run dev
+
+# Eventmie Pro assets
+cd eventmie-pro
+npm install
 npm run dev
 ```
 
@@ -165,6 +171,7 @@ MAIL_FROM_NAME="EzyTix4U"
 - [Database Schema](docs/DATABASE.md) - Database structure and relationships
 - [Architecture Overview](docs/ARCHITECTURE.md) - System architecture and components
 - [Development Guide](docs/DEVELOPMENT.md) - Development workflow and best practices
+- [Project Structure](docs/PROJECT_STRUCTURE.md) - Where everything lives and how it connects
 
 ### Integration Guides
 - [API Integration Guide](docs/API_INTEGRATION.md) - Third-party integration instructions

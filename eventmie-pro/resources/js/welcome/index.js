@@ -29,4 +29,29 @@ Vue.component('banner-slider', require('./components/BannerSlider').default);
  */
 window.app = new Vue({
     el: '#eventmie_app',
+    mounted() {
+        this.initHowItWorksTabs();
+    },
+    methods: {
+        initHowItWorksTabs() {
+            console.log('Initializing How It Works tabs...');
+            
+            // Enable tab click functionality
+            $('#howItWorksTabs a').click(function (e) {
+                e.preventDefault();
+                console.log('Tab clicked:', $(this).text());
+                $(this).tab('show');
+            });
+
+            // Auto-switch tabs every 5 seconds
+            let tabs = $('#howItWorksTabs a');
+            console.log('Found tabs:', tabs.length);
+            let index = 0;
+            setInterval(() => {
+                index = (index + 1) % tabs.length;
+                console.log('Auto-switching to tab:', index);
+                tabs.eq(index).tab('show');
+            }, 5000);
+        }
+    }
 });

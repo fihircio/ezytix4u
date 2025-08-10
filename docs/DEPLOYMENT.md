@@ -73,6 +73,13 @@ npm install
 npm run production
 ```
 
+Note: Build frontend assets from the `eventmie-pro` package directory if you are customizing package Vue/CSS:
+```bash
+cd eventmie-pro
+npm install
+npm run production
+```
+
 #### Environment Configuration
 ```bash
 cp .env.example .env

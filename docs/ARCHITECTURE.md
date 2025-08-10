@@ -3,6 +3,30 @@
 ## Overview
 The Event Portal is built on Laravel with Eventmie Pro integration, providing a comprehensive event management solution. The system follows a modular architecture with clear separation of concerns.
 
+## Diagram
+
+```mermaid
+graph TD;
+  A[Browser Request] --> B[routes/web.php<br/>Eventmie::routes()];
+  B --> C[eventmie-pro/routes/eventmie.php];
+  C --> D[Controllers<br/>(frontend/admin overrides)];
+  D --> E[Blade Views<br/>(eventmie::...)];
+  E --> F[Layout mounts #eventmie_app];
+  F --> G[Page JS bundle<br/>(publishable/assets/js/*.js)];
+  G --> H[Vue Components];
+
+  %% Assets pipeline
+  E --> I[include_css/include_js];
+  I --> J[eventmie_asset() helper];
+  J --> K[Route frontend-assets<br/>EventmieController@assets];
+  K --> L[publishable/assets<br/>css/js/webfonts];
+
+  %% Admin (Voyager)
+  C --> M[/admin routes (Voyager)];
+  M --> N[Voyager Controllers];
+  N --> O[Voyager Views];
+```
+
 ## System Components
 
 ### 1. Core Application (Laravel)
@@ -17,7 +41,7 @@ The Event Portal is built on Laravel with Eventmie Pro integration, providing a 
 - **Event Management**: Core event functionality
 - **Ticket System**: Ticket creation and management
 - **User Management**: User roles and permissions
-- **Payment Processing**: Payment gateway integration
+- **Payment Processing**: PayPal Express, Billplz, ToyyibPay, USAePay integrations
 - **Email Notifications**: Automated communication
 
 ### 3. Frontend (Vue.js)
@@ -83,6 +107,20 @@ The Event Portal is built on Laravel with Eventmie Pro integration, providing a 
    - Background jobs
    - Email queuing
    - Task scheduling
+
+## Package Integration Details (Eventmie Pro)
+
+- Service Provider: `eventmie-pro/src/EventmieServiceProvider.php` registers third-party providers (Voyager, Socialite, Ziggy, Charts, DataTables, DomPDF, Honeypot), aliases middlewares, loads package views/translations/migrations, and merges config.
+- Routes: `routes/web.php` calls `Eventmie::routes()` which includes `eventmie-pro/routes/eventmie.php` for all site and admin routes (welcome, events, bookings, profile, dashboard, voyager overrides).
+- Views: Blade templates under `eventmie-pro/resources/views` are referenced via the `eventmie::` namespace. You can override by placing files under `resources/views/vendor/eventmie`.
+- Assets: Built with Laravel Mix inside `eventmie-pro` and served via `eventmie_asset()` helper through the `frontend-assets` route from `EventmieController@assets`.
+- Admin (Voyager): Admin routes are available under `/admin` by default and are extended/overridden by controllers in `eventmie-pro/src/Http/Controllers/Voyager` with views under `eventmie-pro/resources/views/vendor/voyager`.
+
+## Request and Asset Flow
+
+1. Request hits Laravel → `routes/web.php` → `Eventmie::routes()` → `eventmie-pro/routes/eventmie.php`.
+2. Controller returns `eventmie::...` blade → layout `eventmie::layouts.app` mounts `#eventmie_app`.
+3. Page-specific JS from `eventmie-pro/resources/js/...` compiled to `publishable/assets/js/*.js` is included via `eventmie_asset('js/xyz.js')` and initializes Vue on `#eventmie_app`.
 
 ## Security Architecture
 
