@@ -8,6 +8,7 @@ use Classiebit\Eventmie\Middleware\Authenticate;
 
 use Classiebit\Eventmie\Http\Controllers\VenueController;
 use Classiebit\Eventmie\Http\Controllers\MyVenueController;
+use Classiebit\Eventmie\Http\Controllers\AiController;
 use Classiebit\Eventmie\Middleware\CheckPrivateEvent;
 use Illuminate\Support\Facades\Schema;
 /*
@@ -57,6 +58,8 @@ Route::get('/lang/{lang?}', $namespace.'\EventmieController@change_lang')->name(
 // Package Asset
 Route::get('frontend-assets', $namespace.'\EventmieController@assets')->name('eventmie.eventmie_assets');
 
+// AI Generation - moved to top level for better accessibility
+Route::post('/ai/generate', [AiController::class, 'generate'])->name('eventmie.ai_generate');
 
 /* Auth */
 Auth::routes();
@@ -119,10 +122,11 @@ Route::group([
 
     /* Welcome */
     Route::get('/', $namespace."\WelcomeController@index")->name('welcome');
+// AI Generation route moved to top level
 
-    Route::get('/home', function() {
-        return redirect()->route('eventmie.welcome');
-    });
+Route::get('/home', function() {
+    return redirect()->route('eventmie.welcome');
+});
     
 
     /* Organiser Dashboard */

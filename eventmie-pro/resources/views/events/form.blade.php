@@ -60,5 +60,11 @@
 </script>
 <script src="https://maps.googleapis.com/maps/api/js?key={{ setting('apps.google_map_key') }}&libraries=places">
 </script>
+<!-- Load latest CKEditor 4 LTS to avoid deprecation banner -->
+<script src="https://cdn.ckeditor.com/4.25.1-lts/standard-all/ckeditor.js"></script>
+<style>
+/* Fallback: hide CKEditor warning if any older instance shows banner */
+.cke_notifications_area { display: none !important; }
+</style>
 <script type="text/javascript" src="{{ eventmie_asset('js/events_manage.js') }}"></script>
 @stop

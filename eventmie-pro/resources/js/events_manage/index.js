@@ -30,11 +30,16 @@ import CKEditor from 'ckeditor4-vue';
 window.ckeditor = CKEditor.component;
 Vue.component('ckeditor', window.ckeditor).default;
 
+// Quill-based rich text editor (to match .ql-toolbar .ql-snow UI)
+import { VueEditor } from 'vue2-editor';
+Vue.component('VueEditor', VueEditor);
+
 
 /**
  * Local Components 
  */
 Vue.component('tabs-component', require('./components/Tabs.vue').default);
+Vue.component('ai-modal', require('./components/AiModal.vue').default);
 import Detail from './components/Detail';
 import Media from './components/Media';
 import Location from './components/Location';
@@ -56,6 +61,20 @@ const store = new Vuex.Store({
         tags         : [],
         event_id     : null,
         is_dirty     : false,
+
+        // AI suggested content (optional scratchpad)
+        ai_title: null,
+        ai_excerpt: null,
+        ai_description: null,
+        ai_faq: null,
+        ai_meta_title: null,
+        ai_meta_description: null,
+        ai_meta_keywords: null,
+        
+        // SEO fields
+        meta_title: null,
+        meta_description: null,
+        meta_keywords: null,
         
         v_sch_index         : 0,
         v_repetitive        : 0,
@@ -67,7 +86,7 @@ const store = new Vuex.Store({
 
     },
     mutations: {
-        add(state, {tickets, tags, event_id, v_repetitive, v_repetitive_days, v_repetitive_dates, v_from_time, v_to_time, organiser_id, event, is_dirty}) {
+        add(state, {tickets, tags, event_id, v_repetitive, v_repetitive_days, v_repetitive_dates, v_from_time, v_to_time, organiser_id, event, is_dirty, ai_title, ai_excerpt, ai_description, ai_faq, ai_meta_title, ai_meta_description, ai_meta_keywords}) {
             if(typeof tickets !== "undefined") {
                 state.tickets   = tickets;
             }
@@ -112,10 +131,19 @@ const store = new Vuex.Store({
                 state.is_dirty = is_dirty;
             }
 
+            // AI scratchpad updates
+            if(typeof ai_title !== "undefined") state.ai_title = ai_title;
+            if(typeof ai_excerpt !== "undefined") state.ai_excerpt = ai_excerpt;
+            if(typeof ai_description !== "undefined") state.ai_description = ai_description;
+            if(typeof ai_faq !== "undefined") state.ai_faq = ai_faq;
+            if(typeof ai_meta_title !== "undefined") state.ai_meta_title = ai_meta_title;
+            if(typeof ai_meta_description !== "undefined") state.ai_meta_description = ai_meta_description;
+            if(typeof ai_meta_keywords !== "undefined") state.ai_meta_keywords = ai_meta_keywords;
+
             
 
         },
-        update(state,{ v_sch_index, v_repetitive_days, v_repetitive_dates, v_from_time, v_to_time}){
+        update(state,{ v_sch_index, v_repetitive_days, v_repetitive_dates, v_from_time, v_to_time, meta_title, meta_description, meta_keywords}){
 
             if(typeof v_repetitive_days !== "undefined" && typeof v_sch_index !== "undefined"  ) {
                 state.v_repetitive_days[v_sch_index] = v_repetitive_days;
@@ -131,6 +159,20 @@ const store = new Vuex.Store({
 
             if(typeof v_to_time !== "undefined" && typeof v_sch_index !== "undefined"  ) {
                 state.v_to_time[v_sch_index] = v_to_time;
+            }
+
+            // Update SEO fields
+            if(typeof meta_title !== "undefined") {
+                console.log('Store: updating meta_title from', state.meta_title, 'to', meta_title);
+                state.meta_title = meta_title;
+            }
+            if(typeof meta_description !== "undefined") {
+                console.log('Store: updating meta_description from', state.meta_description, 'to', meta_description);
+                state.meta_description = meta_description;
+            }
+            if(typeof meta_keywords !== "undefined") {
+                console.log('Store: updating meta_keywords from', state.meta_keywords, 'to', meta_keywords);
+                state.meta_keywords = meta_keywords;
             }
         },
     },

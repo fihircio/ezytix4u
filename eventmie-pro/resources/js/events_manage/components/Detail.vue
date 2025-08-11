@@ -2,6 +2,11 @@
     <div>
 
         <form ref="form" @submit.prevent="validateForm" method="POST" enctype="multipart/form-data" class="lgx-contactform">
+            <div class="mb-3">
+                <button type="button" class="btn btn-success" @click="openAi = true">
+                    <i class="fas fa-magic"></i> Create with AI
+                </button>
+            </div>
             <input type="hidden" name="event_id" v-model="event_id">
             
             <input type="hidden" name="organiser_id" v-model="organiser_ids" v-validate="(is_admin ? 'required' : '')" >
@@ -73,15 +78,15 @@
 
             <div class="mb-3">
                 <label class="form-label">{{ trans('em.description') }}</label>
-                <textarea class="form-control"  rows="3" name="description" :value="description" v-validate="'required'" style="display:none;"></textarea>
-                <ckeditor  v-model="description"></ckeditor>
+                <textarea class="form-control"  rows="3" name="description" v-model="description" v-validate="'required'" style="display:none;"></textarea>
+                <vue-editor v-model="description" useCustomImageHandler :editorToolbar="quillToolbar"></vue-editor>
                 <span v-show="errors.has('description')" class="help text-danger">{{ errors.first('description') }}</span>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">{{ trans('em.more_event_info') }} </label>
-                <textarea class="form-control" rows="3" name="faq" :value="faq" style="display:none;"></textarea>
-                <ckeditor v-model="faq"></ckeditor>
+                <textarea class="form-control" rows="3" name="faq" v-model="faq" v-validate="'required'" style="display:none;"></textarea>
+                <vue-editor ref="faqEditor" v-model="faq" useCustomImageHandler :editorToolbar="quillToolbar" @input="onFaqInput"></vue-editor>
                 <span v-show="errors.has('faq')" class="help text-danger">{{ errors.first('faq') }}</span>
             </div>
 
@@ -133,6 +138,7 @@
             <button type="submit" class="btn btn-primary btn-lg mt-2"><i class="fas fa-sd-card"></i> {{ trans('em.save') }}</button>
         </form>                
         
+        <ai-modal v-if="openAi" :seo-only="false" @close="openAi = false" @apply="applyAi"></ai-modal>
     </div>
 </template>
 
@@ -141,6 +147,8 @@
 import _ from 'lodash';
 import { mapState, mapMutations} from 'vuex';
 import mixinsFilters from '../../mixins.js';
+import AiModal from './AiModal.vue';
+import { mapState as _noop } from 'vuex';
 
 
 export default {
@@ -151,6 +159,8 @@ export default {
     mixins:[
         mixinsFilters
     ],
+
+    components: { AiModal },
 
     data() {
         return {
@@ -174,6 +184,20 @@ export default {
             short           : '',
             short_url       : route('eventmie.welcome')+'/',
             e_soldout       : 0,
+
+            // AI modal
+            openAi          : false,
+
+            quillToolbar: [
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'header': [1, 2, 3, false] }],
+                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                [{ 'align': [] }],
+                ['blockquote', 'code-block'],
+                ['link', 'image', 'video'],
+                [{ 'color': [] }, { 'background': [] }],
+                ['clean']
+            ],
         }
     },
 
@@ -209,6 +233,12 @@ export default {
                 this.offline_payment_info = this.event.offline_payment_info;
                 this.e_soldout       = this.event.e_soldout > 0 ? 1 : 0;
                 this.short           = (this.event.short_url == '' || this.event.short_url == null ) ? '' : this.event.short_url;
+                
+                // Only update FAQ if it's not already set (to preserve AI-generated content)
+                if (!this.faq && this.event.faq) {
+                    this.faq = this.event.faq;
+                    this.event_ck.faq = this.event.faq;
+                }
             }    
             
             
@@ -232,6 +262,12 @@ export default {
 
         // submit form
         formSubmit(event) {
+            // Preserve FAQ content before saving
+            this.preserveFaqContent();
+            
+            // Sync form data with Vuex store before saving
+            this.syncFormData();
+            
             // prepare form data for post request
             let post_url = route('eventmie.myevents_store');
             let post_data = new FormData(this.$refs.form);
@@ -250,22 +286,118 @@ export default {
                     });
                     this.showNotification('success', trans('em.event_save_success'));
                     
-                    if(res.data.slug)
-                    {   
-                        //create case redirect with slug
-                        setTimeout(function() {
-                            window.location = route('eventmie.myevents_form',[res.data.slug]);
-                        }, 1000);
-                    }
-                }    
-
+                    // Restore FAQ content after successful save
+                    this.$nextTick(() => {
+                        this.restoreFaqContent();
+                    });
+                }
+                else
+                {
+                    this.showNotification('error', res.data.message);
+                }
             })
             .catch(error => {
                 let serrors = Vue.helpers.axiosErrors(error);
                 if (serrors.length) {
                     this.serverValidate(serrors);
                 }
+                
+                // Restore FAQ content even if save fails
+                this.$nextTick(() => {
+                    this.restoreFaqContent();
+                });
             });
+        },
+
+        // Sync form data with Vuex store before saving
+        syncFormData() {
+            // Ensure all form fields are properly synced
+            if (this.description !== this.event_ck.description) {
+                this.event_ck.description = this.description;
+            }
+            if (this.faq !== this.event_ck.faq) {
+                this.event_ck.faq = this.faq;
+            }
+            
+            // Also ensure the hidden textarea has the current FAQ content
+            if (this.faq && this.faq.trim()) {
+                // Force update the hidden textarea value
+                this.$nextTick(() => {
+                    const hiddenTextarea = this.$refs.form.querySelector('textarea[name="faq"]');
+                    if (hiddenTextarea) {
+                        hiddenTextarea.value = this.faq;
+                    }
+                });
+            }
+        },
+
+        // Preserve FAQ content during form operations
+        preserveFaqContent() {
+            if (this.faq && this.faq.trim()) {
+                // Store the current FAQ content temporarily
+                this._preservedFaq = this.faq;
+            }
+        },
+
+        // Restore FAQ content after form operations
+        restoreFaqContent() {
+            if (this._preservedFaq && (!this.faq || this.faq.trim() === '')) {
+                this.faq = this._preservedFaq;
+                this.event_ck.faq = this._preservedFaq;
+                
+                // Restore the Quill editor content
+                this.$nextTick(() => {
+                    this.setFaqContent(this._preservedFaq);
+                });
+            }
+        },
+
+        onFaqInput(quill) {
+            // Get the HTML content from Quill editor
+            const htmlContent = quill.root.innerHTML;
+            
+            // Update the local data
+            this.faq = htmlContent;
+            
+            // Also update event_ck to ensure consistency
+            this.event_ck.faq = htmlContent;
+            
+            // Mark as dirty
+            this.add({ is_dirty: true });
+        },
+
+        applyAi(payload) {
+            console.log('AI Modal applied payload:', payload);
+            
+            if(payload.title) this.title = payload.title;
+            if(payload.excerpt) this.excerpt = payload.excerpt;
+            if(payload.description) this.description = payload.description;
+            if(payload.faq) {
+                this.faq = payload.faq;
+                // Also update event_ck to ensure consistency
+                this.event_ck.faq = payload.faq;
+                
+                // Manually set the Quill editor content to ensure it displays properly
+                this.$nextTick(() => {
+                    this.setFaqContent(payload.faq);
+                    
+                    // Double-check that the content is properly set
+                    if (this.$refs.faqEditor && this.$refs.faqEditor.quill) {
+                        const quillContent = this.$refs.faqEditor.quill.root.innerHTML;
+                        if (quillContent !== payload.faq) {
+                            // Force update if content doesn't match
+                            this.$refs.faqEditor.quill.root.innerHTML = payload.faq;
+                            this.$refs.faqEditor.quill.update();
+                        }
+                    }
+                });
+            }
+            
+            // No need to update SEO fields here since SEO tab has its own AI generation
+            // SEO fields will be handled independently in the SEO tab
+            
+            this.add({ is_dirty: true });
+            Vue.helpers.showToast('success', trans('em.saved')+' '+trans('em.draft'));
         },
 
         getCategories(){
@@ -372,6 +504,37 @@ export default {
             this.add({is_dirty: false});
         },
 
+        onFaqInput(quill) {
+            this.faq = quill.root.innerHTML;
+        },
+
+        setFaqContent(content) {
+            if (this.$refs.faqEditor && this.$refs.faqEditor.quill) {
+                // Set the Quill editor content
+                this.$refs.faqEditor.quill.root.innerHTML = content;
+                
+                // Also ensure the Vue data is updated
+                this.faq = content;
+                this.event_ck.faq = content;
+                
+                // Force a re-render of the Quill editor
+                this.$refs.faqEditor.quill.update();
+            }
+        },
+
+        // Initialize Quill editor content
+        initQuillContent() {
+            this.$nextTick(() => {
+                if (this.faq && this.faq.trim() && this.$refs.faqEditor && this.$refs.faqEditor.quill) {
+                    // Set the content in Quill editor
+                    this.$refs.faqEditor.quill.root.innerHTML = this.faq;
+                    
+                    // Force Quill to recognize the content
+                    this.$refs.faqEditor.quill.update();
+                }
+            });
+        },
+
 
     },
 
@@ -389,6 +552,16 @@ export default {
             });
             
         };
+        this.initQuillContent();
+    },
+
+    updated() {
+        // Check if FAQ content needs to be restored after component updates
+        this.$nextTick(() => {
+            if (this._preservedFaq && (!this.faq || this.faq.trim() === '')) {
+                this.restoreFaqContent();
+            }
+        });
     },
 
     watch: {
@@ -399,6 +572,32 @@ export default {
 
         short : function(){
             this.shortUrl();
+        },
+        
+        // Watch FAQ field changes
+        faq: function(newVal, oldVal) {
+            if (newVal !== oldVal) {
+                // Ensure event_ck is also updated
+                this.event_ck.faq = newVal;
+                
+                // If FAQ content was cleared unexpectedly and we have preserved content, restore it
+                if ((!newVal || newVal.trim() === '') && this._preservedFaq && oldVal && oldVal.trim()) {
+                    this.$nextTick(() => {
+                        this.restoreFaqContent();
+                    });
+                }
+                
+                // Keep Quill editor in sync with data changes
+                this.$nextTick(() => {
+                    if (this.$refs.faqEditor && this.$refs.faqEditor.quill && newVal && newVal.trim()) {
+                        const currentQuillContent = this.$refs.faqEditor.quill.root.innerHTML;
+                        if (currentQuillContent !== newVal) {
+                            this.$refs.faqEditor.quill.root.innerHTML = newVal;
+                            this.$refs.faqEditor.quill.update();
+                        }
+                    }
+                });
+            }
         }
     }
 

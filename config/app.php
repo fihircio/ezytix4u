@@ -166,6 +166,7 @@ return [
          */
         Billplz\Laravel\BillplzServiceProvider::class,
         Tarsoft\Toyyibpay\ToyyibpayServiceProvider::class,
+        Classiebit\Eventmie\EventmieServiceProvider::class,
         /*
          * Application Service Providers...
          */
@@ -231,6 +232,7 @@ return [
         'View' => Illuminate\Support\Facades\View::class,
         'Billplz' => Billplz\Laravel\Billplz::class,
         'Toyyibpay' => Tarsoft\Toyyibpay\ToyyibpayFacade::class,
+        'Eventmie' => Classiebit\Eventmie\Facades\Eventmie::class,
 
     ],
 

@@ -90484,7 +90484,32 @@ Vue.component('banner-slider', (__webpack_require__(/*! ./components/BannerSlide
  * e.g interceptors 
  */
 window.app = new Vue({
-  el: '#eventmie_app'
+  el: '#eventmie_app',
+  mounted() {
+    this.initHowItWorksTabs();
+  },
+  methods: {
+    initHowItWorksTabs() {
+      console.log('Initializing How It Works tabs...');
+
+      // Enable tab click functionality
+      $('#howItWorksTabs a').click(function (e) {
+        e.preventDefault();
+        console.log('Tab clicked:', $(this).text());
+        $(this).tab('show');
+      });
+
+      // Auto-switch tabs every 5 seconds
+      var tabs = $('#howItWorksTabs a');
+      console.log('Found tabs:', tabs.length);
+      var index = 0;
+      setInterval(() => {
+        index = (index + 1) % tabs.length;
+        console.log('Auto-switching to tab:', index);
+        tabs.eq(index).tab('show');
+      }, 5000);
+    }
+  }
 });
 })();
 

@@ -896,6 +896,21 @@ class SettingsTableSeeder extends Seeder
             ]), "type" => "checkbox", "order" => "47", "group" => "Regional", ])->save();
         }
 
+        // AI settings group
+        $setting = $this->findSetting("ai.openai_api_key");
+        if (!$setting->exists) {
+            $setting->fill([
+                "display_name" => "OpenAI API Key",
+                "value" => "",
+                "details" => json_encode([
+                    "description" => "Need to Add OpenAI API Key to Enable Create Event with AI feature. Please read instructions here - https://ezytix4u.com/docs/ai-event-creation"
+                ]),
+                "type" => "text",
+                "order" => "1",
+                "group" => "AI",
+            ])->save();
+        }
+
        $setting = $this->findSetting("apps.usaepay_production_mode");
         if (!$setting->exists) {
             $setting->fill(["display_name" => "USAePay Production Mode", "value" => "0", "details" => json_encode([
