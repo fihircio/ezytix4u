@@ -282,7 +282,14 @@
                                 {{ __('voyager::generic.Set Callback URL on your Toyyibpay Dashboard') }} - <code>{{ route('eventmie.bookings_toyyibpay_callback') }}</code>
                             </div>
                             @endif
-
+                            {{-- Info for Chipin Callback --}}
+                            @if($setting->key == 'apps.chipin_api_key')
+                            <br>
+                            <div class="alert alert-info">
+                                {{ __('voyager::generic.Set Callback URL on your Chipin Dashboard') }} - <code>{{ route('eventmie.bookings_chipin_callback') }}</code>
+                            </div>
+                            @endif
+                            
                             <div class="panel-heading">
                                 <h3 class="panel-title">
                                     {{ $setting->display_name }} @if(config('voyager.show_dev_tips'))<code>setting('{{ $setting->key }}')</code>@endif
@@ -417,6 +424,23 @@
                                     @if($setting->key == 'apps.toyyibpay_sandbox')
                                         <input type="checkbox" name="{{ $setting->key }}" id="toyyibpay_sandbox" value="1" {{ $setting->value ? 'checked' : '' }} >
                                         <label for="toyyibpay_sandbox">Enable Sandbox Mode</label>
+                                    @endif
+
+                                    @if($setting->key == 'apps.chipin_brand_id')
+                                        <input type="text" class="form-control" name="{{ $setting->key }}" value="{{ $setting->value }}">
+                                    @endif
+
+                                    @if($setting->key == 'apps.chipin_api_key')
+                                        <input type="password" class="form-control" name="{{ $setting->key }}" value="{{ $setting->value }}">
+                                    @endif
+
+                                    @if($setting->key == 'apps.chipin_environment')
+                                        <select class="form-control" name="{{ $setting->key }}">
+                                            <option value="sandbox" {{ $setting->value == 'sandbox' ? 'selected' : '' }}>Sandbox</option>
+                                            <option value="production" {{ $setting->value == 'production' ? 'selected' : '' }}>Production</option>
+                                        </select>
+                                        <button type="button" class="btn btn-sm btn-info mt-2" id="test-chipin-connection">Test Connection</button>
+                                        <div id="chipin-connection-result" class="mt-2"></div>
                                     @endif
 
                                     <?php $options = json_decode($setting->details); ?>
@@ -563,16 +587,13 @@
                 }
             });
 
-            @can('delete', Voyager::model('Setting'))
+            // Delete setting functionality
             $('.panel-actions .voyager-trash').click(function () {
                 var display = $(this).data('display-name') + '/' + $(this).data('display-key');
-
                 $('#delete_setting_title').text(display);
-
                 $('#delete_form')[0].action = '{{ route('voyager.settings.delete', [ 'id' => '__id' ]) }}'.replace('__id', $(this).data('id'));
                 $('#delete_modal').modal('show');
             });
-            @endcan
 
             $('.toggleswitch').bootstrapToggle();
 
@@ -584,6 +605,38 @@
                 e.preventDefault();
                 $(this).closest('form').attr('action', $(this).attr('href'));
                 $(this).closest('form').submit();
+            });
+
+            // Test Chipin Connection
+            $('#test-chipin-connection').click(function() {
+                var button = $(this);
+                var resultDiv = $('#chipin-connection-result');
+                
+                button.prop('disabled', true).html('Testing...');
+                resultDiv.html('<div class="alert alert-info">Testing connection to Chipin API...</div>');
+                
+                $.ajax({
+                    url: '{{ route("voyager.settings.test_chipin_connection") }}',
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        chipin_brand_id: $('input[name="apps.chipin_brand_id"]').val(),
+                        chipin_api_key: $('input[name="apps.chipin_api_key"]').val(),
+                        chipin_environment: $('select[name="apps.chipin_environment"]').val()
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            resultDiv.html('<div class="alert alert-success">Connection successful! Chipin API is working correctly.</div>');
+                        } else {
+                            resultDiv.html('<div class="alert alert-danger">Connection failed: ' + response.message + '</div>');
+                        }
+                        button.prop('disabled', false).html('Test Connection');
+                    },
+                    error: function(xhr) {
+                        resultDiv.html('<div class="alert alert-danger">Error: ' + (xhr.responseJSON ? xhr.responseJSON.message : 'Unknown error occurred') + '</div>');
+                        button.prop('disabled', false).html('Test Connection');
+                    }
+                });
             });
         });
     </script>

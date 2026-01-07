@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Auth;
 use Classiebit\Eventmie\Services\PaypalExpress;
@@ -22,6 +23,7 @@ use Classiebit\Eventmie\Services\USAePay;
 use Illuminate\Support\Facades\DB;
 use Classiebit\Eventmie\Services\BillplzService;
 use Classiebit\Eventmie\Services\ToyyibPayService;
+use Classiebit\Eventmie\Services\ChipinService;
 use Throwable;
 
 class BookingsController extends Controller
@@ -50,6 +52,7 @@ class BookingsController extends Controller
         $this->organiser_id = null;
         $this->billplzService = new BillplzService(setting('apps'));
         $this->toyyibPayService = new ToyyibPayService(setting('apps'));
+        $this->chipinService = new ChipinService(setting('apps'));
         
         $this->USAePay      = new USAePay;
         
@@ -290,15 +293,30 @@ class BookingsController extends Controller
         }
         
         // Loop through each ticket and selected seats to get the quantity
-        foreach($request->ticket_id as $key => $ticket_id) 
+        foreach($request->ticket_id as $key => $ticket_id)
         {
             $seat_ticket = 'seat_id_' . $ticket_id;
             $quantity = 0;
 
+            // First check if there are seats selected for this ticket
             if (!empty($request->$seat_ticket)) {
                 $quantity = count($request->$seat_ticket);
-            } elseif (!empty($request->quantity[$key])) {
+            }
+            // Check for quantity indexed by ticket_id (Robust)
+            elseif (isset($request->quantity[$ticket_id])) {
+                $quantity = (int)$request->quantity[$ticket_id];
+            }
+            // Fallback to indexed array (Legacy/Fragile)
+            elseif (!empty($request->quantity[$key])) {
                 $quantity = (int)$request->quantity[$key];
+            }
+            
+            // For free tickets, if no quantity is set but there are customer details, assume quantity = 1
+            if($quantity == 0) {
+                $customer_name_field = 'name_'.$key.'_0';
+                if(!empty($request->$customer_name_field)) {
+                    $quantity = 1;
+                }
             }
             
             if ($quantity > 0) {
@@ -310,7 +328,7 @@ class BookingsController extends Controller
                 ];
             }
             
-        } 
+        }
         /*
         dd($selected_tickets, array_map(function($ticket_id) use ($request) {
             $seat_ticket = 'seat_id_' . $ticket_id;
@@ -445,7 +463,6 @@ class BookingsController extends Controller
     }
     
 
-    // book tickets
     public function book_tickets(Request $request)
     {
         // check login user role
@@ -513,9 +530,9 @@ class BookingsController extends Controller
             for($i = 1; $i <= $value['quantity']; $i++)
             {
                 $booking[$key]['customer_id']       = $this->customer_id;
-                $booking[$key]['customer_name']     = $customer['name'];
-                $booking[$key]['customer_email']    = $customer['email'];
-                $booking[$key]['customer_phone']    = $customer['phone'];
+                $booking[$key]['customer_name']     = $customer['name'] ?? '';
+                $booking[$key]['customer_email']    = $customer['email'] ?? '';
+                $booking[$key]['customer_phone']    = $customer['phone'] ?? '';
                 $booking[$key]['organiser_id']      = $this->organiser_id;
                 $booking[$key]['event_id']          = $request->event_id;
                 $booking[$key]['ticket_id']         = $value['ticket_id'];
@@ -893,8 +910,237 @@ class BookingsController extends Controller
     }
     /* =================== TOYYIBPAY ==================== */
 
+    /* =================== CHIPIN ==================== */
+    // 2. Create a payment and redirect to payment gateway
+      /**
+     *  Chipin
+     *
+     * @param  mixed $order
+     * @param  mixed $currency
+     * @param  mixed $booking
+     * @return void
+     */
+    protected function chipin($order = [], $currency = 'MYR', $booking = [])
+    {
+        try {
+            Log::info('Creating Chipin payment', ['order_number' => $order['order_number']]);
+            
+            $response = $this->chipinService->createPayment($order, $currency, $booking);
+            
+            if ($response['status']) {
+                $paymentId = $response['id'] ?? $response['payment_id'] ?? null;
+                if ($paymentId) {
+                    // Store payment ID with order number as key for better reliability
+                    $orderNumber = $order['order_number'];
+                    session(['chipin_payment_id_' . $orderNumber => $paymentId]);
+                    session(['chipin_payment_id' => $paymentId]); // Keep for backward compatibility
+                    session(['chipin_order_number' => $orderNumber]); // Store order number for reference
+                } else {
+                    Log::error('No payment ID found in Chipin response', ['response' => $response]);
+                }
+                return response()->json($response);
+            }
+            
+            return error($response['error'], Response::HTTP_BAD_REQUEST);
+        } catch (\Throwable $th) {
+            Log::error('Chipin payment creation exception', [
+                'error' => $th->getMessage(),
+                'trace' => $th->getTraceAsString()
+            ]);
+            return error($th->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    // 3. Get payment status on redirect from gateway
+    public function chipinCallback(Request $request)
+    {
+        $data = $request->all();
+        $orderNumber = null; // Initialize order number
 
-    /** 
+        // For GET requests, extract payment ID from query parameters
+        if ($request->method() === 'GET') {
+            $allQuery = $request->query();
+            
+            // Check if Chipin replaced {payment_id} placeholder in redirect URLs
+            if ($request->has('payment_id') && $request->query('payment_id') !== '{payment_id}') {
+                $paymentId = $request->query('payment_id');
+                Log::info('Retrieved payment ID from query parameters', ['payment_id' => $paymentId]);
+            }
+            
+            // SECONDARY: Check headers
+            if (empty($paymentId)) {
+                $headers = $request->headers->all();
+                
+                // Check common header names that might contain payment ID
+                $headerPaymentId = $headers['x-payment-id'] ??
+                                  $headers['x-transaction-id'] ??
+                                  $headers['x-chipin-payment-id'] ??
+                                  $headers['payment-id'] ??
+                                  $headers['transaction-id'] ??
+                                  null;
+                
+                if ($headerPaymentId) {
+                    $paymentId = $headerPaymentId;
+                    Log::info('SUCCESS: Retrieved payment ID from headers', [
+                        'payment_id' => $paymentId,
+                        'source' => 'headers',
+                        'headers_checked' => array_keys($headers)
+                    ]);
+                }
+            }
+            
+            
+            // FINAL FALLBACK: Try general session key
+            if (empty($paymentId)) {
+                $paymentId = session('chipin_payment_id');
+                if ($paymentId) {
+                    Log::info('SUCCESS: Retrieved payment ID from general session key', [
+                        'payment_id' => $paymentId
+                    ]);
+                }
+            }
+            
+            
+            if (empty($paymentId)) {
+                Log::error('Chipin GET callback missing payment ID - all fallbacks failed', [
+                    'query' => $allQuery,
+                    'available_keys' => array_keys($allQuery),
+                    'full_url' => $request->fullUrl(),
+                    'path' => $request->path(),
+                    'session_keys' => array_keys(session()->all()),
+                    'has_chipin_session' => session()->has('chipin_payment_id'),
+                    'has_chipin_session_with_order' => $orderNumber ? session()->has('chipin_payment_id_' . $orderNumber) : false,
+                    'order_number' => $orderNumber
+                ]);
+                
+                // FINAL FALLBACK: Try to create a user-friendly error response
+                // Instead of failing completely, try to provide helpful information
+                $errorResponse = [
+                    'error' => 'Payment ID missing',
+                    'message' => 'Unable to retrieve payment information. Please contact support with your order details.',
+                    'suggestion' => 'This may be due to a session timeout or redirect issue. Please try completing your payment again.',
+                    'support_info' => [
+                        'order_number' => $orderNumber ?? 'Unknown',
+                        'timestamp' => now()->toISOString(),
+                        'gateway' => 'Chipin'
+                    ]
+                ];
+                
+                return response()->json($errorResponse, Response::HTTP_BAD_REQUEST);
+            }
+
+            // For GET requests, we'll skip signature verification for now
+            // as the signature might be in headers which we need to handle differently
+            Log::info('Processing GET callback for payment ID', ['payment_id' => $paymentId]);
+        } else {
+            // For POST requests (webhook notifications), verify and process
+            if (!$this->chipinService->verifyWebhook($data)) {
+                Log::error('Chipin webhook verification failed', ['data' => $data]);
+                return response('Invalid signature', Response::HTTP_BAD_REQUEST);
+            }
+
+            // Extract payment ID from webhook data
+            $paymentId = $data['payment_id'] ?? $data['id'] ?? $data['transaction_id'] ?? null;
+            
+            if (empty($paymentId)) {
+                Log::error('Chipin POST callback missing payment ID', [
+                    'data' => $data,
+                    'available_keys' => array_keys($data)
+                ]);
+                return response()->json(['error' => ['Payment ID missing']], Response::HTTP_BAD_REQUEST);
+            }
+
+            Log::info('Processing POST callback for payment ID', ['payment_id' => $paymentId]);
+        }
+
+        // Verify payment status with Chipin API
+        
+        $paymentStatus = $this->chipinService->verifyPaymentStatus($paymentId);
+        
+        Log::info('Chipin verifyPaymentStatus response', ['payment_id' => $paymentId, 'response' => $paymentStatus]);
+        
+        if (isset($paymentStatus['error'])) {
+            Log::error('Chipin payment verification failed', ['payment_id' => $paymentId, 'error' => $paymentStatus['error']]);
+            return error($paymentStatus['error'], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Check if response has expected structure
+        if (!isset($paymentStatus[0]) || !isset($paymentStatus[0]['paymentStatus'])) {
+            Log::error('Chipin payment verification - unexpected response structure', [
+                'payment_id' => $paymentId,
+                'response' => $paymentStatus
+            ]);
+            return error('Invalid payment status response', Response::HTTP_BAD_REQUEST);
+        }
+
+        $status = $paymentStatus[0]['paymentStatus'];
+        $transactionId = $paymentStatus[0]['paymentId'] ?? $paymentId;
+        $orderId = $paymentStatus[0]['orderNo'] ?? null;
+
+        Log::info('Chipin payment status', [
+            'payment_id' => $paymentId,
+            'status' => $status,
+            'transaction_id' => $transactionId,
+            'order_id' => $orderId
+        ]);
+
+        // Check if payment is successful (assuming 'paid' or 'completed' status)
+        if ($status === 'paid' || $status === 'completed') {
+            $flag = [
+                'status' => true,
+                'transaction_id' => $transactionId,
+                'message' => 'Payment successful',
+                'payer_reference' => $paymentId,
+                'price' => $paymentStatus[0]['paymentAmount'] ?? null,
+            ];
+        } else {
+            $flag = [
+                'status' => false,
+                'transaction_id' => $transactionId,
+                'message' => 'Payment failed - Status: ' . $status
+            ];
+        }
+
+        // Clear session payment ID after successful processing
+        if ($orderNumber) {
+            session()->forget('chipin_payment_id_' . $orderNumber);
+        }
+        session()->forget('chipin_payment_id');
+        session()->forget('chipin_order_number');
+
+        return $this->finish_checkout($flag);
+    }
+    
+
+    /**
+     * Handle Chipin overview webhook callbacks
+     * This is for webhook notifications from Chipin
+     */
+    public function chipinOverviewCallback(Request $request)
+    {
+        $data = $request->all();
+        Log::info('Received Chipin overview webhook', [
+            'method' => $request->method(),
+            'data' => $data,
+            'headers' => $request->headers->all(),
+            'full_url' => $request->fullUrl()
+        ]);
+
+        // Verify webhook signature
+        if (!$this->chipinService->verifyWebhook($data)) {
+            Log::error('Chipin overview webhook verification failed', ['data' => $data]);
+            return response('Invalid signature', Response::HTTP_BAD_REQUEST);
+        }
+
+        Log::info('Chipin overview webhook processed successfully', ['data' => $data]);
+        
+        // Return success response
+        return response()->json(['status' => 'success', 'message' => 'Webhook received']);
+    }
+    /* =================== CHIPIN ==================== */
+
+
+    /**
      * 4 Finish checkout process
      * Last: Add data to purchases table and finish checkout
     */
@@ -912,8 +1158,15 @@ class BookingsController extends Controller
         
        // dd('Checkout Status:', $flag);
         //dd('After session retrieval:', $data, $booking, $payment_method);
-        // IMPORTANT!!! clear session data setted during checkout process
+        // IMPORTANT!!! Only clear specific session data that might interfere with payment flow
+        // Don't clear chipin_payment_id session as it's needed for callback
+        // Clear all chipin-related session data except payment ID after successful processing
+        // This ensures we don't lose the payment ID before callback
         session()->forget(['pre_payment', 'booking', 'payment_method']);
+        
+        // Clear chipin session data only after successful callback processing
+        // This will be handled in chipinCallback method after payment verification
+        // session()->forget(['chipin_payment_id_' . $orderNumber, 'chipin_payment_id', 'chipin_order_number']);
         
         // if customer then redirect to mybookings
         $url = route('eventmie.mybookings_index');
@@ -950,6 +1203,8 @@ class BookingsController extends Controller
                 $data['payment_gateway'] = 'USAePay';
             else if ($payment_method == 10)
                 $data['payment_gateway'] = 'ToyyibPay';
+            else if ($payment_method == 11)
+                $data['payment_gateway'] = 'Chipin';
 
             try {
                 //dd('Before DB transaction:', $data, $booking, $flag);
@@ -1020,8 +1275,6 @@ class BookingsController extends Controller
         session()->flash('error', $msg);
         return redirect($url)->withErrors($msg);
 
-        $booking = session('booking');
-        $this->finish_booking($booking, $data);
     }
 
     // 5. finish booking
@@ -1272,10 +1525,6 @@ class BookingsController extends Controller
         if($total_price <= 0)
             return true;
 
-        // if it's Admin
-        if(Auth::user()->hasRole('admin'))
-            return true;
-
         // get payment method
         // paypal will always be default payment method
         // payment_method can either 1 or offline
@@ -1291,6 +1540,10 @@ class BookingsController extends Controller
         // if not-offline
         if($payment_method != 'offline')
             return false;
+
+        // if it's Admin
+        if(Auth::user()->hasRole('admin'))
+            return true;
 
         /* In case of offline method selected */
         
@@ -1512,6 +1765,22 @@ class BookingsController extends Controller
                 return response()->json($toyyibPayResponse);
             } else {
                 return error($toyyibPayResponse['error'], Response::HTTP_REQUEST_TIMEOUT);
+            }
+            
+        }
+        
+        if($payment_method == 11)
+        {
+            if(empty(setting('apps.chipin_brand_id')) || empty(setting('apps.chipin_api_key')))
+            return response()->json(['status' => false, 'url'=>$url, 'message'=>$msg]);
+   
+            // Call createPayment to get the payment link
+            return $this->chipin($order, $currency, $booking);
+            
+            if ($chipinResponse['status']) {
+                return response()->json($chipinResponse);
+            } else {
+                return error($chipinResponse['error'], Response::HTTP_REQUEST_TIMEOUT);
             }
             
         }

@@ -2464,7 +2464,7 @@ function _toPrimitive(input, hint) { if (typeof input !== "object" || input === 
 
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
-  props: ['event', 'max_ticket_qty', 'login_user_id', 'is_admin', 'is_organiser', 'is_customer', 'is_paypal', 'is_offline_payment_organizer', 'is_offline_payment_customer', 'tickets', 'total_capacity', 'booked_tickets', 'currency', 'date_format', 'is_usaepay', 'is_billplz', 'is_toyyibpay'],
+  props: ['event', 'max_ticket_qty', 'login_user_id', 'is_admin', 'is_organiser', 'is_customer', 'is_paypal', 'is_offline_payment_organizer', 'is_offline_payment_customer', 'tickets', 'total_capacity', 'booked_tickets', 'currency', 'date_format', 'is_usaepay', 'is_billplz', 'is_toyyibpay', 'is_chipin'],
   mixins: [_mixins_js__WEBPACK_IMPORTED_MODULE_6__["default"]],
   components: {
     'ticket-component': _TicketList_vue__WEBPACK_IMPORTED_MODULE_7__["default"]
@@ -2870,7 +2870,7 @@ function _toPrimitive(input, hint) { if (typeof input !== "object" || input === 
     AttendeeComponent: _Attendee_vue__WEBPACK_IMPORTED_MODULE_10__["default"],
     SeatComponent: _Seat__WEBPACK_IMPORTED_MODULE_11__["default"]
   },
-  props: ['tickets', 'max_ticket_qty', 'event', 'currency', 'login_user_id', 'is_admin', 'is_organiser', 'is_customer', 'is_paypal', 'is_offline_payment_organizer', 'is_offline_payment_customer', 'booked_tickets', 'is_usaepay', 'is_billplz', 'is_toyyibpay'],
+  props: ['tickets', 'max_ticket_qty', 'event', 'currency', 'login_user_id', 'is_admin', 'is_organiser', 'is_customer', 'is_paypal', 'is_offline_payment_organizer', 'is_offline_payment_customer', 'booked_tickets', 'is_usaepay', 'is_billplz', 'is_toyyibpay', 'is_chipin'],
   data() {
     return {
       openModal: false,
@@ -4301,7 +4301,8 @@ var render = function render() {
       booked_tickets: _vm.booked_tickets,
       is_usaepay: _vm.is_usaepay,
       is_billplz: _vm.is_billplz,
-      is_toyyibpay: _vm.is_toyyibpay
+      is_toyyibpay: _vm.is_toyyibpay,
+      is_chipin: _vm.is_chipin
     }
   }) : _vm._e()], 1);
 };
@@ -4601,7 +4602,7 @@ var render = function render() {
         expression: "item.t_soldout <= 0"
       }],
       staticClass: "w-10 w-20-mobile"
-    }, [item.seatchart != null && item.seatchart.status > 0 && _vm.is_bulk <= 0 ? _c("div", [_c("p", [_vm._v(_vm._s(_vm.trans("em.quantity")) + ": " + _vm._s(_vm.quantity[index]))])]) : _vm._e()]), _vm._v(" "), (item.seatchart == null || item.seatchart != null && item.seatchart.status <= 0) && _vm.is_bulk <= 0 ? _c("div", [typeof _vm.booked_tickets[item.id + "-" + _vm.booked_date_server] != "undefined" ? _c("div", [(item.customer_limit != null ? item.customer_limit : _vm.max_ticket_qty) <= 100 ? _c("select", {
+    }, [item.seatchart != null && item.seatchart.status > 0 && _vm.is_bulk <= 0 ? _c("div", [_c("p", [_vm._v(_vm._s(_vm.trans("em.quantity")) + ": " + _vm._s(_vm.quantity[index]))])]) : _vm._e()]), _vm._v(" "), (item.seatchart == null || item.seatchart != null && item.seatchart.status <= 0) && _vm.is_bulk <= 0 && item.price > 0 ? _c("div", [typeof _vm.booked_tickets[item.id + "-" + _vm.booked_date_server] != "undefined" ? _c("div", [(item.customer_limit != null ? item.customer_limit : _vm.max_ticket_qty) <= 100 ? _c("select", {
       directives: [{
         name: "model",
         rawName: "v-model",
@@ -4610,7 +4611,7 @@ var render = function render() {
       }],
       staticClass: "form-select border-2 form-select-lg",
       attrs: {
-        name: "quantity[]"
+        name: "quantity[" + item.id + "]"
       },
       on: {
         change: function change($event) {
@@ -4652,7 +4653,7 @@ var render = function render() {
       staticClass: "form-control form-input-sm",
       attrs: {
         type: "number",
-        name: "quantity[]",
+        name: "quantity[" + item.id + "]",
         value: "0",
         min: "0",
         max: _vm.booked_tickets[item.id + "-" + _vm.booked_date_server].total_vacant < (item.customer_limit != null ? item.customer_limit : _vm.max_ticket_qty) ? _vm.booked_tickets[item.id + "-" + _vm.booked_date_server].total_vacant : item.customer_limit != null ? item.customer_limit : _vm.max_ticket_qty
@@ -4683,7 +4684,7 @@ var render = function render() {
       }],
       staticClass: "form-select border-2 form-select-lg",
       attrs: {
-        name: "quantity[]"
+        name: "quantity[" + item.id + "]"
       },
       on: {
         change: function change($event) {
@@ -4718,7 +4719,7 @@ var render = function render() {
       staticClass: "form-control form-input-sm",
       attrs: {
         type: "number",
-        name: "quantity[]",
+        name: "quantity[" + item.id + "]",
         value: "0",
         min: "0",
         max: item.quantity > (item.customer_limit != null ? item.customer_limit : _vm.max_ticket_qty) ? parseInt(item.customer_limit != null ? item.customer_limit : _vm.max_ticket_qty) : parseInt(item.quantity)
@@ -4740,7 +4741,27 @@ var render = function render() {
       staticClass: "text-danger"
     }, [_c("small", [_c("i", {
       staticClass: "fas fa-times-circle"
-    }), _vm._v("  " + _vm._s(_vm.trans("em.vacant")) + " 0")])]) : _vm._e()])]) : _vm._e()]), _vm._v(" "), _c("div", {
+    }), _vm._v("  " + _vm._s(_vm.trans("em.vacant")) + " 0")])]) : _vm._e()])]) : _c("div", [_c("input", {
+      directives: [{
+        name: "model",
+        rawName: "v-model",
+        value: _vm.quantity[index],
+        expression: "quantity[index]"
+      }],
+      attrs: {
+        type: "hidden",
+        name: "quantity[" + item.id + "]"
+      },
+      domProps: {
+        value: _vm.quantity[index]
+      },
+      on: {
+        input: function input($event) {
+          if ($event.target.composing) return;
+          _vm.$set(_vm.quantity, index, $event.target.value);
+        }
+      }
+    })])]), _vm._v(" "), _c("div", {
       staticClass: "ticket-price w-25 text-end"
     }, [_c("strong", [_vm._v("\n                                                            " + _vm._s(_vm.total_price[index] ? _vm.total_price[index] : "0.00") + "\n                                                            "), _c("small", [_vm._v(_vm._s(_vm.currency))])]), _vm._v(" "), _vm.quantity[index] > 0 ? _c("span", [_c("i", {
       staticClass: "fas fa-check-circle text-success"
@@ -5036,7 +5057,31 @@ var render = function render() {
         _vm.payment_method = "10";
       }
     }
-  }), _vm._v(" "), _vm._m(3)]) : _vm._e(), _vm._v(" "), _vm.is_organiser > 0 && _vm.is_offline_payment_organizer > 0 || _vm.is_customer > 0 && _vm.is_offline_payment_customer > 0 || _vm.is_admin > 0 || _vm.is_bulk > 0 ? _c("div", {
+  }), _vm._v(" "), _vm._m(3)]) : _vm._e(), _vm._v(" "), _vm.is_admin <= 0 && _vm.is_chipin > 0 ? _c("div", {
+    staticClass: "radio-inline"
+  }, [_c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.payment_method,
+      expression: "payment_method"
+    }],
+    staticClass: "custom-control-input",
+    attrs: {
+      type: "radio",
+      id: "payment_method_chipin",
+      name: "payment_method",
+      value: "11"
+    },
+    domProps: {
+      checked: _vm._q(_vm.payment_method, "11")
+    },
+    on: {
+      change: function change($event) {
+        _vm.payment_method = "11";
+      }
+    }
+  }), _vm._v(" "), _vm._m(4)]) : _vm._e(), _vm._v(" "), _vm.is_organiser > 0 && _vm.is_offline_payment_organizer > 0 || _vm.is_customer > 0 && _vm.is_offline_payment_customer > 0 || _vm.is_admin > 0 || _vm.is_bulk > 0 ? _c("div", {
     staticClass: "radio-inline"
   }, [_c("input", {
     directives: [{
@@ -5166,6 +5211,17 @@ var staticRenderFns = [function () {
   }, [_vm._v("   "), _c("i", {
     staticClass: "fa-regular fa-money-bill-wave"
   }), _vm._v(" Toyyibpay")]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("label", {
+    staticClass: "custom-control-label",
+    attrs: {
+      for: "payment_method_chipin"
+    }
+  }, [_vm._v("   "), _c("i", {
+    staticClass: "fas fa-credit-card"
+  }), _vm._v(" Chipin")]);
 }];
 render._withStripped = true;
 

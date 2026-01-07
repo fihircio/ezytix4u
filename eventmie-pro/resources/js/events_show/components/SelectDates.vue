@@ -341,11 +341,11 @@
             </div>
         </div>
 
-        <ticket-component 
-            v-if="booking_date && start_time && end_time" 
-            :event="event" 
-            :tickets="tickets" 
-            :max_ticket_qty="max_ticket_qty" 
+        <ticket-component
+            v-if="booking_date && start_time && end_time"
+            :event="event"
+            :tickets="tickets"
+            :max_ticket_qty="max_ticket_qty"
             :currency="currency"
             :login_user_id="login_user_id"
             :is_admin="is_admin"
@@ -357,7 +357,8 @@
             :booked_tickets="booked_tickets"
             :is_usaepay="is_usaepay"
             :is_billplz="is_billplz"
-            :is_toyyibpay="is_toyyibpay"    
+            :is_toyyibpay="is_toyyibpay"
+            :is_chipin="is_chipin"
         >
         </ticket-component>
 
@@ -390,7 +391,8 @@ export default {
         'date_format',
         'is_usaepay',
         'is_billplz',
-        'is_toyyibpay'
+        'is_toyyibpay',
+        'is_chipin'
     ],
 
     mixins:[

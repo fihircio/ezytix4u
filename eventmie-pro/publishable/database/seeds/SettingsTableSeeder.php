@@ -930,6 +930,33 @@ class SettingsTableSeeder extends Seeder
             $setting->fill(["display_name" => "USAePay Pin", "value" => "", "details"=> null, "type" => "text", "order" => "36", "group" => "Apps", ])->save();
         }
 
+        // Chipin Payment Gateway Settings
+        $setting = $this->findSetting("apps.chipin_brand_id");
+        if (!$setting->exists) {
+            $setting->fill(["display_name" => "Chipin Brand ID", "value" => "", "details" => null, "type" => "text", "order" => "50", "group" => "Apps", ])->save();
+        }
+
+        $setting = $this->findSetting("apps.chipin_api_key");
+        if (!$setting->exists) {
+            $setting->fill(["display_name" => "Chipin API Key", "value" => "", "details" => null, "type" => "text", "order" => "50", "group" => "Apps", ])->save();
+        }
+
+        $setting = $this->findSetting("apps.chipin_environment");
+        if (!$setting->exists) {
+            $setting->fill([
+                "display_name" => "Chipin Environment",
+                "value" => "sandbox",
+                "details" => json_encode([
+                    "validation" => [
+                        "rule" => "in:0,1,on,off"
+                    ]
+                ]),
+                "type" => "checkbox",
+                "order" => "50",
+                "group" => "Apps",
+            ])->save();
+        }
+
     }
 
     /**

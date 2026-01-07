@@ -259,6 +259,7 @@ class EventsController extends Controller
         $is_paypal = $this->is_paypal();
         $is_billplz = $this->is_billplz();
         $is_toyyibpay = $this->is_toyyibpay();
+        $is_chipin = $this->is_chipin();
 
         $is_usaepay = $this->USAePay->isUSAePay();
         
@@ -270,8 +271,8 @@ class EventsController extends Controller
         $total_capacity = $tickets_data['total_capacity'];
 
         return Eventmie::view($view, compact(
-            'event', 'tag_groups', 'max_ticket_qty', 'free_tickets', 
-            'ended', 'category', 'country', 'google_map_key', 'is_paypal','is_billplz', 'is_toyyibpay',  
+            'event', 'tag_groups', 'max_ticket_qty', 'free_tickets',
+            'ended', 'category', 'country', 'google_map_key', 'is_paypal','is_billplz', 'is_toyyibpay', 'is_chipin',
             'tickets', 'currency', 'booked_tickets', 'total_capacity', 'extra', 'is_usaepay'));
     }
 
@@ -380,6 +381,18 @@ class EventsController extends Controller
               $is_toyyibpay = 0;
           
           return $is_toyyibpay;
+      }
+
+      // is_chipin
+      
+      protected function is_chipin()
+      {
+          // if have Chipin keys then will show Chipin payment option otherwise hide
+          $is_chipin = 1;
+          if(empty(setting('apps.chipin_brand_id')) || empty(setting('apps.chipin_api_key')))
+              $is_chipin = 0;
+          
+          return $is_chipin;
       }
 
     // get tickets and it is public

@@ -117,7 +117,7 @@
                                                         
                                                             <!-- <div class="w-10 w-20-mobile"> -->
                                                             <!-- Hide quantity dropdown in case of reserved seating -->
-                                                            <div  v-if="(item.seatchart == null || (item.seatchart != null  && item.seatchart.status <= 0) )  && is_bulk <= 0 " >
+                                                            <div  v-if="(item.seatchart == null || (item.seatchart != null  && item.seatchart.status <= 0) )  && is_bulk <= 0 && item.price > 0" >
                                                                 <!-- CUSTOM -->    
                                                                 <!-- Live stock alert  -->
                                                                 <!-- if any booked tickets -->
@@ -126,7 +126,7 @@
                                                                 '>
                                                                     
                                                                     <select class="form-select border-2 form-select-lg" 
-                                                                        name="quantity[]" 
+                                                                        :name="'quantity['+item.id+']'" 
                                                                         v-model="quantity[index]"
                                                                         v-if='(item.customer_limit != null ? item.customer_limit :  max_ticket_qty) <= 100'
                                                                     >
@@ -137,7 +137,7 @@
                                                                         >{{itm }}</option>
                                                                         <option v-else :value="itm" v-for=" (itm, ind) in (item.quantity > (item.customer_limit != null ? item.customer_limit :  max_ticket_qty) ? parseInt(item.customer_limit != null ? item.customer_limit :  max_ticket_qty) : parseInt(item.quantity))"  :key="ind">{{itm }}</option>
                                                                     </select>
-                                                                    <input v-else type="number" name="quantity[]" 
+                                                                    <input v-else type="number" :name="'quantity['+item.id+']'" 
                                                                         v-model="quantity[index]" value="0" class="form-control form-input-sm" 
                                                                         min="0" :max="booked_tickets[item.id+'-'+booked_date_server].total_vacant < (item.customer_limit != null ? item.customer_limit :  max_ticket_qty) ? booked_tickets[item.id+'-'+booked_date_server].total_vacant : (item.customer_limit != null ? item.customer_limit :  max_ticket_qty)"
                                                                     >
@@ -154,14 +154,14 @@
                                                                 </div>
                                                                 <div v-else>
                                                                     <select class="form-select border-2 form-select-lg" 
-                                                                        name="quantity[]" 
+                                                                        :name="'quantity['+item.id+']'" 
                                                                         v-model="quantity[index]"
                                                                         v-if="(item.customer_limit != null ? item.customer_limit :  max_ticket_qty) <= 100"
                                                                     >
                                                                         <option value="0" selected>0</option>
                                                                         <option :value="itm" v-for=" (itm, ind) in item.quantity > (item.customer_limit != null ? item.customer_limit :  max_ticket_qty) ? parseInt((item.customer_limit != null ? item.customer_limit :  max_ticket_qty)) : parseInt(item.quantity)"  :key="ind">{{itm }}</option>
                                                                     </select>
-                                                                    <input v-else type="number" name="quantity[]" v-model="quantity[index]" value="0" class="form-control form-input-sm" min="0" :max="item.quantity > (item.customer_limit != null ? item.customer_limit :  max_ticket_qty) ? parseInt((item.customer_limit != null ? item.customer_limit :  max_ticket_qty)) : parseInt(item.quantity)">
+                                                                    <input v-else type="number" :name="'quantity['+item.id+']'" v-model="quantity[index]" value="0" class="form-control form-input-sm" min="0" :max="item.quantity > (item.customer_limit != null ? item.customer_limit :  max_ticket_qty) ? parseInt((item.customer_limit != null ? item.customer_limit :  max_ticket_qty)) : parseInt(item.quantity)">
                                                                     <!-- Show if vacant less than max_ticket_qty -->
                                                                     <p class="text-primary h6" 
                                                                         v-if="item.quantity < (item.customer_limit != null ? item.customer_limit :  max_ticket_qty) && item.quantity > 0">
@@ -174,8 +174,11 @@
                                                                     </p>
                                                                 </div>
                                                             </div>
+                                                            <div v-else>
+                                                                <input type="hidden" :name="'quantity['+item.id+']'" v-model="quantity[index]">
+                                                            </div>
                                                     </div>
-                                                    <div class="ticket-price w-25 text-end">
+                                                            <div class="ticket-price w-25 text-end">
                                                             <strong>
                                                                 {{ total_price[index] ? total_price[index] : '0.00' }}
                                                                 <small>{{currency}}</small>
@@ -327,7 +330,12 @@
 
                                                 <div class="radio-inline" v-if="is_admin <= 0 && is_toyyibpay > 0">
                                                     <input type="radio" class="custom-control-input" id="payment_method_toyyibpay" name="payment_method" v-model="payment_method" value="10">
-                                                    <label class="custom-control-label" for="payment_method_toyyibpay">  &nbsp;<i class="fa-regular fa-money-bill-wave"></i> Toyyibpay</label> 
+                                                    <label class="custom-control-label" for="payment_method_toyyibpay">  &nbsp;<i class="fa-regular fa-money-bill-wave"></i> Toyyibpay</label>
+                                                </div>
+
+                                                <div class="radio-inline" v-if="is_admin <= 0 && is_chipin > 0">
+                                                    <input type="radio" class="custom-control-input" id="payment_method_chipin" name="payment_method" v-model="payment_method" value="11">
+                                                    <label class="custom-control-label" for="payment_method_chipin">  &nbsp;<i class="fas fa-credit-card"></i> Chipin</label>
                                                 </div>
                     
                                                 <!-- For Admin & Organizer & Customer -->
@@ -422,7 +430,8 @@ export default {
         'booked_tickets',
         'is_usaepay',
         'is_billplz',
-        'is_toyyibpay'
+        'is_toyyibpay',
+        'is_chipin'
     ],
 
     data() {

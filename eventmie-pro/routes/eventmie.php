@@ -93,22 +93,26 @@ Route::group([
     'prefix' => config('eventmie.route.prefix').'/'.config('eventmie.route.admin_prefix'),
 ], function () use ($namespace) {
     $controller     = $namespace.'\Voyager\DashboardController';
+    $settingsController = $namespace.'\Voyager\VoyagerSettingsController';
     
     \Voyager::routes();
     
     /* Override Voyager Default Routes */
-    Route::get('/', "$controller@index")->name('voyager.dashboard');  
+    Route::get('/', "$controller@index")->name('voyager.dashboard');
     Route::post('sales/report', "$controller@sales_report")->name('voyager.sales_report');
     Route::post('export/sales/report', "$controller@export_sales_report")->name('voyager.export_sales_report');
     Route::post('event/total/sales_price', "$controller@EventTotalBySalesPrice")->name('voyager.event_total_by_sales_price');
     Route::post('get/event', "$controller@getEvent")->name('voyager.get_event');
 
     // Override menus route
-    Route::get('/menus', function() { 
+    Route::get('/menus', function() {
         return redirect()
         ->route("voyager.dashboard")
-        ->send(); 
+        ->send();
     })->name('voyager.menus.index');
+
+    // Chipin Settings Test Connection
+    Route::post('settings/test-chipin-connection', "$settingsController@testConnection")->name('voyager.settings.test_chipin_connection');
 
    
 });
@@ -256,6 +260,12 @@ Route::get('/home', function() {
 
         // Toyyibpay Callback
         Route::match(['get', 'post'], '/bookings/toyyibpay/callback', "$controller@toyyibpayCallback")->name('bookings_toyyibpay_callback');
+        
+        // Chipin Callback
+        Route::get('/chipin/callback', "$controller@chipinCallback")->name('bookings_chipin_callback');
+        
+        // Chipin Overview Callback (for webhook notifications)
+        Route::post('/chipin/overview/callbacks', "$controller@chipinOverviewCallback")->name('bookings_chipin_overview_callback');
     
         // Redirect back to event
         Route::get('/login-first', "$controller@login_first")->name('login_first');

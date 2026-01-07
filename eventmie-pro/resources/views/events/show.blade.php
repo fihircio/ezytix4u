@@ -133,13 +133,14 @@
                                                     :is_usaepay="{{ json_encode($is_usaepay) }}"
                                                     :is_billplz="{{ $is_billplz }}"
                                                     :is_toyyibpay="{{ $is_toyyibpay }}"
+                                                    :is_chipin="{{ $is_chipin }}"
                                                     :date_format="{{ json_encode(
                                                         [
                                                             'vue_date_format' => format_js_date(),
                                                             'vue_time_format' => format_js_time(),
-                                                        ], 
+                                                        ],
                                                         JSON_HEX_APOS,
-                                                    ) }}"         
+                                                    ) }}"
                                                 >
                                                 </select-dates>
                                             </div>
