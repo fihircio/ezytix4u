@@ -49,7 +49,18 @@ class VenueController extends Controller
             return $this->venues($request);
         }
 
-        $extra['storage_url'] = \Storage::url('');
+        $extra['storage_url'] = '/storage/'; // Fallback or remove entirely if unused. 
+        // Better: don't call Storage::url('') on S3.
+        // If the view needs a base URL, it should be handled differently.
+        // For now, let's set it to a safe default that won't crash S3.
+        if(config('filesystems.default') == 's3') {
+            $extra['storage_url'] = \Storage::url('dummy'); // Use a valid key or just '' might be failing.
+            // Actually, if '' fails, we should avoid it.
+            // Let's just set it to null or empty string, as the views should be using full URLs now.
+            $extra['storage_url'] = ''; 
+        } else {
+             $extra['storage_url'] = \Storage::url('');
+        }
 
         return Eventmie::view($view, compact('path', 'extra'));
     }
