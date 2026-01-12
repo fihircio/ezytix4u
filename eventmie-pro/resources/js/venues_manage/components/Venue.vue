@@ -35,7 +35,7 @@
                                                 <button type="button" class="btn-remove-image" @click="deleteImages(image)">
                                                     <i class="fas fa-times"></i>
                                                 </button>
-                                                <img :src="'/storage/'+image" class="img-fluid img-rounded m-2">
+                                                <img :src="image" class="img-fluid img-rounded m-2">
                                             </div>
                                         </div>
                                     </div>

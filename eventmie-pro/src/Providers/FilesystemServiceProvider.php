@@ -30,6 +30,7 @@ class FilesystemServiceProvider extends ServiceProvider
             // Set default filesystem disk
             $driver = Setting::where('key', 'filesystem.driver')->value('value') ?: 'local';
             config(['filesystems.default' => $driver]);
+            config(['voyager.storage.disk' => $driver]);
 
             // Override S3 config
             if ($driver === 's3') {
