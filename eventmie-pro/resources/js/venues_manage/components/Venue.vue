@@ -35,7 +35,7 @@
                                                 <button type="button" class="btn-remove-image" @click="deleteImages(image)">
                                                     <i class="fas fa-times"></i>
                                                 </button>
-                                                <img :src="image" class="img-fluid img-rounded m-2">
+                                                <img :src="getImageUrl(index)" class="img-fluid img-rounded m-2">
                                             </div>
                                         </div>
                                     </div>
@@ -242,6 +242,7 @@ export default {
 
             images              : [],
             multiple_images     : [],
+            multiple_images_url : [],
 
             slug                : '',
             country_id  : 0,
@@ -287,8 +288,16 @@ export default {
             this.glong                  = this.edit_venue.glong;
             this.city                   = this.edit_venue.city;
             this.multiple_images        = this.edit_venue.images ? JSON.parse(this.edit_venue.images) : [];
+            this.multiple_images_url    = this.edit_venue.images_url ? JSON.parse(this.edit_venue.images_url) : [];
             this.slug                   = this.edit_venue.slug;
             this.country_id             = this.edit_venue.country_id ? this.edit_venue.country_id : 0;
+        },
+
+        getImageUrl(index) {
+            if(this.multiple_images_url && this.multiple_images_url[index]) {
+                return this.multiple_images_url[index];
+            }
+            return '';
         },
 
         // validate data on form submit

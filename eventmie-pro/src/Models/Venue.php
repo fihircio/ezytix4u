@@ -76,8 +76,18 @@ class Venue extends Model
      * @param  mixed $value
      * @return string
      */
-    public function getImagesAttribute($value)
+    protected $appends = ['images_url'];
+
+    /**
+     * getImagesUrlAttribute
+     * Convert venue image paths to proper URLs
+     *
+     * @param  mixed $value
+     * @return string
+     */
+    public function getImagesUrlAttribute()
     {
+        $value = $this->images;
         if(!empty($value)) {
             // Decode the JSON array of image paths
             $images = json_decode($value, true);
