@@ -1,4 +1,6 @@
 
+import * as bootstrap from 'bootstrap';
+
 /**
  * This is a page specific seperate vue instance initializer
  */
@@ -34,24 +36,19 @@ window.app = new Vue({
     },
     methods: {
         initHowItWorksTabs() {
-            console.log('Initializing How It Works tabs...');
-            
-            // Enable tab click functionality
-            $('#howItWorksTabs a').click(function (e) {
-                e.preventDefault();
-                console.log('Tab clicked:', $(this).text());
-                $(this).tab('show');
-            });
-
             // Auto-switch tabs every 5 seconds
-            let tabs = $('#howItWorksTabs a');
-            console.log('Found tabs:', tabs.length);
-            let index = 0;
-            setInterval(() => {
-                index = (index + 1) % tabs.length;
-                console.log('Auto-switching to tab:', index);
-                tabs.eq(index).tab('show');
-            }, 5000);
+            const triggerTabList = [].slice.call(document.querySelectorAll('#howItWorksTabs a'));
+
+            if (triggerTabList.length > 0) {
+                let index = 0;
+                setInterval(() => {
+                    index = (index + 1) % triggerTabList.length;
+                    const triggerEl = triggerTabList[index];
+                    // Create/Get tab instance
+                    const tab = new bootstrap.Tab(triggerEl);
+                    tab.show();
+                }, 5000);
+            }
         }
     }
 });

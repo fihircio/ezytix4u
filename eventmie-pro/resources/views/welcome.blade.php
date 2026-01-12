@@ -308,10 +308,10 @@
                     <h2>@lang('eventmie-pro::em.how_it_works')</h2>
                     <ul class="nav nav-tabs justify-content-center mt-4" id="howItWorksTabs" role="tablist">
                         <li class="nav-item">
-                            <a class="nav-link active show" id="organisers-tab" data-toggle="tab" href="#organisers" role="tab">@lang('eventmie-pro::em.for_event_organisers')</a>
+                            <a class="nav-link active show" id="organisers-tab" data-bs-toggle="tab" href="#organisers" role="tab">@lang('eventmie-pro::em.for_event_organisers')</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" id="customers-tab" data-toggle="tab" href="#customers" role="tab">@lang('eventmie-pro::em.for_customers')</a>
+                            <a class="nav-link" id="customers-tab" data-bs-toggle="tab" href="#customers" role="tab">@lang('eventmie-pro::em.for_customers')</a>
                         </li>
                     </ul>
                 </div>
