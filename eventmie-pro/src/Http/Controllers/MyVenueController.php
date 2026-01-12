@@ -211,7 +211,7 @@ class MyVenueController extends Controller
             {
                 if(!empty($result->images))
                 {
-                    $exiting_images = json_decode($result->images, true);
+                    $exiting_images = json_decode($result->getOriginal('images'), true);
 
                     $images = array_merge($images, $exiting_images);
                 }
@@ -250,7 +250,7 @@ class MyVenueController extends Controller
             'image'                => 'required|string',
         ]);
 
-        $images     = json_decode($venue->images);
+        $images     = json_decode($venue->getOriginal('images'));
     
         $filtered_images = [];
         foreach($images as $key => $val)

@@ -305,13 +305,14 @@ class Event extends Model
         }
 
         $query->select($select)
+                ->where('poster', '!=', null)
                 ->where(['publish' => 1, 'status' => 1]);
                 
                         
         // if hide expired events is on
         if(!empty(setting('booking.hide_expire_events')))
         {
-            $today  = \Carbon\carbon::now(setting('regional.timezone_default'))->format('Y-m-d');    
+            $today  = \Carbon\Carbon::now(setting('regional.timezone_default'))->format('Y-m-d');    
             $query->whereRaw('(IF(events.repetitive = 1, events.end_date >= "'.$today.'", events.start_date >= "'.$today.'"))');
             
         }
@@ -319,8 +320,16 @@ class Event extends Model
         $result = $query->where(['events.publish' => 1, 'events.status' => 1])->groupBy('city')
                         ->orderBy('cities', 'DESC')
                         ->limit(6)->get();
-                        
-        return to_array($result);
+        
+        // Convert poster to URL
+        $result = $result->map(function($item) {
+            if(!empty($item->poster)) {
+                $item->poster = \Storage::url($item->poster);
+            }
+            return $item;
+        });
+
+        return $result->toArray();
     }
 
     // get organisers 
