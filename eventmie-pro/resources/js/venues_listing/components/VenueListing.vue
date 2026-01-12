@@ -13,7 +13,7 @@
                 <div>
                     <div class="position-relative ">
                         <a  :href="venueSlug(venue.slug)" class="text-inherit">
-                            <div class="back-image rounded-3 img-hover" :style="{ 'background-image': 'url(' + storage_url + JSON.parse(venue.images)[0] + ')' }"></div>
+                            <div class="back-image rounded-3 img-hover" :style="{ 'background-image': 'url(' + JSON.parse(venue.images_url)[0] + ')' }"></div>
                         </a>
                     </div>
 
