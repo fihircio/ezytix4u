@@ -39,7 +39,7 @@ class FilesystemServiceProvider extends ServiceProvider
                     'filesystems.disks.s3.secret' => Setting::where('key', 'filesystem.aws_secret_access_key')->value('value'),
                     'filesystems.disks.s3.region' => Setting::where('key', 'filesystem.aws_default_region')->value('value') ?: 'us-east-1',
                     'filesystems.disks.s3.bucket' => Setting::where('key', 'filesystem.aws_bucket')->value('value'),
-                    'filesystems.disks.s3.url' => Setting::where('key', 'filesystem.aws_url')->value('value'),
+                    'filesystems.disks.s3.url' => rtrim(Setting::where('key', 'filesystem.aws_url')->value('value'), '/'),
                     'filesystems.disks.s3.endpoint' => Setting::where('key', 'filesystem.aws_endpoint')->value('value'),
                     'filesystems.disks.s3.use_path_style_endpoint' => (bool) Setting::where('key', 'filesystem.aws_use_path_style_endpoint')->value('value'),
                     'filesystems.disks.s3.acl' => null, // Disable ACL since bucket has ACLs disabled
