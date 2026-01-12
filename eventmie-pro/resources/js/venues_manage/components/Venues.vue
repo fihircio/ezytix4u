@@ -31,7 +31,7 @@
                             <td :data-title="trans('em.venue')">
                                 <div class="d-flex align-items-center">
                                     <a :href="venueSlug(item.slug)">    
-                                        <img :src="'/storage/'+JSON.parse(item.images)[0]" :alt="item.title" class="rounded img-4by3-md ">
+                                        <img :src="JSON.parse(item.images_url)[0]" :alt="item.title" class="rounded img-4by3-md ">
                                     </a>
                                     <div class="ms-3 lh-1">
                                         <h5 class="mb-1"> 
