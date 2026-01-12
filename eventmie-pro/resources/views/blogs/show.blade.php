@@ -4,7 +4,7 @@
 @section('meta_title', $post['seo_title'])
 @section('meta_keywords', $post['meta_keywords'])
 @section('meta_description', $post['meta_description'])
-@section('meta_image', '/storage/' . $post['image'])
+@section('meta_image', $post->image)
 @section('meta_url', url()->current())
 
 @section('content')
@@ -19,7 +19,7 @@
                             <!-- img -->
                             <div class="mb-6 ">
 
-                                <img src="/storage/{{ $post['image'] }}" alt="{{ $post['title'] }}"
+                                <img src="{{ $post->image }}" alt="{{ $post['title'] }}"
                                     class="img-fluid rounded-3 img-hover">
 
                             </div>

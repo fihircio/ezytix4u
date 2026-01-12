@@ -3191,7 +3191,7 @@ function _toPrimitive(input, hint) { if (typeof input !== "object" || input === 
               Vue.helpers.showToast('error', trans('em.thumbnail') + ' ' + trans('em.image') + ' ' + trans('em.required'));
               return _context.abrupt("return", false);
             case 3:
-              if (!(_this.thumbnail_poster === null)) {
+              if (!(_this.poster_croppa === null)) {
                 _context.next = 6;
                 break;
               }
@@ -3245,11 +3245,23 @@ function _toPrimitive(input, hint) { if (typeof input !== "object" || input === 
         }
       });
     },
+    // Helper method to get correct image URL
+    getImageUrl(path) {
+      if (!path) return '';
+      // If it's already a full URL (http/https), use as-is
+      if (path.startsWith('http')) return path;
+      // If it already has /storage/, use as-is
+      if (path.startsWith('/storage/')) return path;
+      // Otherwise, add /storage/ prefix
+      return '/storage/' + path;
+    },
     // set default value in case of edit
     editMedia() {
       if (Object.keys(this.event).length > 0) {
-        this.thumbnail_preview = this.event.thumbnail ? '/storage/' + this.event.thumbnail : null;
-        this.poster_preview = this.event.poster ? '/storage/' + this.event.poster : null;
+        // Backend already adds /storage/ prefix via Storage::url() accessor
+        // So we use the value as-is without adding prefix
+        this.thumbnail_preview = this.event.thumbnail || null;
+        this.poster_preview = this.event.poster || null;
         this.video_link = this.event.video_link;
         this.multiple_images = this.event.images ? JSON.parse(this.event.images) : [];
       }
@@ -5570,7 +5582,8 @@ function _toPrimitive(input, hint) { if (typeof input !== "object" || input === 
       this.openModal = false;
     },
     editTags() {
-      this.imageSrc = '/storage/' + this.edit_tag.image;
+      // Backend already provides full URL via Storage::url() accessor
+      this.imageSrc = this.edit_tag.image;
       this.title = this.edit_tag.title;
       this.type = this.edit_tag.type;
       this.sub_title = this.edit_tag.sub_title;
@@ -7375,7 +7388,7 @@ var render = function render() {
     })]), _vm._v(" "), _c("img", {
       staticClass: "rounded img-fluid",
       attrs: {
-        src: "/storage/" + image
+        src: _vm.getImageUrl(image)
       }
     })]);
   }), 0) : _vm._e()])]), _vm._v(" "), _c("div", {
@@ -7465,7 +7478,7 @@ var render = function render() {
   }, [_vm._v("×")])]), _vm._v(" "), _c("img", {
     staticClass: "img-responsive img-rounded",
     attrs: {
-      src: "/storage/" + _vm.event.seatingchart_image
+      src: _vm.getImageUrl(_vm.event.seatingchart_image)
     }
   })])]) : _vm._e()])]), _vm._v(" "), _c("div", {
     staticClass: "mb-3"

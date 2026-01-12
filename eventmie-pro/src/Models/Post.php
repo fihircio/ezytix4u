@@ -16,9 +16,13 @@ class Post extends \TCG\Voyager\Models\Post
      */
     public function getImageAttribute($value)
     {
-        if(checkPrefix()) {
-            
-            return asset('storage/'.$value);
+        if(!empty($value)) {
+            // If it's already a full URL, return it as is
+            if (filter_var($value, FILTER_VALIDATE_URL)) {
+                return $value;
+            }
+            // Otherwise, use Storage facade to generate correct URL based on disk configuration
+            return \Storage::url($value);
         }
         
         return $value;
@@ -29,7 +33,7 @@ class Post extends \TCG\Voyager\Models\Post
         $result = Post::where(['status' => 'PUBLISHED'])
                     ->limit(3)->orderBy('updated_at', 'DESC')->get();
 
-        return to_array($result);
+        return $result;
 
     }
 

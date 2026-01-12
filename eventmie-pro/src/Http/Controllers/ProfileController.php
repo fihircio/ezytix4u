@@ -333,12 +333,8 @@ class ProfileController extends Controller
                 $constraint->aspectRatio();
             });
             
-            // if directory not exist then create directiory
-            if (! File::exists(storage_path('/app/public/').$path)) {
-                File::makeDirectory(storage_path('/app/public/').$path, 0775, true);
-            }
-            
-            $image_resize->save(storage_path('/app/public/'.$path.$avatar));
+            // Use Storage facade instead of hardcoded local path
+            \Storage::put($path.$avatar, $image_resize->getEncoded());
             
             $user->avatar    = $path.$avatar;
             

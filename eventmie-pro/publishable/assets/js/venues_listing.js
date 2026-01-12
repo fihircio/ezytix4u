@@ -2759,7 +2759,7 @@ var render = function render() {
     }, [_c("div", {
       staticClass: "back-image rounded-3 img-hover",
       style: {
-        "background-image": "url(/storage/" + JSON.parse(venue.images)[0] + ")"
+        "background-image": "url(" + _vm.storage_url + JSON.parse(venue.images)[0] + ")"
       }
     })])]), _vm._v(" "), _c("div", {
       staticClass: "mt-3"

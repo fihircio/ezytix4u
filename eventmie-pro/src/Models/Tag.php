@@ -11,6 +11,22 @@ class Tag extends Model
 {
     protected $guarded = [];
 
+    /**
+     * getImageAttribute
+     *
+     * @param  mixed $value
+     * @return string
+     */
+    public function getImageAttribute($value)
+    {
+        if(!empty($value)) {
+            // Use Storage facade to generate correct URL based on disk configuration
+            return \Storage::url($value);
+        }
+
+        return $value;
+    }
+
     // get particular event tags
     public function get_event_tags($event_id = null)
     {
@@ -28,7 +44,8 @@ class Tag extends Model
         }
         
         $result = Tag::whereIn('id', $tags_id)->where('status', 1)->orderBy('updated_at', 'DESC')->get();
-        return to_array($result);
+        // Use toArray() method instead of to_array() helper to preserve model accessors
+        return $result->toArray();
     }
 
     // add tags

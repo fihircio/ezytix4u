@@ -208,7 +208,7 @@
                         @php $i++; @endphp
                         <div class="d-flex align-items-lg-stretch col-xl-4 col-lg-4 col-md-4 col-sm-12 col-12' }}">
                             <div class="card w-100 border-0 overlay-bg img-hover mb-3"
-                                @php $bgimg =  asset('/storage/'.$item['thumb']); @endphp
+                                @php $bgimg = $item['thumb']; @endphp
                                 style="background-image: url({{ $bgimg }}); background-size: cover;">
 
                                 <span class="single-name"></span>
@@ -242,7 +242,7 @@
                         @php $i++; @endphp
                         <div class="d-flex align-items-lg-stretch col-12 mb-4 {{ $i % 3 ? 'col-md-4' : 'col-md-8' }}">
                             <div class="card w-100 border-0 overlay-bg img-hover "
-                                @php $bgimg =  asset('/storage/'.$item->poster); @endphp
+                                @php $bgimg = $item->poster; @endphp
                                 style="background-image: url({{ $bgimg }}); background-size: cover;">
 
                                 <span class="single-name"></span>
@@ -279,16 +279,16 @@
                 <div class="row">
                     @foreach ($posts as $item)
                         <div class="col-lg-4 col-md-6 col-12">
-                            <a class="text-reset"href="{{ route('eventmie.post_view', $item['slug']) }}">
+                            <a class="text-reset"href="{{ route('eventmie.post_view', $item->slug) }}">
                                 <div class="card smooth-shadow-sm border-0 mb-4 mb-lg-0">
                                     <div class="card-img">
                                         <div class="back-image rounded-top"
-                                            style="background-image:url('/storage/{{ $item['image'] }}')"></div>
+                                            style="background-image:url('{{ $item->image }}')"></div>
                                     </div>
                                     <div class="card-body ">
-                                        <h5 class="mb-0">{{ Str::limit($item['title'], 35) }}</h5>
+                                        <h5 class="mb-0">{{ Str::limit($item->title, 35) }}</h5>
                                         <p class="text-ms font-weight-semi-bold mb-2">
-                                            {{ Str::limit($item['excerpt'], 50) }}</p>
+                                            {{ Str::limit($item->excerpt, 50) }}</p>
                                     </div>
                                 </div>
                             </a>

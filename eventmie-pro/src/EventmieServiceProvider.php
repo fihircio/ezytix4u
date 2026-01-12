@@ -154,6 +154,9 @@ class EventmieServiceProvider extends ServiceProvider
 
         // spam prevention
         $this->app->register(HoneypotServiceProvider::class);
+
+        // filesystem service provider
+        $this->app->register(\Classiebit\Eventmie\Providers\FilesystemServiceProvider::class);
         
     }
 

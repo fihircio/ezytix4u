@@ -172,7 +172,8 @@ export default {
         },
 
         editTags(){
-            this.imageSrc    = '/storage/'+this.edit_tag.image;
+            // Backend already provides full URL via Storage::url() accessor
+            this.imageSrc    = this.edit_tag.image;
             this.title       = this.edit_tag.title;
             this.type        = this.edit_tag.type;
             this.sub_title   = this.edit_tag.sub_title;

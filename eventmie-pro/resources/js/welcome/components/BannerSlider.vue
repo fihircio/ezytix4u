@@ -18,8 +18,8 @@
         >
             <section>
                 <div class="container-fluid p-0">
-                    <div class="cover-img-bg" :style=" { backgroundImage: 'url(' + (`/storage/${item.image}`) + ')'} ">
-                        <img class="cover-img prevent_draggable" :src="'/storage/'+item.image" :alt="item.title" />
+                    <div class="cover-img-bg" :style=" { backgroundImage: 'url(' + (item.image.startsWith('http') ? item.image : '/storage/' + item.image) + ')'} ">
+                        <img class="cover-img prevent_draggable" :src="item.image.startsWith('http') ? item.image : '/storage/' + item.image" :alt="item.title" />
                         <div class="banner-slider-form">
                             <h1 class="text-white mb-0 fw-bold display-5">{{ item.title }}</h1>
                             <p class="fw-bold text-white">{{ item.subtitle }}</p>

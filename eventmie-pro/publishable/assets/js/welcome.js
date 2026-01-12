@@ -2341,7 +2341,7 @@ var render = function render() {
   }, [_c("div", {
     staticClass: "back-image rounded-3 img-hover prevent_draggable",
     style: {
-      "background-image": "url(/storage/" + _vm.event.thumbnail + ")"
+      "background-image": "url(" + _vm.event.thumbnail + ")"
     }
   })]), _vm._v(" "), _c("span", {
     staticClass: "d-inline-flex badge bg-primary position-absolute top-0 ms-1 mt-2 start-0"
@@ -2542,12 +2542,12 @@ var render = function render() {
     }, [_c("div", {
       staticClass: "cover-img-bg",
       style: {
-        backgroundImage: "url(" + "/storage/".concat(item.image) + ")"
+        backgroundImage: "url(" + (item.image.startsWith("http") ? item.image : "/storage/" + item.image) + ")"
       }
     }, [_c("img", {
       staticClass: "cover-img prevent_draggable",
       attrs: {
-        src: "/storage/" + item.image,
+        src: item.image.startsWith("http") ? item.image : "/storage/" + item.image,
         alt: item.title
       }
     }), _vm._v(" "), _c("div", {

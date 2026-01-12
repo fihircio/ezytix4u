@@ -20,7 +20,7 @@
                                         <!-- post classic block -->
 
                                         <a href="{{ route('eventmie.post_view', $item['slug']) }}">
-                                            <img src="/storage/{{ $item['image'] }}" alt=""
+                                            <img src="{{ $item->image }}" alt=""
                                                 class="w-100 rounded-3 img-hover">
                                         </a>
 

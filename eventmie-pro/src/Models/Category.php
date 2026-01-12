@@ -15,9 +15,9 @@ class Category extends Model
      */
     public function getThumbAttribute($value)
     {
-        if(checkPrefix()) {
-            
-            return asset('storage/'.$value);
+        if(!empty($value)) {
+            // Use Storage facade to generate correct URL based on disk configuration
+            return \Storage::url($value);
         }
         
         return $value;

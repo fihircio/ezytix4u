@@ -8,8 +8,8 @@
 <section>
     @if(!empty(json_decode($venue->images, true)))
     <div class="container-fluid p-0">
-        <div class="cover-img-bg" style="background-image: url({{ '/storage/' . json_decode($venue->images, true)[0] }});">
-            <img class="cover-img" src="{{ '/storage/' . json_decode($venue->images, true)[0] }}" alt="{{ $venue->title }}" />
+        <div class="cover-img-bg" style="background-image: url({{ \Storage::url(json_decode($venue->images, true)[0] ?? '') }});">
+            <img class="cover-img" src="{{ \Storage::url(json_decode($venue->images, true)[0] ?? '') }}" alt="{{ $venue->title }}" />
         </div>
     </div>
     @endif
@@ -70,7 +70,7 @@
                             <div class="row">
                                 @foreach(json_decode($venue->images, true) as $val)
                                 <div class="col-md-6">
-                                    <img src="{{ '/storage/' . $val }}" class="img-fluid rounded mb-2" alt="{{ $venue->title }}" />
+                                    <img src="{{ \Storage::url($val) }}" class="img-fluid rounded mb-2" alt="{{ $venue->title }}" />
                                 </div>
                                 @endforeach
                             </div>

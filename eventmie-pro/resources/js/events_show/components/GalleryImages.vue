@@ -30,10 +30,11 @@ export default {
     },
 
     mounted() {
-        // add url to images
+        // Backend already provides full URLs via Storage::url() accessor
+        // Just use the images as-is from the backend
         this.gimages.forEach(function(value, key) {
-            this.images.push('/storage/'+value);
-        }.bind(this));    
-    }, 
+            this.images.push(value);
+        }.bind(this));
+    },
 }
 </script> 

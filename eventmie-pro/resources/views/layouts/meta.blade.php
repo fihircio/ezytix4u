@@ -25,7 +25,7 @@
 <meta property="og:type"          content="article" />
 <meta property="og:title"         content="@yield('meta_title', setting('seo.meta_title'))" />
 <meta property="og:description"   content="@yield('meta_description', setting('seo.meta_description'))" />
-<meta property="og:image"         content="@yield('meta_image', setting('site.logo'))" />
+<meta property="og:image"         content="@yield('meta_image', Storage::url(setting('site.logo')))" />
 <meta property="og:image:width"   content="854" />
 <meta property="og:image:height"  content="480" />
 
@@ -40,7 +40,7 @@
 <meta name="title" content="@yield('meta_title', setting('seo.meta_title'))">
 <meta name="keywords" content="@yield('meta_keywords', setting('seo.meta_keywords'))">
 <meta name="description" content="@yield('meta_description', setting('seo.meta_description'))">
-<meta name="image" content="@yield('meta_image', setting('site.logo'))">
+<meta name="image" content="@yield('meta_image', Storage::url(setting('site.logo')))"> 
 <meta name="url" content="@yield('meta_url', eventmie_url())" >
 <meta name="author" content="@yield('meta_author', (setting('site.site_name') ? setting('site.site_name') : config('app.name')))">
 

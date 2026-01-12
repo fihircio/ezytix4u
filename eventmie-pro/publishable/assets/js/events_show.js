@@ -2281,9 +2281,10 @@ __webpack_require__.r(__webpack_exports__);
     'gallery': (vue_gallery__WEBPACK_IMPORTED_MODULE_1___default())
   },
   mounted() {
-    // add url to images
+    // Backend already provides full URLs via Storage::url() accessor
+    // Just use the images as-is from the backend
     this.gimages.forEach(function (value, key) {
-      this.images.push('/storage/' + value);
+      this.images.push(value);
     }.bind(this));
   }
 });

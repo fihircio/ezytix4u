@@ -113,7 +113,7 @@ class TagsController extends Controller
                 $image       = $tag->image;   
         }
 
-        $path = '/tags/'.Carbon::now()->format('FY').'/';
+        $path = 'tags/'.Carbon::now()->format('FY').'/';
 
         // for image
         if($request->hasfile('image')) 
@@ -131,12 +131,8 @@ class TagsController extends Controller
                 $constraint->aspectRatio();
             });
             
-            // if directory not exist then create directiory
-            if (! File::exists(storage_path('/app/public/').$path)) {
-                File::makeDirectory(storage_path('/app/public/').$path, 0775, true);
-            }
-            
-            $image_resize->save(storage_path('/app/public/'.$path.$image));
+            // Use Storage facade instead of hardcoded local path
+            \Storage::put($path.$image, $image_resize->getEncoded());
             $image     = $path.$image;
         }
        

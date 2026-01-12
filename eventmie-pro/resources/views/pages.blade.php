@@ -19,6 +19,9 @@
                     <div class="container">
                         <div class="row">
                             <div class="col-md-12  col-12">
+                                @if(!empty($page->image))
+                                    <img src="{{ $page->image }}" alt="{{ $page->title }}" class="img-fluid mb-4" />
+                                @endif
                                 <p>
                                     {!! $page->body !!}
                                 </p>

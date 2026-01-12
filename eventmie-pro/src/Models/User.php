@@ -25,6 +25,42 @@ class User extends \TCG\Voyager\Models\User  implements MustVerifyEmail
     protected $guarded = [];
 
     /**
+     * getAvatarAttribute
+     *
+     * @param  mixed $value
+     * @return string
+     */
+    public function getAvatarAttribute($value)
+    {
+        if(!empty($value)) {
+            // Use Storage facade to generate correct URL based on disk configuration
+            return \Storage::url($value);
+        }
+
+        // Return default avatar URL when value is empty
+        $default_avatar = config('voyager.user.default_avatar', 'users/default.png');
+        return \Storage::url($default_avatar);
+    }
+
+    /**
+     * Convert model to array
+     * Ensure the avatar accessor is applied even when serialized
+     *
+     * @return array
+     */
+    public function toArray()
+    {
+        $array = parent::toArray();
+        
+        // Force avatar to go through the accessor
+        if (isset($this->attributes['avatar'])) {
+            $array['avatar'] = $this->avatar;
+        }
+        
+        return $array;
+    }
+
+    /**
      * The attributes that should be hidden for arrays.
      *
      * @var array

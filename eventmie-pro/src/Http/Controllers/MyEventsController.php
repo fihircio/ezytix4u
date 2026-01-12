@@ -462,12 +462,8 @@ class MyEventsController extends Controller
                     $constraint->aspectRatio();
                 });
             
-                // if directory not exist then create directiory
-                if (! File::exists(storage_path('/app/public/').$path)) {
-                    File::makeDirectory(storage_path('/app/public/').$path, 0775, true);
-                }
-                
-                $image_resize->save(storage_path('/app/public/'.$path.$image[$key]));
+                // Use Storage facade instead of hardcoded local path
+                \Storage::put($path.$image[$key], $image_resize->getEncoded());
                 $images[$key]    = $path.$image[$key];
             }
         }
@@ -484,7 +480,7 @@ class MyEventsController extends Controller
             
             $extension              = $file->getClientOriginalExtension(); // getting image extension
             $seatingchart_image     = time().rand(1,988).'.'.$extension;
-            $file->storeAs('/app/public/'.$path, $seatingchart_image);
+            $file->storeAs($path, $seatingchart_image);
             
             $seatingchart_image     = $path.$seatingchart_image;
 
@@ -502,7 +498,9 @@ class MyEventsController extends Controller
         {
             if(!empty($result->images))
             {
-                $exiting_images = json_decode($result->images, true);
+                // Use getOriginal() to get raw database value without accessor
+                // This prevents double URL encoding (accessor already converts to S3 URLs)
+                $exiting_images = json_decode($result->getOriginal('images'), true);
 
                 $images = array_merge($images, $exiting_images);
             }
@@ -1101,15 +1099,11 @@ class MyEventsController extends Controller
             else
                 $filename        = time().str_random(10).'.'.'webp';
             
-            $path            = '/storage/'.$params['path'].'/'.Carbon::now()->format('FY').'/';
+            $path            = $params['path'].'/'.Carbon::now()->format('FY').'/'.$filename;
             $image_resize    = Image::make(base64_decode($image))->encode('webp', 90)->resize($params['width'], $params['height']);
 
-            // first check if directory exists or not
-            if (! File::exists(public_path().$path)) {
-                File::makeDirectory(public_path().$path, 0775, true);
-            }
-    
-            $image_resize->save(public_path($path . $filename));
+            // Use Storage facade to save to configured disk (S3 or local)
+            \Storage::put($path, $image_resize->getEncoded());
             
             return  $filename;
         }
@@ -1650,7 +1644,9 @@ class MyEventsController extends Controller
             return error('access denied', Response::HTTP_BAD_REQUEST );
         }
 
-        $images     = json_decode($event->images);
+        // Use getOriginal() to get raw database value without accessor
+        // This ensures we're comparing and filtering raw paths, not S3 URLs
+        $images     = json_decode($event->getOriginal('images'));
     
         $filtered_images = [];
         foreach($images as $key => $val)

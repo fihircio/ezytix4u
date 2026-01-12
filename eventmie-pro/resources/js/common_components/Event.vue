@@ -5,7 +5,7 @@
         <div>
             <div class="position-relative">
                 <a  :href="eventSlug(event.slug)" class="text-inherit">
-                    <div class="back-image rounded-3 img-hover prevent_draggable" :style="{ 'background-image': 'url(/storage/' + event.thumbnail + ')' }"></div>
+                    <div class="back-image rounded-3 img-hover prevent_draggable" :style="{ 'background-image': 'url(' + event.thumbnail + ')' }"></div>
                 </a>
                 
                 <!-- repetitive events who Upcoming  -->
@@ -92,7 +92,6 @@ export default {
     },
 
     methods:{
-        
         // check free tickets of events
         checkFreeTickets(event_tickets = []){
             let free = false;

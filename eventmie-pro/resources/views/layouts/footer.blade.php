@@ -55,7 +55,7 @@
                 </div>
             </div>
             <div class="col-md-3">
-                <img class="w-50 mx-auto" src="/storage/{{ setting('site.logo') }}"
+                <img class="w-50 mx-auto" src="{{ Storage::url(setting('site.logo')) }}"
                     alt="{{ setting('site.site_name') }}" />
             </div>
         </div>

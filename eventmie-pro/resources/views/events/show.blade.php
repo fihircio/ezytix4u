@@ -4,7 +4,7 @@
 @section('meta_title', $event->meta_title)
 @section('meta_keywords', $event->meta_keywords)
 @section('meta_description', $event->meta_description)
-@section('meta_image', '/storage/' . $event['thumbnail'])
+@section('meta_image', $event['thumbnail'])
 @section('meta_url', url()->current())
 
 
@@ -13,8 +13,8 @@
     <!--Cover-->
     <section>
         <div class="container-fluid p-0">
-            <div class="cover-img-bg" style="background-image: url({{ '/storage/' . $event['poster'] }});">
-                <img class="cover-img" src="{{ '/storage/' . $event['poster'] }}" alt="{{ $event['title'] }}" />
+            <div class="cover-img-bg" style="background-image: url({{ $event['poster'] }});">
+                <img class="cover-img" src="{{ $event['poster'] }}" alt="{{ $event['title'] }}" />
             </div>
         </div>
     </section>
@@ -170,7 +170,7 @@
                                         <!--//main row-->
                                         <div class="row">
                                             <div class="col-12 text-center">
-                                                <img src="/storage/{{ $event->seatingchart_image }}" alt="{{ $event->title }}"/>
+                                                <img src="{{ $event->seatingchart_image }}" alt="{{ $event->title }}"/>
                                             </div>
                                             <!--//col-->
                                         </div>
@@ -223,7 +223,7 @@
                                                 @endif
                                                 <div class="mb-3">
                                                     @if ($value['image'])
-                                                        <img src="/storage/{{ $value['image'] }}"
+                                                        <img src="{{ $value['image'] }}"
                                                             alt="{{ $value['title'] }}" class="rounded-3 w-100 mb-4 " />
                                                     @else
                                                         <img src="{{ asset('ep_img/512x512.webp') }}"
@@ -394,7 +394,7 @@
                             <div class="card-body">
                                 <h4 class="mb-2 fw-bold">Organiser</h4>
                                 <div class="d-flex align-items-center">
-                                    <img src="{{ '/storage/' . $event->organiser_image }}" alt="Organiser Image" class="rounded-circle" width="50" height="50">
+                                    <img src="{{ $event->organiser_image }}" alt="Organiser Image" class="rounded-circle" width="50" height="50">
                                     <p class="mb-0 ms-3">{{ $event->organiser }}</p>
                                 </div>
                             </div>-->

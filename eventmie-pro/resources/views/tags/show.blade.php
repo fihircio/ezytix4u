@@ -12,7 +12,7 @@
                     <!-- img  -->
                     <div class="col-lg-2 col-md-3 col-12">
                         @if ($tag->image)
-                            <img src="/storage/{{ $tag->image }}" alt="{{ $tag->title }}"
+                            <img src="{{ $tag->image }}" alt="{{ $tag->title }}"
                                 class="rounded-circle avatar-lg-custom mx-auto mb-4" />
                         @else
                             <img src="{{ asset('ep_img/512x512.webp') }}" alt="{{ $tag->title }}"

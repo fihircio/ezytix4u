@@ -9,7 +9,7 @@
                             <input type="hidden" name="_token" id="csrf-token" :value="csrf_token" />
                             
                             <div class="col-md-12 mb-5 text-center">
-                                <img id="preview-image-before-upload" :src="'storage/'+ user.avatar"
+                                <img id="preview-image-before-upload" :src="avatarUrl"
                                     alt="profile-pic" style="max-height: 128px;border-radius: 50%;">
                             </div>
 
@@ -99,6 +99,13 @@ export default {
             is_organiser : is_organiser,
 
         };
+    },
+
+    computed: {
+        avatarUrl() {
+            if (!this.user.avatar) return '/storage/users/default.png';
+            return this.user.avatar.startsWith('http') ? this.user.avatar : '/storage/' + this.user.avatar;
+        }
     },
 
     methods: {

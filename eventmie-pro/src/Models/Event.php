@@ -42,6 +42,73 @@ class Event extends Model
         return $this->hasMany(Ticket::class);
     }
 
+    /**
+     * getThumbnailAttribute
+     *
+     * @param  mixed $value
+     * @return string
+     */
+    public function getThumbnailAttribute($value)
+    {
+        if(!empty($value)) {
+            // Use Storage facade to generate correct URL based on disk configuration
+            return \Storage::url($value);
+        }
+
+        return $value;
+    }
+
+    /**
+     * getPosterAttribute
+     *
+     * @param  mixed $value
+     * @return string
+     */
+    public function getPosterAttribute($value)
+    {
+        if(!empty($value)) {
+            // Use Storage facade to generate correct URL based on disk configuration
+            return \Storage::url($value);
+        }
+
+        return $value;
+    }
+
+    /**
+     * getImagesAttribute
+     * Convert gallery image paths to proper URLs
+     *
+     * @param  mixed $value
+     * @return string
+     */
+    public function getImagesAttribute($value)
+    {
+        if(!empty($value)) {
+            // Decode the JSON array of image paths
+            $images = json_decode($value, true);
+            
+            if(is_array($images)) {
+                // Convert each path to proper URL
+                $images = array_map(function($path) {
+                    if(!empty($path)) {
+                        // If it's already a full URL (http/https), return as-is
+                        if(filter_var($path, FILTER_VALIDATE_URL)) {
+                            return $path;
+                        }
+                        // Otherwise, use Storage facade to generate correct URL based on disk configuration
+                        return \Storage::url($path);
+                    }
+                    return $path;
+                }, $images);
+                
+                // Return as JSON string to maintain compatibility
+                return json_encode($images);
+            }
+        }
+
+        return $value;
+    }
+
     // get event
     public function get_event($slug = null, $event_id = null)
     {   

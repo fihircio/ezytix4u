@@ -95,7 +95,7 @@
                                         <button type="button" class="btn-sm btn-remove-image bg-light-danger text-danger" @click="deleteGalleryImages(image)">
                                             <i class="fas fa-times"></i>
                                         </button>
-                                        <img :src="'/storage/'+image" class="rounded img-fluid">
+                                        <img :src="getImageUrl(image)" class="rounded img-fluid">
                                     </div>
                                 </div>
                             </div>
@@ -124,7 +124,7 @@
                                             <span style=" background:red; " class="badge badge-light">&times;</span>
                                         </button>
                                         
-                                        <img :src="'/storage/'+event.seatingchart_image" class="img-responsive img-rounded">
+                                        <img :src="getImageUrl(event.seatingchart_image)" class="img-responsive img-rounded">
                                     </div>
                                 </div>
                             </div>
@@ -218,7 +218,7 @@ export default {
                 Vue.helpers.showToast('error', trans('em.thumbnail')+' '+trans('em.image')+' '+trans('em.required'));
                 return false;
             }
-            if(this.thumbnail_poster === null) {
+            if(this.poster_croppa === null) {
                 Vue.helpers.showToast('error', trans('em.poster')+' '+trans('em.image')+' '+trans('em.required'));
                 return false;
             }
@@ -265,16 +265,29 @@ export default {
             });
         },
 
+        // Helper method to get correct image URL
+        getImageUrl(path) {
+            if (!path) return '';
+            // If it's already a full URL (http/https), use as-is
+            if (path.startsWith('http')) return path;
+            // If it already has /storage/, use as-is
+            if (path.startsWith('/storage/')) return path;
+            // Otherwise, add /storage/ prefix
+            return '/storage/' + path;
+        },
+
         // set default value in case of edit
         editMedia(){
             
             if(Object.keys(this.event).length > 0)
             {
-                this.thumbnail_preview         = this.event.thumbnail ? ('/storage/'+this.event.thumbnail) : null;
-                this.poster_preview            = this.event.poster ? ('/storage/'+this.event.poster) : null;
+                // Backend already adds /storage/ prefix via Storage::url() accessor
+                // So we use the value as-is without adding prefix
+                this.thumbnail_preview         = this.event.thumbnail || null;
+                this.poster_preview            = this.event.poster || null;
                 this.video_link                = this.event.video_link;
                 this.multiple_images           = this.event.images ? JSON.parse(this.event.images) : [];
-            }    
+            }
         },
 
         //delete 

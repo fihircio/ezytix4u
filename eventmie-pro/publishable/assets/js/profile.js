@@ -2490,6 +2490,12 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       is_organiser: is_organiser
     };
   },
+  computed: {
+    avatarUrl() {
+      if (!this.user.avatar) return '/storage/users/default.png';
+      return this.user.avatar.startsWith('http') ? this.user.avatar : '/storage/' + this.user.avatar;
+    }
+  },
   methods: {
     // ...mapMutations(["add"]),
 
@@ -3330,7 +3336,7 @@ var render = function render() {
     },
     attrs: {
       id: "preview-image-before-upload",
-      src: "storage/" + _vm.user.avatar,
+      src: _vm.avatarUrl,
       alt: "profile-pic"
     }
   })]), _vm._v(" "), _c("div", {

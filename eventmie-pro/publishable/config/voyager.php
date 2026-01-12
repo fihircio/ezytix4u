@@ -17,7 +17,7 @@ return [
         // Set `namespace` to a class to override auth user model.
         // However make sure the appointed class must ready to use before installing voyager.
         // Otherwise `php artisan voyager:install` will fail with class not found error.
-        'namespace'                    => null,
+        'namespace'                    => \Classiebit\Eventmie\Models\User::class,
         'default_avatar'               => 'users/default.png',
         'redirect'                     => '/',
     ],
@@ -60,7 +60,9 @@ return [
     */
 
     'storage' => [
-        'disk' => env('FILESYSTEM_DRIVER', 'public'),
+        // Use the application's configured default disk (which respects admin settings)
+        // This ensures S3 uploads work when configured in admin panel
+        'disk' => config('filesystems.default', env('FILESYSTEM_DRIVER', 'public')),
     ],
 
     /*

@@ -28,7 +28,7 @@
                             <td :data-title="trans('em.event')">
                                 <div class="d-flex align-items-center">
                                     <a :href="eventSlug(event.slug)">    
-                                        <img :src="'/storage/'+event.poster" :alt="event.title" class=" rounded img-4by3-md ">
+                                        <img :src="event.poster.startsWith('http') ? event.poster : '/storage/' + event.poster" :alt="event.title" class=" rounded img-4by3-md ">
                                     </a>
                                     <div class="ms-3 lh-1">
                                         <h5 class="mb-1"> 

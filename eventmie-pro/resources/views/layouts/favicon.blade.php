@@ -1,5 +1,5 @@
 <!--  FAVICON AND TOUCH ICONS -->
-<link rel="shortcut icon" type="image/x-icon" href="/storage/{{ setting('site.site_favicon') }}"/>
+<link rel="shortcut icon" type="image/x-icon" href="{{ setting('site.site_favicon') }}"/>
 <!-- this icon shows in browser toolbar -->
 <link rel="icon" type="image/x-icon" href="/storage/{{ setting('site.site_favicon') }}">
 <!-- this icon shows in browser toolbar -->

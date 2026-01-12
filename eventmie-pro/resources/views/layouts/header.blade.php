@@ -23,7 +23,7 @@
 
                 <nav class="navbar navbar-expand-lg">
                     <a class="navbar-brand pr-5" href="{{ url('') }}">
-                        <img src="/storage/{{ setting('site.logo') }}"
+                        <img src="{{ Storage::url(setting('site.logo')) }}"
                             class="mx-auto d-blocks {{ App::isLocale('ar') ? 'float-end' : 'float-start' }}"
                             alt="{{ setting('site.site_name') }}" style="height:50px;" />
                         <div class="my-2">

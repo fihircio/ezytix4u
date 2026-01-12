@@ -49,6 +49,8 @@ class VenueController extends Controller
             return $this->venues($request);
         }
 
+        $extra['storage_url'] = \Storage::url('');
+
         return Eventmie::view($view, compact('path', 'extra'));
     }
 

@@ -3133,7 +3133,7 @@ var render = function render() {
     }, [_c("img", {
       staticClass: "rounded img-4by3-md",
       attrs: {
-        src: "/storage/" + booking.event_thumbnail,
+        src: booking.event_thumbnail.startsWith("http") ? booking.event_thumbnail : "/storage/" + booking.event_thumbnail,
         alt: booking.event_title
       }
     })]), _vm._v(" "), _c("div", {

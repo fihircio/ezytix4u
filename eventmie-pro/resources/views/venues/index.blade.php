@@ -27,6 +27,7 @@
 
     <script>
         var path = {!! json_encode($path, JSON_HEX_TAG) !!};
+        var storage_url = {!! json_encode($extra['storage_url'] ?? '', JSON_HEX_TAG) !!};
     </script>
     <script type="text/javascript" src="{{ eventmie_asset('js/venues_listing.js') }}"></script>
 @stop

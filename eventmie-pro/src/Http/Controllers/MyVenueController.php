@@ -195,12 +195,8 @@ class MyVenueController extends Controller
                     $constraint->aspectRatio();
                 });
             
-                // if directory not exist then create directiory
-                if (! File::exists(storage_path('/app/public/').$path)) {
-                    File::makeDirectory(storage_path('/app/public/').$path, 0775, true);
-                }
-                
-                $image_resize->save(storage_path('/app/public/'.$path.$image[$key]));
+                // Use Storage facade instead of hardcoded local path
+                \Storage::put($path.$image[$key], $image_resize->getEncoded());
                 $images[$key]    = $path.$image[$key];
             }
         }

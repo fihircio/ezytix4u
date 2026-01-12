@@ -2722,7 +2722,7 @@ var render = function render() {
     }, [_c("img", {
       staticClass: "rounded img-4by3-md",
       attrs: {
-        src: "/storage/" + event.poster,
+        src: event.poster.startsWith("http") ? event.poster : "/storage/" + event.poster,
         alt: event.title
       }
     })]), _vm._v(" "), _c("div", {

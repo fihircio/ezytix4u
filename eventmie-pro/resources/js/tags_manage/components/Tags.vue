@@ -23,7 +23,7 @@
                         <tr v-for="(item, index) in tags" v-bind:item="item" v-bind:index="index" v-bind:key="item.id">
                             <td :data-title="trans('em.name')">
                                 <div class="d-flex align-items-center">
-                                    <img :src="'/storage/'+item.image" :alt="item.title" class="rounded img-4by3-md ">
+                                    <img :src="item.image.startsWith('http') ? item.image : '/storage/' + item.image" :alt="item.title" class="rounded img-4by3-md ">
                                     
                                     <div class="ms-3 lh-1">
                                         <h5 class="mb-1">{{ item.title }}</h5>

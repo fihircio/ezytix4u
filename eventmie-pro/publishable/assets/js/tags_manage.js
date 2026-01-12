@@ -2244,7 +2244,8 @@ function _toPrimitive(input, hint) { if (typeof input !== "object" || input === 
       this.openModal = false;
     },
     editTags() {
-      this.imageSrc = '/storage/' + this.edit_tag.image;
+      // Backend already provides full URL via Storage::url() accessor
+      this.imageSrc = this.edit_tag.image;
       this.title = this.edit_tag.title;
       this.type = this.edit_tag.type;
       this.sub_title = this.edit_tag.sub_title;
@@ -3234,7 +3235,7 @@ var render = function render() {
     }, [_c("img", {
       staticClass: "rounded img-4by3-md",
       attrs: {
-        src: "/storage/" + item.image,
+        src: item.image.startsWith("http") ? item.image : "/storage/" + item.image,
         alt: item.title
       }
     }), _vm._v(" "), _c("div", {
