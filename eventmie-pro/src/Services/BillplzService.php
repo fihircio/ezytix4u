@@ -44,16 +44,18 @@ class BillplzService
             ]
         ]);
 
-        $this->client = Client::make($this->apiKey, $settings['billplz_redirect_uri'], $this->guzzleClient);
+        if ($this->apiKey) {
+            $this->client = Client::make($this->apiKey, $settings['billplz_redirect_uri'] ?? '', $this->guzzleClient);
+        }
         
-        if (app()->environment('local', 'development')) {
+        if ($this->client && app()->environment('local', 'development')) {
             $this->client->useSandbox();
             Log::info('Using Billplz Sandbox environment');
-        } else {
+        } elseif ($this->client) {
             Log::info('Using Billplz Production environment');
         }
 
-        $this->signature = new Signature($this->xSignatureKey, ['x_signature']);
+        $this->signature = new Signature($this->xSignatureKey ?? '', ['x_signature']);
         $this->callbackUrl = route('eventmie.bookings_billplz_callback');
     }
 

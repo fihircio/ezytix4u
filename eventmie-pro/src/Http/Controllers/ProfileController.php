@@ -15,6 +15,7 @@ use Classiebit\Eventmie\Notifications\MailNotification;
 use Intervention\Image\Facades\Image;
 use File;
 Use Illuminate\Support\Carbon;
+use Classiebit\Eventmie\Services\StripeService;
 
 class ProfileController extends Controller
 {    
@@ -29,6 +30,8 @@ class ProfileController extends Controller
         $this->middleware('common');
     
         $this->middleware('auth');
+
+        $this->stripeService = new StripeService();
     }
     
     /**
@@ -349,6 +352,41 @@ class ProfileController extends Controller
         }
         
 
+    }
+
+    /**
+     * Stripe Connect
+     */
+    public function stripeConnect()
+    {
+        $user = Auth::user();
+        $result = $this->stripeService->createConnectLink($user);
+
+        if ($result['status']) {
+            return redirect($result['url']);
+        }
+
+        return error_redirect($result['error']);
+    }
+
+    public function stripeConnectRefresh()
+    {
+        return $this->stripeConnect();
+    }
+
+    public function stripeConnectReturn()
+    {
+        $user = Auth::user();
+        
+        if ($user->stripe_account_id) {
+            $isSubmitted = $this->stripeService->checkAccountStatus($user->stripe_account_id);
+            if ($isSubmitted) {
+                $user->stripe_connect_status = 'verified';
+                $user->save();
+            }
+        }
+
+        return redirect()->route('eventmie.profile', ['#userBankDetails'])->with('status', __('eventmie-pro::em.saved'));
     }
  
 }

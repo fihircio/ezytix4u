@@ -106,6 +106,26 @@
                                     </button>
                                 </div>
                             </div>
+
+                            <hr>
+
+                            <div class="form-group row mt-3" v-if="user.stripe_account_id">
+                                <label class="col-md-3 form-label">{{ trans("em.stripe_account") }}</label>
+                                <div class="col-md-9">
+                                    <span class="badge bg-success" v-if="user.stripe_connect_status == 'verified'">{{ trans("em.stripe_account_verified") }}</span>
+                                    <span class="badge bg-warning" v-else>{{ trans("em.pending") }}</span>
+                                    <p class="mt-2 small text-muted">ID: {{ user.stripe_account_id }}</p>
+                                </div>
+                            </div>
+
+                            <div class="form-group row mt-3">
+                                <label class="col-md-3 form-label">{{ trans("em.stripe") }}</label>
+                                <div class="col-md-9">
+                                    <a :href="stripeConnectUrl()" class="btn btn-dark">
+                                        <i class="fab fa-stripe"></i> {{ trans("em.connect_stripe") }}
+                                    </a>
+                                </div>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -166,6 +186,10 @@ export default {
 
         submitUrl() {
             return route("eventmie.updateBankUser");
+        },
+
+        stripeConnectUrl() {
+            return route("eventmie.stripe_connect");
         },
     },
     mounted() {

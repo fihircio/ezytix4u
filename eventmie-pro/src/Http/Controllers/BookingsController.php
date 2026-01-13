@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\DB;
 use Classiebit\Eventmie\Services\BillplzService;
 use Classiebit\Eventmie\Services\ToyyibPayService;
 use Classiebit\Eventmie\Services\ChipinService;
+use Classiebit\Eventmie\Services\StripeService;
 use Throwable;
 
 class BookingsController extends Controller
@@ -53,6 +54,7 @@ class BookingsController extends Controller
         $this->billplzService = new BillplzService(setting('apps'));
         $this->toyyibPayService = new ToyyibPayService(setting('apps'));
         $this->chipinService = new ChipinService(setting('apps'));
+        $this->stripeService = new StripeService();
         
         $this->USAePay      = new USAePay;
         
@@ -273,12 +275,13 @@ class BookingsController extends Controller
 
         $selected_attendees = [];
         
-        foreach($request->quantity as $key => $val)
+        foreach($request->ticket_id as $key => $ticket_id)
         {
-            if($val)
+            $val = isset($request->quantity[$ticket_id]) ? (int)$request->quantity[$ticket_id] : 0;
+            if($val > 0)
             {
-                $ticket_ids[]                               = $request->ticket_id[$key];
-                $selected_tickets[$key]['ticket_id']        = $request->ticket_id[$key]; 
+                $ticket_ids[]                               = $ticket_id;
+                $selected_tickets[$key]['ticket_id']        = $ticket_id; 
                 $selected_tickets[$key]['ticket_title']     = $request->ticket_title[$key];  
                 $selected_tickets[$key]['quantity']         = $val < 1 ? 1 : $val; // min qty = 1
                 
@@ -287,7 +290,7 @@ class BookingsController extends Controller
                     $selected_attendees[$key]['name']           = $attedees['name'][$key];
                     $selected_attendees[$key]['phone']          = $attedees['phone'][$key];
                     $selected_attendees[$key]['address']        = $attedees['address'][$key];
-                    $selected_attendees[$key]['ticket_id']      = $request->ticket_id[$key];
+                    $selected_attendees[$key]['ticket_id']      = $ticket_id;
                 }
             }
         }
@@ -1139,6 +1142,22 @@ class BookingsController extends Controller
     }
     /* =================== CHIPIN ==================== */
 
+    /**
+     * Stripe Callback
+     */
+    public function stripeCallback(Request $request)
+    {
+        $sessionId = $request->get('session_id');
+        
+        if (empty($sessionId)) {
+            return error('Stripe Session ID missing', Response::HTTP_BAD_REQUEST);
+        }
+
+        $result = $this->stripeService->verifyPayment($sessionId);
+
+        return $this->finish_checkout($result);
+    }
+
 
     /**
      * 4 Finish checkout process
@@ -1783,6 +1802,20 @@ class BookingsController extends Controller
                 return error($chipinResponse['error'], Response::HTTP_REQUEST_TIMEOUT);
             }
             
+        }
+
+        if($payment_method == 12)
+        {
+            if(empty(setting('apps.stripe_public_key')) || empty(setting('apps.stripe_secret_key')))
+                return response()->json(['status' => false, 'url'=>$url, 'message'=>$msg]); 
+
+            $stripeResponse = $this->stripeService->createCheckoutSession($order, $currency, $booking);
+            
+            if ($stripeResponse['status']) {
+                return response()->json($stripeResponse);
+            } else {
+                return response()->json(['status' => false, 'url'=>$url, 'message'=>$stripeResponse['error']]);
+            }
         }
         
     }

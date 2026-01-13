@@ -134,6 +134,7 @@
                                                     :is_billplz="{{ $is_billplz }}"
                                                     :is_toyyibpay="{{ $is_toyyibpay }}"
                                                     :is_chipin="{{ $is_chipin }}"
+                                                    :is_stripe="{{ $is_stripe }}"
                                                     :date_format="{{ json_encode(
                                                         [
                                                             'vue_date_format' => format_js_date(),

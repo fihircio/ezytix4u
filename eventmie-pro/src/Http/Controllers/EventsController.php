@@ -260,6 +260,7 @@ class EventsController extends Controller
         $is_billplz = $this->is_billplz();
         $is_toyyibpay = $this->is_toyyibpay();
         $is_chipin = $this->is_chipin();
+        $is_stripe = $this->is_stripe();
 
         $is_usaepay = $this->USAePay->isUSAePay();
         
@@ -272,7 +273,7 @@ class EventsController extends Controller
 
         return Eventmie::view($view, compact(
             'event', 'tag_groups', 'max_ticket_qty', 'free_tickets',
-            'ended', 'category', 'country', 'google_map_key', 'is_paypal','is_billplz', 'is_toyyibpay', 'is_chipin',
+            'ended', 'category', 'country', 'google_map_key', 'is_paypal','is_billplz', 'is_toyyibpay', 'is_chipin', 'is_stripe',
             'tickets', 'currency', 'booked_tickets', 'total_capacity', 'extra', 'is_usaepay'));
     }
 
@@ -393,6 +394,21 @@ class EventsController extends Controller
               $is_chipin = 0;
           
           return $is_chipin;
+      }
+
+      // is_stripe
+      protected function is_stripe()
+      {
+          $pub = setting('apps.stripe_public_key');
+          $sec = setting('apps.stripe_secret_key');
+          
+          \Log::info('Stripe Keys Debug: pub=' . ($pub ? 'set' : 'empty') . ', sec=' . ($sec ? 'set' : 'empty'));
+
+          // if have Stripe keys then will show Stripe payment option otherwise hide
+          if(empty($pub) || empty($sec))
+              return 0;
+          
+          return 1;
       }
 
     // get tickets and it is public

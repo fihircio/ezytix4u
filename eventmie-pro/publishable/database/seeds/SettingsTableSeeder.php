@@ -355,6 +355,40 @@ class SettingsTableSeeder extends Seeder
                 "group" => "Apps",
             ])->save();
         }
+
+        // Stripe Settings
+        $setting = $this->findSetting("apps.stripe_public_key");
+        if (!$setting->exists) {
+            $setting->fill(["display_name" => "Stripe Public Key", "value" => "", "details"=> null, "type" => "text", "order" => "53", "group" => "Apps", ])->save();
+        }
+
+        $setting = $this->findSetting("apps.stripe_secret_key");
+        if (!$setting->exists) {
+            $setting->fill(["display_name" => "Stripe Secret Key", "value" => "", "details"=> null, "type" => "password", "order" => "54", "group" => "Apps", ])->save();
+        }
+
+        $setting = $this->findSetting("apps.stripe_webhook_secret");
+        if (!$setting->exists) {
+            $setting->fill(["display_name" => "Stripe Webhook Secret", "value" => "", "details"=> null, "type" => "password", "order" => "55", "group" => "Apps", ])->save();
+        }
+
+        $setting = $this->findSetting("apps.stripe_mode");
+        if (!$setting->exists) {
+            $setting->fill([
+                "display_name" => "Stripe Mode", 
+                "value" => "sandbox", 
+                "details"=> json_encode([
+                    "default" => "sandbox",
+                    "options" => [
+                        "sandbox" => "Sandbox",
+                        "production" => "Production",
+                    ]
+                ]), 
+                "type" => "select_dropdown", 
+                "order" => "56", 
+                "group" => "Apps", 
+            ])->save();
+        }
         $setting = $this->findSetting("mail.mail_driver");
         if (!$setting->exists) {
             $setting->fill(["display_name" => "Mail Driver", "value" => "", "details"=> null, "type" => "text", "order" => "36", "group" => "Mail", ])->save();

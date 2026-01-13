@@ -266,6 +266,9 @@ Route::get('/home', function() {
         
         // Chipin Overview Callback (for webhook notifications)
         Route::post('/chipin/overview/callbacks', "$controller@chipinOverviewCallback")->name('bookings_chipin_overview_callback');
+
+        // Stripe Callback
+        Route::get('/stripe/callback', "$controller@stripeCallback")->name('bookings_stripe_callback');
     
         // Redirect back to event
         Route::get('/login-first', "$controller@login_first")->name('login_first');
@@ -431,6 +434,12 @@ Route::get('/home', function() {
         Route::post('/updateAuthUserRole',"$controller@updateAuthUserRole")->name('updateAuthUserRole');
         Route::post('/updatePasswordUser',"$controller@updateSecurity")->name('updatePasswordUser');
         Route::post('/updateBankUser',"$controller@updateBank")->name('updateBankUser');
+        
+        // Stripe Connect
+        Route::get('/stripe-connect', "$controller@stripeConnect")->name('stripe_connect');
+        Route::get('/stripe-connect-refresh', "$controller@stripeConnectRefresh")->name('stripe_connect_refresh');
+        Route::get('/stripe-connect-return', "$controller@stripeConnectReturn")->name('stripe_connect_return');
+
         Route::post('/updateOrganiserUser',"$controller@updateOrganiser")->name('updateOrganiserUser');
        
 

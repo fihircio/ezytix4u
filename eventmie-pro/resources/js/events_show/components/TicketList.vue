@@ -131,11 +131,11 @@
                                                                         v-if='(item.customer_limit != null ? item.customer_limit :  max_ticket_qty) <= 100'
                                                                     >
                                                                         <option value="0" selected>0</option>
-                                                                        <option :key="ind"
+                                                                        <option :key="'v1_'+ind"
                                                                             v-if="booked_tickets[item.id+'-'+booked_date_server].total_vacant <= (item.customer_limit != null ? item.customer_limit :  max_ticket_qty)" 
                                                                             :value="itm" v-for=" (itm, ind) in booked_tickets[item.id+'-'+booked_date_server].total_vacant"  
                                                                         >{{itm }}</option>
-                                                                        <option v-else :value="itm" v-for=" (itm, ind) in (item.quantity > (item.customer_limit != null ? item.customer_limit :  max_ticket_qty) ? parseInt(item.customer_limit != null ? item.customer_limit :  max_ticket_qty) : parseInt(item.quantity))"  :key="ind">{{itm }}</option>
+                                                                        <option v-else :key="'v2_'+ind" :value="itm" v-for=" (itm, ind) in (item.quantity > (item.customer_limit != null ? item.customer_limit :  max_ticket_qty) ? parseInt(item.customer_limit != null ? item.customer_limit :  max_ticket_qty) : parseInt(item.quantity))" >{{itm }}</option>
                                                                     </select>
                                                                     <input v-else type="number" :name="'quantity['+item.id+']'" 
                                                                         v-model="quantity[index]" value="0" class="form-control form-input-sm" 
@@ -337,6 +337,11 @@
                                                     <input type="radio" class="custom-control-input" id="payment_method_chipin" name="payment_method" v-model="payment_method" value="11">
                                                     <label class="custom-control-label" for="payment_method_chipin">  &nbsp;<i class="fas fa-credit-card"></i> Chipin</label>
                                                 </div>
+
+                                                <div class="radio-inline" v-if="is_admin <= 0 && is_stripe > 0">
+                                                    <input type="radio" class="custom-control-input" id="payment_method_stripe" name="payment_method" v-model="payment_method" value="12">
+                                                    <label class="custom-control-label" for="payment_method_stripe">  &nbsp;<i class="fab fa-stripe"></i> Stripe</label>
+                                                </div>
                     
                                                 <!-- For Admin & Organizer & Customer -->
                                                 <div class="radio-inline" 
@@ -431,7 +436,8 @@ export default {
         'is_usaepay',
         'is_billplz',
         'is_toyyibpay',
-        'is_chipin'
+        'is_chipin',
+        'is_stripe'
     ],
 
     data() {
@@ -439,7 +445,7 @@ export default {
             openModal           : false,
             ticket_info         : false,    
             moment              : moment,
-            quantity            : [1],
+            quantity            : [],
             price               : null,
             total_price         : [],
             customer_id         : 0,
@@ -651,12 +657,11 @@ export default {
                     
                     amount                  = (parseFloat(value * this.tickets[key].price)).toFixed(2);
 
-                    // when have no taxes set set total_price with actual ammount without taxes
                     if(Object.keys(this.total_price).length > 0)
                     {
                         this.total_price.forEach(function(v, k){
 
-                            if(Object.keys(v).length <= 0);
+                            if(Object.keys(v).length <= 0)
                                 this.total_price[key] = amount;
                                 
                         }.bind(this))
@@ -704,16 +709,10 @@ export default {
             // only set default value once
             var _this   = this;
             var promise = new Promise(function(resolve, reject) { 
-                // only set default value once
-                if(_this.quantity.length == 1) {
-                    _this.tickets.forEach(function(value, key) {
-                        if(key == 0)
-                            _this.quantity[key] = 0;
-                        else
-                            _this.quantity[key] = 0;
-                            
-                    }.bind());
-                }
+                // Initialize quantity array for each ticket
+                _this.tickets.forEach(function(value, key) {
+                    _this.$set(_this.quantity, key, 0);
+                });
                 resolve(true);
             }); 
 

@@ -359,6 +359,7 @@
             :is_billplz="is_billplz"
             :is_toyyibpay="is_toyyibpay"
             :is_chipin="is_chipin"
+            :is_stripe="is_stripe"
         >
         </ticket-component>
 
@@ -392,7 +393,8 @@ export default {
         'is_usaepay',
         'is_billplz',
         'is_toyyibpay',
-        'is_chipin'
+        'is_chipin',
+        'is_stripe'
     ],
 
     mixins:[

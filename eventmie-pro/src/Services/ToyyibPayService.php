@@ -18,9 +18,9 @@ class ToyyibPayService
         $this->client = new Client();
 
         // Store category code and user secret key
-        $this->categoryCode = $settings['toyyibpay_code'];
-        $this->userSecretKey = $settings['toyyibpay_secret_key'];
-        $this->toyyibpay_uri = $settings['toyyibpay_redirect_uri'];
+        $this->categoryCode = $settings['toyyibpay_code'] ?? null;
+        $this->userSecretKey = $settings['toyyibpay_secret_key'] ?? null;
+        $this->toyyibpay_uri = $settings['toyyibpay_redirect_uri'] ?? null;
 
         // Set your callback URL (use the route name)
         $this->_callback_url = route('eventmie.bookings_toyyibpay_callback');
