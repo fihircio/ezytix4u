@@ -1800,17 +1800,10 @@ class BookingsController extends Controller
         if($payment_method == 11)
         {
             if(empty(setting('apps.chipin_brand_id')) || empty(setting('apps.chipin_api_key')))
-            return response()->json(['status' => false, 'url'=>$url, 'message'=>$msg]);
+                return response()->json(['status' => false, 'url'=>$url, 'message'=>$msg]);
    
             // Call createPayment to get the payment link
             return $this->chipin($order, $currency, $booking);
-            
-            if ($chipinResponse['status']) {
-                return response()->json($chipinResponse);
-            } else {
-                return error($chipinResponse['error'], Response::HTTP_REQUEST_TIMEOUT);
-            }
-            
         }
 
         if($payment_method == 12)

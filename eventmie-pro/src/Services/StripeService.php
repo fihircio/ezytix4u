@@ -15,8 +15,23 @@ class StripeService
     protected $webhookSecret;
     protected $mode;
 
+    /**
+     * Attempt to manually load Stripe SDK if it's not found in the autoloader.
+     * This is useful for environments where composer dump-autoload cannot be run.
+     */
+    protected function loadSDK()
+    {
+        if (!class_exists(\Stripe\Stripe::class)) {
+            $path = base_path('vendor/stripe/stripe-php/init.php');
+            if (file_exists($path)) {
+                require_once $path;
+            }
+        }
+    }
+
     public function __construct()
     {
+        $this->loadSDK();
         $this->publicKey     = setting('apps.stripe_public_key');
         $this->secretKey     = setting('apps.stripe_secret_key');
         $this->webhookSecret = setting('apps.stripe_webhook_secret');
@@ -29,6 +44,7 @@ class StripeService
 
     protected function isSDKAvailable($class = \Stripe\Stripe::class)
     {
+        $this->loadSDK();
         return class_exists($class);
     }
 

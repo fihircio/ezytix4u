@@ -1,7 +1,30 @@
-[2026-01-14 06:44:51] production.INFO: FilesystemServiceProvider: Set S3 ACL to null  
-[2026-01-14 06:44:51] production.INFO: Billplz Service Initialization {"environment":"production","apiKey_length":0,"xSignatureKey_length":0,"collectionId":null,"redirectUri":null} 
-[2026-01-14 06:44:51] production.INFO: Chipin Service Initialization {"environment":"production","chipin_environment":"0","brandId":"fb1327e5-aa44-4787-9fad-0b28763490a0","apiKey_length":88} 
-[2026-01-14 06:44:51] production.ERROR: Class "Stripe\Checkout\Session" not found {"userId":30,"exception":"[object] (Error(code: 0): Class \"Stripe\\Checkout\\Session\" not found at /home2/ezytix57/repositories/ezytix4u/eventmie-pro/src/Services/StripeService.php:36)
+
+text/x-log laravel.log ( ASCII text, with very long lines )
+[2026-01-14 17:28:24] production.INFO: FilesystemServiceProvider: Set S3 ACL to null  
+[2026-01-14 17:28:25] production.INFO: Stripe Keys Debug: pub=set, sec=set  
+[2026-01-14 17:28:25] production.INFO: FilesystemServiceProvider: Set S3 ACL to null  
+[2026-01-14 17:28:25] production.INFO: FilesystemServiceProvider: Set S3 ACL to null  
+[2026-01-14 17:28:25] production.INFO: FilesystemServiceProvider: Set S3 ACL to null  
+[2026-01-14 17:28:25] production.INFO: FilesystemServiceProvider: Set S3 ACL to null  
+[2026-01-14 17:28:26] production.INFO: FilesystemServiceProvider: Set S3 ACL to null  
+[2026-01-14 17:28:30] production.INFO: FilesystemServiceProvider: Set S3 ACL to null  
+[2026-01-14 17:28:30] production.INFO: Billplz Service Initialization {"environment":"production","apiKey_length":0,"xSignatureKey_length":0,"collectionId":null,"redirectUri":null} 
+[2026-01-14 17:28:30] production.INFO: Chipin Service Initialization {"environment":"production","chipin_environment":"0","brandId":"fb1327e5-aa44-4787-9fad-0b28763490a0","apiKey_length":88} 
+[2026-01-14 17:28:30] production.INFO: FilesystemServiceProvider: Set S3 ACL to null  
+[2026-01-14 17:28:31] production.INFO: FilesystemServiceProvider: Set S3 ACL to null  
+[2026-01-14 17:28:31] production.INFO: FilesystemServiceProvider: Set S3 ACL to null  
+[2026-01-14 17:28:31] production.INFO: FilesystemServiceProvider: Set S3 ACL to null  
+[2026-01-14 17:28:32] production.INFO: FilesystemServiceProvider: Set S3 ACL to null  
+[2026-01-14 17:28:33] production.INFO: FilesystemServiceProvider: Set S3 ACL to null  
+[2026-01-14 17:28:33] production.INFO: Stripe Keys Debug: pub=set, sec=set  
+[2026-01-14 17:28:33] production.INFO: FilesystemServiceProvider: Set S3 ACL to null  
+[2026-01-14 17:28:33] production.INFO: FilesystemServiceProvider: Set S3 ACL to null  
+[2026-01-14 17:28:33] production.INFO: FilesystemServiceProvider: Set S3 ACL to null  
+[2026-01-14 17:28:33] production.INFO: FilesystemServiceProvider: Set S3 ACL to null  
+[2026-01-14 17:28:48] production.INFO: FilesystemServiceProvider: Set S3 ACL to null  
+[2026-01-14 17:28:48] production.INFO: Billplz Service Initialization {"environment":"production","apiKey_length":0,"xSignatureKey_length":0,"collectionId":null,"redirectUri":null} 
+[2026-01-14 17:28:48] production.INFO: Chipin Service Initialization {"environment":"production","chipin_environment":"0","brandId":"fb1327e5-aa44-4787-9fad-0b28763490a0","apiKey_length":88} 
+[2026-01-14 17:28:48] production.ERROR: Class "Stripe\Checkout\Session" not found {"userId":30,"exception":"[object] (Error(code: 0): Class \"Stripe\\Checkout\\Session\" not found at /home2/ezytix57/repositories/ezytix4u/eventmie-pro/src/Services/StripeService.php:36)
 [stacktrace]
 #0 /home2/ezytix57/repositories/ezytix4u/eventmie-pro/src/Http/Controllers/BookingsController.php(1825): Classiebit\\Eventmie\\Services\\StripeService->createCheckoutSession()
 #1 /home2/ezytix57/repositories/ezytix4u/eventmie-pro/src/Http/Controllers/BookingsController.php(737): Classiebit\\Eventmie\\Http\\Controllers\\BookingsController->multiple_payment_method()
@@ -58,9 +81,9 @@
 #52 /home2/ezytix57/public_html/index.php(51): Illuminate\\Foundation\\Http\\Kernel->handle()
 #53 {main}
 "} 
-[2026-01-14 06:44:54] production.INFO: FilesystemServiceProvider: Set S3 ACL to null  
-[2026-01-14 06:44:54] production.INFO: Billplz Service Initialization {"environment":"production","apiKey_length":0,"xSignatureKey_length":0,"collectionId":null,"redirectUri":null} 
-[2026-01-14 06:44:54] production.INFO: Chipin Service Initialization {"environment":"production","chipin_environment":"0","brandId":"fb1327e5-aa44-4787-9fad-0b28763490a0","apiKey_length":88} 
-[2026-01-14 06:44:54] production.INFO: Creating Chipin payment {"order_number":"1768373094484"} 
-[2026-01-14 06:44:54] production.INFO: Chipin Create Payment Parameters (Refactored) {"brand_id":"fb1327e5-aa44-4787-9fad-0b28763490a0","client":{"email":"rashid@ezytix4u.com","phone":"6010000000","full_name":"rashid","first_name":"rashid","address":"Default Address","city":"Default City","country":"MY","postcode":"12345"},"purchase":{"products":[{"name":"Explore the Future of AI ( | Early bird | )","price":12281,"quantity":1}],"currency":"MYR","notes":"Order #1768373094484"},"success_redirect":"https://ezytix4u.com/bookings/chipin/callback?payment_id={payment_id}","failure_redirect":"https://ezytix4u.com/bookings/chipin/callback?status=failed&payment_id={payment_id}","success_callback":"https://ezytix4u.com/bookings/chipin/overview/callbacks","reference":"1768373094484","return_payment_id":true} 
-[2026-01-14 06:44:54] production.INFO: Chipin Create Payment Response {"status_code":400,"response":{"__all__":[{"message":"No payment method is available for this combination of brand, currency, `skip_capture` and amount. This might be caused by triggering limiting rules that have blocked available payment methods. Please check rules! For more assistance please contact support, mentioning the values of these 4 fields you tried to use.","code":"purchase_no_available_payment_method"}]},"duration":0.1964430809020996} 
+[2026-01-14 17:31:50] production.INFO: FilesystemServiceProvider: Set S3 ACL to null  
+[2026-01-14 17:31:50] production.INFO: Billplz Service Initialization {"environment":"production","apiKey_length":0,"xSignatureKey_length":0,"collectionId":null,"redirectUri":null} 
+[2026-01-14 17:31:50] production.INFO: Chipin Service Initialization {"environment":"production","chipin_environment":"0","brandId":"fb1327e5-aa44-4787-9fad-0b28763490a0","apiKey_length":88} 
+[2026-01-14 17:31:50] production.INFO: Creating Chipin payment {"order_number":"1768411910742"} 
+[2026-01-14 17:31:50] production.INFO: Chipin Create Payment Parameters (Refactored) {"brand_id":"fb1327e5-aa44-4787-9fad-0b28763490a0","client":{"email":"rashid@ezytix4u.com","phone":"6010000000","full_name":"rashid","first_name":"rashid","address":"Default Address","city":"Default City","country":"MY","postcode":"12345"},"purchase":{"products":[{"name":"Explore the Future of AI ( | Early bird | )","price":12281,"quantity":1}],"currency":"MYR","notes":"Order #1768411910742"},"success_redirect":"https://ezytix4u.com/bookings/chipin/callback?payment_id={payment_id}","failure_redirect":"https://ezytix4u.com/bookings/chipin/callback?status=failed&payment_id={payment_id}","success_callback":"https://ezytix4u.com/bookings/chipin/overview/callbacks","reference":"1768411910742","return_payment_id":true} 
+[2026-01-14 17:31:50] production.INFO: Chipin Create Payment Response {"status_code":400,"response":{"__all__":[{"message":"No payment method is available for this combination of brand, currency, `skip_capture` and amount. This might be caused by triggering limiting rules that have blocked available payment methods. Please check rules! For more assistance please contact support, mentioning the values of these 4 fields you tried to use.","code":"purchase_no_available_payment_method"}]},"duration":0.3603479862213135} 

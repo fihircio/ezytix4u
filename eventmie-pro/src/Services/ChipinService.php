@@ -83,8 +83,12 @@ class ChipinService
             ];
 
             // Construct Product (Single aggregated product for the order)
+            // Sanitizing name to remove special characters that might cause issues
+            $productName = str_replace(['|', '(', ')'], '', $order['product_title'] . ' ' . $order['price_title']);
+            $productName = mb_substr(trim($productName), 0, 250);
+
             $product = [
-                'name' => mb_substr($order['product_title'] . ' (' . $order['price_title'] . ')', 0, 250), // Limit length
+                'name' => $productName,
                 'price' => $amountInCents,
                 'quantity' => 1,
             ];
@@ -93,6 +97,7 @@ class ChipinService
             $purchaseDetails = [
                 'products' => [$product],
                 'currency' => $currency,
+                'total' => $amountInCents, // Some Chipin API versions require total amount explicitly
                 'notes' => 'Order #' . $order['order_number'],
             ];
 
@@ -144,7 +149,15 @@ class ChipinService
                     ];
                 }
 
-                return ['error' => 'Failed to create payment: ' . ($responseData['message'] ?? 'Unknown error'), 'status' => false];
+                // Better error extraction for Chipin's nested error structure
+                $errorMsg = $responseData['message'] ?? 'Unknown error';
+                if (isset($responseData['response']['__all__'][0]['message'])) {
+                    $errorMsg = $responseData['response']['__all__'][0]['message'];
+                } elseif (isset($responseData['error']['message'])) {
+                    $errorMsg = $responseData['error']['message'];
+                }
+
+                return ['error' => 'Failed to create payment: ' . $errorMsg, 'status' => false];
                 
             } catch (\GuzzleHttp\Exception\RequestException $e) {
                 $responseBody = $e->hasResponse() ? json_decode($e->getResponse()->getBody(), true) : null;
