@@ -27,11 +27,20 @@ class StripeService
         }
     }
 
+    protected function isSDKAvailable($class = \Stripe\Stripe::class)
+    {
+        return class_exists($class);
+    }
+
     /**
      * Create Stripe Checkout Session for payment
      */
     public function createCheckoutSession($order, $currency, $booking)
     {
+        if (!$this->isSDKAvailable(\Stripe\Checkout\Session::class)) {
+            return ['status' => false, 'error' => 'Stripe SDK (Checkout) not found on server.'];
+        }
+
         try {
             $checkout_session = Session::create([
                 'payment_method_types' => ['card'],
@@ -72,6 +81,10 @@ class StripeService
      */
     public function verifyPayment($sessionId)
     {
+        if (!$this->isSDKAvailable(\Stripe\Checkout\Session::class)) {
+            return ['status' => false, 'error' => 'Stripe SDK (Session) not found on server.'];
+        }
+
         try {
             $session = Session::retrieve($sessionId);
             if ($session->payment_status === 'paid') {
@@ -95,9 +108,13 @@ class StripeService
      */
     public function createConnectLink($user)
     {
+        if (!$this->isSDKAvailable(\Stripe\Account::class) || !$this->isSDKAvailable(\Stripe\AccountLink::class)) {
+            return ['status' => false, 'error' => 'Stripe SDK (Connect) not found on server.'];
+        }
+
         try {
             if (!$user->stripe_account_id) {
-                $account = Account::create([
+                $account = \Stripe\Account::create([
                     'type' => 'express',
                     'email' => $user->email,
                     'capabilities' => [
@@ -109,7 +126,7 @@ class StripeService
                 $user->save();
             }
 
-            $account_link = AccountLink::create([
+            $account_link = \Stripe\AccountLink::create([
                 'account' => $user->stripe_account_id,
                 'refresh_url' => route('eventmie.stripe_connect_refresh'),
                 'return_url' => route('eventmie.stripe_connect_return'),
@@ -134,8 +151,12 @@ class StripeService
      */
     public function checkAccountStatus($accountId)
     {
+        if (!$this->isSDKAvailable(\Stripe\Account::class)) {
+            return false;
+        }
+
         try {
-            $account = Account::retrieve($accountId);
+            $account = \Stripe\Account::retrieve($accountId);
             return $account->details_submitted;
         } catch (\Exception $e) {
             Log::error('Stripe Account Status Error: ' . $e->getMessage());
