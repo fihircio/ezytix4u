@@ -54,7 +54,12 @@ class BookingsController extends Controller
         $this->billplzService = new BillplzService(setting('apps'));
         $this->toyyibPayService = new ToyyibPayService(setting('apps'));
         $this->chipinService = new ChipinService(setting('apps'));
-        $this->stripeService = new StripeService();
+        try {
+            $this->stripeService = new StripeService();
+        } catch (\Throwable $e) {
+            \Log::error('StripeService initialization failed: ' . $e->getMessage());
+            $this->stripeService = null;
+        }
         
         $this->USAePay      = new USAePay;
         
@@ -1153,6 +1158,10 @@ class BookingsController extends Controller
             return error('Stripe Session ID missing', Response::HTTP_BAD_REQUEST);
         }
 
+        if (!$this->stripeService) {
+            return error('Stripe service not initialized. Please ensure Stripe SDK is installed.', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
         $result = $this->stripeService->verifyPayment($sessionId);
 
         return $this->finish_checkout($result);
@@ -1808,6 +1817,10 @@ class BookingsController extends Controller
         {
             if(empty(setting('apps.stripe_public_key')) || empty(setting('apps.stripe_secret_key')))
                 return response()->json(['status' => false, 'url'=>$url, 'message'=>$msg]); 
+
+            if (!$this->stripeService) {
+                return response()->json(['status' => false, 'url'=>$url, 'message' => 'Stripe service not initialized. Please ensure Stripe SDK is installed.']);
+            }
 
             $stripeResponse = $this->stripeService->createCheckoutSession($order, $currency, $booking);
             

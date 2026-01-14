@@ -31,7 +31,12 @@ class ProfileController extends Controller
     
         $this->middleware('auth');
 
-        $this->stripeService = new StripeService();
+        try {
+            $this->stripeService = new StripeService();
+        } catch (\Throwable $e) {
+            \Log::error('StripeService initialization failed: ' . $e->getMessage());
+            $this->stripeService = null;
+        }
     }
     
     /**
@@ -360,6 +365,9 @@ class ProfileController extends Controller
     public function stripeConnect()
     {
         $user = Auth::user();
+        if (!$this->stripeService) {
+            return error_redirect('Stripe service not initialized. Please ensure Stripe SDK is installed.');
+        }
         $result = $this->stripeService->createConnectLink($user);
 
         if ($result['status']) {
@@ -378,7 +386,7 @@ class ProfileController extends Controller
     {
         $user = Auth::user();
         
-        if ($user->stripe_account_id) {
+        if ($user->stripe_account_id && $this->stripeService) {
             $isSubmitted = $this->stripeService->checkAccountStatus($user->stripe_account_id);
             if ($isSubmitted) {
                 $user->stripe_connect_status = 'verified';

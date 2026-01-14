@@ -22,8 +22,8 @@ class StripeService
         $this->webhookSecret = setting('apps.stripe_webhook_secret');
         $this->mode          = setting('apps.stripe_mode') ?? 'sandbox';
 
-        if ($this->secretKey) {
-            Stripe::setApiKey($this->secretKey);
+        if ($this->secretKey && class_exists(\Stripe\Stripe::class)) {
+            \Stripe\Stripe::setApiKey($this->secretKey);
         }
     }
 
