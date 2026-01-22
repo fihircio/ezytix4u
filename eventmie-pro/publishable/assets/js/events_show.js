@@ -3926,7 +3926,7 @@ var render = function render() {
   }, [_c("img", {
     staticClass: "seat-img",
     attrs: {
-      src: "/storage/" + _vm.local_ticket.seatchart.chart_image
+      src: _vm.local_ticket.seatchart.chart_image
     }
   }), _vm._v(" "), _vm._l(_vm.seats, function (seat, index) {
     return _c("span", {

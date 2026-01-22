@@ -2640,7 +2640,7 @@ var render = function render() {
     }, [_c("img", {
       staticClass: "rounded img-4by3-md",
       attrs: {
-        src: "/storage/" + earning.event_thumbnail,
+        src: earning.event_thumbnail,
         alt: earning.event_name
       }
     })]), _vm._v(" "), _c("div", {

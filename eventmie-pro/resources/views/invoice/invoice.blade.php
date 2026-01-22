@@ -181,7 +181,14 @@
                     <table style="padding: 0;margin: 0;width: 100%">
                         <tr>
                             <td style="width: 10%;">
-                                <img src="{{ "data:image/png;base64,".base64_encode(file_get_contents(public_path('/storage/'.setting('site.logo')))) }}" style="width: 64px;">
+                                @php 
+                                    $disk = \Storage::disk(config('filesystems.default'));
+                                    $logo_path = setting('site.logo');
+                                    $logo_base64 = $disk->exists($logo_path) ? base64_encode($disk->get($logo_path)) : '';
+                                @endphp
+                                @if($logo_base64)
+                                <img src="{{ "data:image/png;base64,".$logo_base64 }}" style="width: 64px;">
+                                @endif
                             </td>
                             <td style="width: 80%;">
                                 <p class="m-heading">{{ (setting('site.site_name') ? setting('site.site_name') : config('app.name')) }}</p>
@@ -295,7 +302,13 @@
                 <table style="padding: 0;margin: 0;width: 100%">
                     <tr>
                         <td style="float: right;">
-                            <img src="{{ "data:image/png;base64,".base64_encode(file_get_contents(public_path('/storage/'.$organizer->seller_signature))) }}" style="width: 64px;text-align: center;margin-bottom: 5px !important;">
+                            @php 
+                                $sig_path = $organizer->seller_signature;
+                                $sig_base64 = $disk->exists($sig_path) ? base64_encode($disk->get($sig_path)) : '';
+                            @endphp
+                            @if($sig_base64)
+                            <img src="{{ "data:image/png;base64,".$sig_base64 }}" style="width: 64px;text-align: center;margin-bottom: 5px !important;">
+                            @endif
                             <p class="m-heading" style="font-size: 12px;font-weight: 600;">@lang('eventmie-pro::em.seller_signature')</p>
                         </td>
                     </tr>

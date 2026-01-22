@@ -10,7 +10,7 @@
         </table>
 
         <div class="seat-container">
-            <img :src="'/storage/'+local_ticket.seatchart.chart_image" class="seat-img">
+            <img :src="local_ticket.seatchart.chart_image" class="seat-img">
 
             <span class="seat-mark" 
                 :class="{'seat-disabled': (seat.status <= 0 && seat.status != null), 'seat-reserved': seat.reserved}"

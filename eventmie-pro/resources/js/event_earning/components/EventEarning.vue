@@ -80,7 +80,7 @@
                             <td :data-title="trans('em.event')">
                                 <div class="d-flex align-items-center">
                                     <a :href="eventSlug(earning.event_slug)"> 
-                                        <img :src="'/storage/'+earning.event_thumbnail" :alt="earning.event_name" class="rounded img-4by3-md ">
+                                        <img :src="earning.event_thumbnail" :alt="earning.event_name" class="rounded img-4by3-md ">
                                     </a>
                                     <div class="ms-3 lh-1">
                                         <h5 class="mb-1"> 

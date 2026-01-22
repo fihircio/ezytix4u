@@ -18,6 +18,26 @@ class Booking extends Model
     protected $guarded = [];
 
     /**
+     * getEventThumbnailAttribute
+     *
+     * @param  mixed $value
+     * @return string
+     */
+    public function getEventThumbnailAttribute($value)
+    {
+        if(!empty($value)) {
+            // If it's already a full URL (http/https), return as-is
+            if(filter_var($value, FILTER_VALIDATE_URL)) {
+                return $value;
+            }
+            // Use Storage facade to generate correct URL based on disk configuration
+            return \Storage::url($value);
+        }
+
+        return $value;
+    }
+
+    /**
      * Table used
     */
     private $tb                 = 'bookings';

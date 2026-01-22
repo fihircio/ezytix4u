@@ -50,19 +50,10 @@ class InvoicesController extends Controller
      */
     public function generatePdf($html = null, $pdf_name = null, $data = [])
     {
-        $path           = '/storage/invoices/'.$data['customer_id'];
+        $path           = 'invoices/'.$data['customer_id'];
+        $pdf_file       = $path.'/'.$data['common_order'].'-invoice.pdf';
         
-        // first check if directory exists or not
-        if (! \File::exists(public_path().$path))
-            \File::makeDirectory(public_path().$path, 0755, true);
-
-        $pdf_file    = public_path('storage/'.$pdf_name.'/'.$data['common_order'].'-invoice.pdf');
-
-        // only create if not already created
-        // if (\File::exists($pdf_file))
-        //     return TRUE;
-            
-        // start PDF generation
+        $disk = \Storage::disk(config('filesystems.default'));
 
         // remove white spaces and comments
         $html =  preg_replace('/>\s+</', '><', $html);
@@ -77,11 +68,14 @@ class InvoicesController extends Controller
             'isHtml5ParserEnabled' => TRUE,
             'enable_html5_parser' => TRUE,
         ];
-        \PDF::setOptions($options)
+        
+        $pdf = \PDF::setOptions($options)
         ->loadHTML($html)
         ->setWarnings(false)
         ->setPaper('a4', 'portrait')
-        ->save($pdf_file);
+        ->output();
+
+        $disk->put($pdf_file, $pdf);
         
         return $pdf_file;
     } 

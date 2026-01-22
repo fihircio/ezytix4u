@@ -104,30 +104,33 @@ class DownloadsController extends Controller
         $this->generatePdf($pdf_html, $pdf_name, $booking);
         
         // download PDF
-        $path           = '/storage/ticketpdfs/'.$booking['customer_id'];
-        $pdf_file    = public_path().$path.'/'.$booking['id'].'-'.$booking['order_number'].'.pdf';
-        if (!\File::exists($pdf_file))
+        $path           = 'ticketpdfs/'.$booking['customer_id'];
+        $pdf_file       = $path.'/'.$booking['id'].'-'.$booking['order_number'].'.pdf';
+        
+        $disk = \Storage::disk(config('filesystems.default'));
+
+        if (!$disk->exists($pdf_file))
             abort('404');
 
-        return response()->download($pdf_file);
+        return $disk->download($pdf_file);
         
     }
 
     protected function createQrcode($data = [], $qrcode_data = [])
     {
-        $path           = '/storage/qrcodes/'.$data['customer_id'];
-        // first check if directory exists or not
-        if (! \File::exists(public_path().$path))
-            \File::makeDirectory(public_path().$path, 0755, true);
-    
-        $qrcode_file    = public_path().$path.'/'.$data['id'].'-'.$data['order_number'].'.png';
+        $path           = 'qrcodes/'.$data['customer_id'];
+        $qrcode_file    = $path.'/'.$data['id'].'-'.$data['order_number'].'.svg';
         
+        $disk = \Storage::disk(config('filesystems.default'));
+
         // only create if not already created
-        // if (\File::exists($qrcode_file))
-        //     return TRUE;
+        if ($disk->exists($qrcode_file))
+            return TRUE;
         
         // generate QrCode
-        \QrCode::format('png')->size(512)->generate(json_encode($qrcode_data), $qrcode_file);
+        $image = \QrCode::format('svg')->size(512)->generate(json_encode($qrcode_data));
+        
+        $disk->put($qrcode_file, $image);
 
         return TRUE;
     }
@@ -137,19 +140,10 @@ class DownloadsController extends Controller
      */
     protected function generatePdf($html = null, $pdf_name = null, $data = [])
     {
-        $path           = '/storage/ticketpdfs/'.$data['customer_id'];
-
-        // first check if directory exists or not
-        if (! \File::exists(public_path().$path))
-            \File::makeDirectory(public_path().$path, 0755, true);
-
-        $pdf_file    = public_path().$path.'/'.$data['id'].'-'.$data['order_number'].'.pdf';
+        $path           = 'ticketpdfs/'.$data['customer_id'];
+        $pdf_file       = $path.'/'.$data['id'].'-'.$data['order_number'].'.pdf';
         
-        // only create if not already created
-        // if (\File::exists($pdf_file))
-        //     return TRUE;
-            
-        // start PDF generation
+        $disk = \Storage::disk(config('filesystems.default'));
 
         // remove white spaces and comments
         $html =  preg_replace('/>\s+</', '><', $html);
@@ -165,12 +159,16 @@ class DownloadsController extends Controller
             'debugKeepTemp' => TRUE,
             'isHtml5ParserEnabled' => TRUE,
             'enable_html5_parser' => TRUE,
+            'logOutputFile' => storage_path('logs/dompdf.log.html'),
         ];
-        \PDF::setOptions($options)
+        
+        $pdf = \PDF::setOptions($options)
         ->loadHTML($html)
         ->setWarnings(false)
         ->setPaper('a4', 'portrait')
-        ->save($pdf_file);
+        ->output();
+
+        $disk->put($pdf_file, $pdf);
 
         return TRUE;
     }
@@ -203,9 +201,11 @@ class DownloadsController extends Controller
         
         
         // If QrCode image already exists, then return qrcode image path
-        $qrcode_file           = '/storage/qrcodes/'.$booking['customer_id'].'/'.$booking['id'].'-'.$booking['order_number'].'.png';
-        if (\File::exists(public_path().$qrcode_file)) {
-            return response()->json([ 'qrcode_file' => $qrcode_file , 'status' => true]);
+        $qrcode_file           = 'qrcodes/'.$booking['customer_id'].'/'.$booking['id'].'-'.$booking['order_number'].'.svg';
+        $disk = \Storage::disk(config('filesystems.default'));
+
+        if ($disk->exists($qrcode_file)) {
+            return response()->json([ 'qrcode_file' => $disk->url($qrcode_file) , 'status' => true]);
         }
         
         // generate QrCode
@@ -216,7 +216,7 @@ class DownloadsController extends Controller
         
         $this->createQrcode($booking, $qrcode_data);
 
-        return response()->json([ 'qrcode_file' =>  $qrcode_file, 'status' => true]);
+        return response()->json([ 'qrcode_file' =>  $disk->url($qrcode_file), 'status' => true]);
 
     }
 
@@ -290,19 +290,19 @@ class DownloadsController extends Controller
 
     protected function bulk_createQrcode($data = [], $qrcode_data = [])
     {
-        $path           = '/storage/qrcodes/'.$data['customer_id'];
-        // first check if directory exists or not
-        if (! \File::exists(public_path().$path))
-            \File::makeDirectory(public_path().$path, 0755, true);
-    
-        $qrcode_file    = public_path().$path.'/'.$data['id'].'-'.$data['order_number'].'.png';
+        $path           = 'qrcodes/'.$data['customer_id'];
+        $qrcode_file    = $path.'/'.$data['id'].'-'.$data['order_number'].'.svg';
         
+        $disk = \Storage::disk(config('filesystems.default'));
+
         // only create if not already created
-        // if (\File::exists($qrcode_file))
-        //     return TRUE;
+        if ($disk->exists($qrcode_file))
+            return TRUE;
         
         // generate QrCode
-        \QrCode::format('png')->size(256)->generate(json_encode($qrcode_data), $qrcode_file);
+        $image = \QrCode::format('svg')->size(256)->generate(json_encode($qrcode_data));
+        
+        $disk->put($qrcode_file, $image);
 
         return TRUE;
     }
@@ -413,9 +413,10 @@ class DownloadsController extends Controller
          
          $common_order = $booking['common_order'];
                  
-         $file = public_path('/storage/invoices/'.$booking['customer_id'].'/'.$booking['common_order'].'-invoice.pdf');
+         $file = 'invoices/'.$booking['customer_id'].'/'.$booking['common_order'].'-invoice.pdf';
+         $disk = \Storage::disk(config('filesystems.default'));
          
-         if(!\File::exists($file)) 
+         if(!$disk->exists($file)) 
          {
              $img_path      = str_replace('https://', 'http://', url(''));
  
@@ -435,7 +436,7 @@ class DownloadsController extends Controller
              $file          = $invoice->generatePdf($pdf_html, $pdf_name, $booking);
          }
          
-         return response()->download($file);
+         return $disk->download($file);
          
      }
 

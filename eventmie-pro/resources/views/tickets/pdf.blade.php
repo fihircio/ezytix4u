@@ -139,7 +139,14 @@
                         <table>
                             <tr>
                                 <td style="padding-top: 10px;text-align: center;" class="text-center">
-                                    <img src="{{ "data:image/png;base64,".base64_encode(file_get_contents(public_path('/storage/'.setting('site.logo')))) }}" style="width: 64px;">
+                                    @php 
+                                        $disk = \Storage::disk(config('filesystems.default'));
+                                        $logo_path = setting('site.logo');
+                                        $logo_base64 = $disk->exists($logo_path) ? base64_encode($disk->get($logo_path)) : '';
+                                    @endphp
+                                    @if($logo_base64)
+                                    <img src="{{ "data:image/png;base64,".$logo_base64 }}" style="width: 64px;">
+                                    @endif
                                     <p class="m-heading">
                                         {{ setting('site.site_name') ? setting('site.site_name') : config('app.name') }}
                                     </p>
@@ -169,8 +176,13 @@
                 
                 <tr>
                     <td style="text-align: center;padding-top: 5px;">
-                        @php $qrcode = $booking['customer_id'].'/'.$booking['id'].'-'.$booking['order_number'].'.png'; @endphp
-                        <img src="{{ "data:image/png;base64,".base64_encode(file_get_contents(public_path('/storage/qrcodes/'.$qrcode))) }}" style="width: 50%;">
+                        @php 
+                            $qrcode_path = 'qrcodes/'.$booking['customer_id'].'/'.$booking['id'].'-'.$booking['order_number'].'.svg'; 
+                            $qrcode_base64 = $disk->exists($qrcode_path) ? base64_encode($disk->get($qrcode_path)) : '';
+                        @endphp
+                        @if($qrcode_base64)
+                        <img src="{{ "data:image/svg+xml;base64,".$qrcode_base64 }}" style="width: 50%;">
+                        @endif
                     </td>
                 </tr>
             </table>
@@ -226,7 +238,14 @@
                                     
                                     <td class="row-divide">
                                         <p class="label" style="margin-top: 0px;margin-left: 78px;float: left;display: inline-block; font-size: 10px;text-transform: capitalize;padding-bottom: 5px;">{{ $event->title }}</p><br>
-                                        <img style="width: 80%;border-radius: 12px;float: right;margin-top: 5px;" src="{{ "data:image/png;base64,".base64_encode(file_get_contents(public_path('/storage/'.$event->thumbnail))) }}">
+                                        @php 
+                                            // Use getRawOriginal to bypass the URL accessor and get the relative path
+                                            $thumb_path = $event->getRawOriginal('thumbnail');
+                                            $thumb_base64 = $disk->exists($thumb_path) ? base64_encode($disk->get($thumb_path)) : '';
+                                        @endphp
+                                        @if($thumb_base64)
+                                        <img style="width: 80%;border-radius: 12px;float: right;margin-top: 5px;" src="{{ "data:image/png;base64,".$thumb_base64 }}">
+                                        @endif
                                     </td>
                                 </tr>
                             </table>
