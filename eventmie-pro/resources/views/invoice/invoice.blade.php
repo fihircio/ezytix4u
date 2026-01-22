@@ -238,8 +238,9 @@
             <tr>
                 <td class="border-0 pl-0 name-info">
                     
-                    <p>@lang('eventmie-pro::em.order_number') <strong>{{ $bookings[0]['common_order'] }}</strong></p>
-                    <p>@lang('eventmie-pro::em.order_date') <strong>{{ \Carbon\Carbon::parse($bookings[0]['created_at'])->translatedFormat(format_carbon_date(true)) }}</strong></p>
+                    <p>@lang('eventmie-pro::em.order_number') <strong>#{{ $bookings[0]['common_order'] }}</strong></p>
+                    <p>@lang('eventmie-pro::em.order_date') (Transaction Date): <strong>{{ \Carbon\Carbon::parse($bookings[0]['created_at'])->translatedFormat(format_carbon_date(true)) }}</strong></p>
+                    <p>@lang('eventmie-pro::em.payment') @lang('eventmie-pro::em.method'): <strong>{{ ucfirst($bookings[0]['payment_type']) }} ({{ $bookings[0]['is_paid'] ? __('eventmie-pro::em.paid') : __('eventmie-pro::em.unpaid') }})</strong></p>
                 </td>
             </tr>
         </tbody>
@@ -288,7 +289,7 @@
             @endforeach
             <tr>
                 <td colspan="5" class="border-0"></td>
-                <td class="text-right pl-0">@lang('eventmie-pro::em.invoice_total')</td>
+                <td class="text-right pl-0">@lang('eventmie-pro::em.invoice_total') (Amount Paid)</td>
                 <td class="text-right pr-0 total-amount">{{ $bookings->sum('net_price') }} {{ $bookings[0]['currency'] }}</td>
             </tr>
             
@@ -319,6 +320,18 @@
     @endif
     
     <p style="margin-top: 10px; font-size: 11px;">{{ $organizer->seller_note }}</p>
+
+    {{-- Mandatory Footer --}}
+    <div style="margin-top: 30px; border-top: 1px solid #dee2e6; padding-top: 10px; font-size: 11px; color: #6B7280;">
+        <p style="font-size: 11px; line-height: 1.4;">
+            <strong>Issued by:</strong><br>
+            EEE LAB VISUAL (002278324-V)<br>
+            Level 15, Dpulze, Lingkaran Cyberjaya Point Timur<br>
+            Cyber 12, 63300 Cyberjaya, Selangor, Malaysia<br>
+            Contact: +60 17-335 8792<br><br>
+            This invoice serves as proof of payment for a digital ticket purchase via Ezytix4u.
+        </p>
+    </div>
     
 </div>
     
