@@ -235,6 +235,12 @@
 
                                         <p class="label">@lang('eventmie-pro::em.venue')</p>
                                         <p class="value-data">{{ ucfirst($event->venue) }} | {{ ucfirst($event->address) }}</p>
+
+                                        <p class="label">@lang('eventmie-pro::em.payment') @lang('eventmie-pro::em.method')</p>
+                                        <p class="value-data text-small">{{ ucfirst($booking['payment_type']) }} ({{ $booking['is_paid'] ? __('eventmie-pro::em.paid') : __('eventmie-pro::em.unpaid') }})</p>
+
+                                        <p class="label">@lang('eventmie-pro::em.amount') @lang('eventmie-pro::em.paid')</p>
+                                        <p class="value-data text-small">{{ $booking['net_price'] }} {{ $booking['currency'] }}</p>
                                     
                                     <td class="row-divide">
                                         <p class="label" style="margin-top: 0px;margin-left: 78px;float: left;display: inline-block; font-size: 10px;text-transform: capitalize;padding-bottom: 5px;">{{ $event->title }}</p><br>
@@ -266,6 +272,14 @@
                     </td>
                 </tr>
             </table>
+        </div>
+
+        {{-- Mandatory Footer --}}
+        <div style="margin-top: 20px; border-top: 1px dashed #797979; padding-top: 10px; font-size: 10px; color: #797979; text-align: center;">
+            <p style="font-size: 10px; line-height: 1.4;">
+                <strong>Issued by:</strong> EEE LAB VISUAL (002278324-V) | Level 15, Dpulze, Lingkaran Cyberjaya Point Timur, Cyber 12, 63300 Cyberjaya, Selangor, Malaysia<br>
+                Contact: +60 17-335 8792 | This ticket serves as proof of payment for a digital ticket purchase via Ezytix4u.
+            </p>
         </div>
 
     </div>
