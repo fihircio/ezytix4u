@@ -89,20 +89,20 @@
     }
     .label {
         color: #797979;
-        font-size: 12px;
+        font-size: 11px;
         text-transform: uppercase;
         font-weight: 600;
-        margin-top: 15px;
+        margin-top: 8px;
     }
     .value-data {
         color: #000;
-        font-size: 20px;
+        font-size: 16px;
     }
     .divider {
         color: #797979;
         border: 1px dashed #797979;
-        margin-top: 10px;
-        margin-bottom: 10px;
+        margin-top: 5px;
+        margin-bottom: 5px;
     }
     .text-capitalize {
         text-transform: capitalize;
@@ -138,7 +138,7 @@
                     <td class="title-bar center">
                         <table>
                             <tr>
-                                <td style="padding-top: 10px;text-align: center;" class="text-center">
+                                <td style="padding-top: 5px;text-align: center;" class="text-center">
                                     @php 
                                         $disk = \Storage::disk(config('filesystems.default'));
                                         $logo_path = setting('site.logo');
@@ -181,7 +181,7 @@
                             $qrcode_base64 = $disk->exists($qrcode_path) ? base64_encode($disk->get($qrcode_path)) : '';
                         @endphp
                         @if($qrcode_base64)
-                        <img src="{{ "data:image/svg+xml;base64,".$qrcode_base64 }}" style="width: 50%;">
+                        <img src="{{ "data:image/svg+xml;base64,".$qrcode_base64 }}" style="width: 35%;">
                         @endif
                     </td>
                 </tr>
@@ -203,7 +203,7 @@
         <div>
             <table>
                 <tr>
-                    <td style="padding: 15px 25px 15px 25px;">
+                    <td style="padding: 5px 25px 5px 25px;">
                         <div>
                             <table>
                                 <tr>
@@ -275,7 +275,7 @@
         </div>
 
         {{-- Mandatory Footer --}}
-        <div style="margin-top: 20px; border-top: 1px dashed #797979; padding-top: 10px; font-size: 10px; color: #797979; text-align: center;">
+        <div style="margin-top: 5px; border-top: 1px dashed #797979; padding-top: 10px; font-size: 10px; color: #797979; text-align: center;">
             <p style="font-size: 10px; line-height: 1.4;">
                 <strong>Issued by:</strong> EEE LAB VISUAL (002278324-V) | Level 15, Dpulze, Lingkaran Cyberjaya Point Timur, Cyber 12, 63300 Cyberjaya, Selangor, Malaysia<br>
                 Contact: +60 17-335 8792 | This ticket serves as proof of payment for a digital ticket purchase via Ezytix4u.
