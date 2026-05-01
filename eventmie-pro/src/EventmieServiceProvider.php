@@ -98,19 +98,23 @@ class EventmieServiceProvider extends ServiceProvider
             \Classiebit\Eventmie\Exceptions\MyHandler::class
         );
         
-        if (\Schema::hasTable('settings')) 
-        {
-            if (Setting::find(1)) 
+        try {
+            if (\Schema::hasTable('settings')) 
             {
-                // setup mail configs
-                $this->mailConfiguration(setting('mail'));
-                
-                // setup regional settings
-                $this->setRegional(setting('regional'));
-                
-                // Setup oauth 
-                $this->socialite(setting('apps'));
+                if (Setting::find(1)) 
+                {
+                    // setup mail configs
+                    $this->mailConfiguration(setting('mail'));
+                    
+                    // setup regional settings
+                    $this->setRegional(setting('regional'));
+                    
+                    // Setup oauth 
+                    $this->socialite(setting('apps'));
+                }
             }
+        } catch (\Exception $e) {
+            // Ignore database connection issues during build/caching
         }
         
         // load eventmie resources.views

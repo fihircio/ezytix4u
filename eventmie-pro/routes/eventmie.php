@@ -20,6 +20,14 @@ use Illuminate\Support\Facades\Schema;
 /* Eventmie-pro package namespace */
 $namespace = !empty(config('eventmie.controllers.namespace')) ? '\\'.config('eventmie.controllers.namespace') : '\Classiebit\Eventmie\Http\Controllers';
 
+$hasSettingsTable = false;
+try {
+    $hasSettingsTable = Schema::hasTable('settings');
+} catch (\Exception $e) {
+    $hasSettingsTable = false;
+}
+
+
 /* Localization */
 Route::get('/assets/js/eventmie_lang', function () {
     // user lang
@@ -37,7 +45,7 @@ Route::get('/assets/js/eventmie_lang', function () {
 /* set local timezone */
 Route::post('/set/local_timezone', function (\Illuminate\Http\Request $request) {
    
-    if(Schema::hasTable('settings'))
+    if($hasSettingsTable)
     {   
         // if timezone_conversion off then set server timezone into client timezone else set client timezone
         if(empty(setting('regional.timezone_conversion')))
@@ -121,8 +129,8 @@ Route::group([
 Route::group([
     'prefix' => config('eventmie.route.prefix'),
     'as'    => 'eventmie.',
-    'middleware' => [ (Schema::hasTable('settings') ? !empty(setting('multi-vendor.verify_email')) : false) ? 'everified' : 'common'],
-], function() use($namespace) {
+    'middleware' => [ ($hasSettingsTable ? !empty(setting('multi-vendor.verify_email')) : false) ? 'everified' : 'common'],
+], function() use($namespace, $hasSettingsTable) {
 
     /* Welcome */
     Route::get('/', $namespace."\WelcomeController@index")->name('welcome');
@@ -199,8 +207,8 @@ Route::get('/home', function() {
     
     Route::group([
         'prefix' => config('eventmie.route.prefix'),
-        'middleware' => [(Schema::hasTable('settings') ? !empty(setting('multi-vendor.verify_email')) : false) ? 'everified' : 'common'],
-        ], function() use ($namespace) {
+    'middleware' => [($hasSettingsTable ? !empty(setting('multi-vendor.verify_email')) : false) ? 'everified' : 'common'],
+    ], function() use ($namespace) {
         /* Events */
         Route::prefix('/events')->group(function () use ($namespace) {
             $controller = $namespace.'\EventsController';
